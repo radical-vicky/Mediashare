@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Photo - MediaShare{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-6">
+            <div class="card p-4">
+                <h2 style="margin-bottom: 24px;">Upload Photo</h2>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="text-center" style="margin-bottom: 24px;">
+                        <div id="preview" style="margin-bottom: 16px; display: none;">
+                            <img id="preview-img" style="max-width: 100%; border-radius: 12px;">
+                        </div>
+                        <label for="image" class="btn btn-secondary" style="cursor: pointer;">Choose Image</label>
+                        <input type="file" id="image" name="image" accept="image/*" style="display: none;" required>
+                        <p class="text-muted" style="margin-top: 8px; font-size: 0.75rem;">JPG, PNG, GIF, WEBP up to 10MB</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Caption</label>
+                        <textarea name="caption" class="form-control" rows="4" placeholder="Write a caption..."></textarea>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                        <a href="{% url 'frontend:feed' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('preview-img').src = e.target.result;
+            document.getElementById('preview').style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

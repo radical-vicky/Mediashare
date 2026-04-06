@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+
+{% block title %}Login - MediaShare{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0"><i class="fas fa-sign-in-alt"></i> Login to MediaShare</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'account_login' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_login" class="form-label">Username or Email</label>
+                            <input type="text" name="login" class="form-control" id="id_login" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_password" class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control" id="id_password" required>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="remember" class="form-check-input" id="id_remember">
+                            <label class="form-check-label" for="id_remember">Remember Me</label>
+                        </div>
+                        
+                        {% if redirect_field_value %}
+                            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+                        {% endif %}
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                    </form>
+                    
+                    <hr>
+                    
+                    <div class="text-center">
+                        <p class="mb-2">
+                            <a href="{% url 'account_reset_password' %}">Forgot Password?</a>
+                        </p>
+                        <p class="mb-0">
+                            Don't have an account? 
+                            <a href="{% url 'account_signup' %}">Sign Up</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

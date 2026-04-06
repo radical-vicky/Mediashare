@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Call {{ receiver.username }} - MediaShare{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-call text-white">
+                    <h4 class="mb-0"><i class="fas fa-phone-alt"></i> Start Call with {{ receiver.username }}</h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        {% if receiver.profile.avatar %}
+                            <img src="{{ receiver.profile.avatar.url }}" class="avatar-lg">
+                        {% else %}
+                            <i class="fas fa-user-circle fa-5x text-secondary"></i>
+                        {% endif %}
+                        <h3 class="mt-3">{{ receiver.username }}</h3>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Call Options:
+                        <ul class="mb-0 mt-2 text-start">
+                            {% if receiver.profile.is_available_for_calls %}
+                                <li><strong>Browser Call:</strong> Free video/audio call (requires camera/mic)</li>
+                            {% endif %}
+                            {% if receiver.profile.phone_number %}
+                                <li><strong>Phone Call:</strong> ${{ receiver.profile.call_price_per_minute }}/minute</li>
+                                <li>Call will be connected to: <strong>{{ receiver.profile.phone_number }}</strong></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
+                    <form method="POST" id="call-form">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Select Call Type</label>
+                            <div class="d-flex gap-3 justify-content-center">
+                                {% if receiver.profile.is_available_for_calls %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="call_type" id="browser" value="browser" checked>
+                                        <label class="form-check-label" for="browser">
+                                            <i class="fas fa-video fa-2x"></i><br>
+                                            Browser Call<br>
+                                            <small>Free</small>
+                                        </label>
+                                    </div>
+                                {% endif %}
+                                {% if receiver.profile.phone_number %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="call_type" id="phone" value="phone">
+                                        <label class="form-check-label" for="phone">
+                                            <i class="fas fa-phone-alt fa-2x"></i><br>
+                                            Phone Call<br>
+                                            <small>${{ receiver.profile.call_price_per_minute }}/min</small>
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            By starting this call, you agree to our terms of service.
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-call" id="start-call-btn">
+                                <i class="fas fa-phone-alt"></i> Start Call
+                            </button>
+                            <a href="{% url 'frontend:user_profile' receiver.username %}" class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.getElementById('call-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('start-call-btn');
+    const formData = new FormData(this);
+    const callType = formData.get('call_type');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+    
+    try {
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {'X-CSRFToken': csrftoken}
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            if (callType === 'browser') {
+                // Redirect to WebRTC room
+                window.location.href = `/call/room/${data.room_name}/`;
+            } else if (callType === 'phone') {
+                // Phone call initiated
+                showToast('Calling... Please wait for the other person to answer', 'info');
+                setTimeout(() => {
+                    window.location.href = `/feed/`;
+                }, 3000);
+            }
+        } else {
+            showToast(data.error || 'Failed to start call', 'danger');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-phone-alt"></i> Start Call';
+        }
+    } catch (error) {
+        showToast('Connection error. Please try again.', 'danger');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-phone-alt"></i> Start Call';
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

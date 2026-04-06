@@ -1,0 +1,16 @@
+Django
+django-allauth
+django-crispy-forms
+crispy-bootstrap5
+Pillow
+channels
+channels-redis
+djangorestframework
+django-cors-headers
+python-decouple
+psycopg2-binary
+django-debug-toolbar
+django-phonenumber-field
+phonenumbers
+django-cleanup
+django-ratelimit

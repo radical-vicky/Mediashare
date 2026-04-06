@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Photo Not Found - MediaShare{% endblock %}
+
+{% block content %}
+<div class="container" style="text-align: center; padding: 60px 20px;">
+    <div class="empty-icon" style="font-size: 80px; margin-bottom: 24px;">📷❌</div>
+    <h1 style="font-size: 32px; margin-bottom: 16px;">Photo Not Found</h1>
+    <p style="color: #7d8590; font-size: 18px; margin-bottom: 32px;">
+        {{ error_message|default:"The photo you're looking for doesn't exist or has been removed." }}
+    </p>
+    
+    {% if suggestions %}
+        <div style="margin-top: 48px;">
+            <h3 style="margin-bottom: 24px;">You might like these photos instead</h3>
+            <div class="premium-grid" style="max-width: 800px; margin: 0 auto;">
+                {% for suggestion in suggestions %}
+                    <a href="{% url 'frontend:photo_detail' suggestion.id %}" class="premium-card">
+                        <img src="{{ suggestion.image.url }}" alt="{{ suggestion.caption|default:'Photo' }}" class="premium-image" loading="lazy">
+                        <div class="premium-info">
+                            <div class="premium-user">{{ suggestion.author.username }}</div>
+                            <div class="premium-title">{{ suggestion.caption|truncatechars:50|default:"Untitled" }}</div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    
+    <div style="margin-top: 48px;">
+        <a href="{% url 'frontend:feed' %}" class="btn btn-primary">Browse Feed</a>
+        <a href="{% url 'frontend:upload_photo' %}" class="btn btn-secondary" style="margin-left: 12px;">Upload a Photo</a>
+    </div>
+</div>
+
+<style>
+    .premium-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 24px;
+    }
+    
+    .premium-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .premium-card:hover {
+        transform: translateY(-4px);
+        border-color: #2f81f7;
+    }
+    
+    .premium-image {
+        width: 100%;
+        aspect-ratio: 3/4;
+        object-fit: cover;
+    }
+    
+    .premium-info {
+        padding: 12px;
+    }
+    
+    .premium-user {
+        font-size: 13px;
+        color: #2f81f7;
+        margin-bottom: 4px;
+    }
+    
+    .premium-title {
+        font-size: 13px;
+        color: #7d8590;
+    }
+    
+    @media (max-width: 768px) {
+        .premium-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+    }
+</style>
+{% endblock %}

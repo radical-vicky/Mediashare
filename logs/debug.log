@@ -1,0 +1,199 @@
+INFO 2026-04-03 18:50:33,096 twilio_views 5132 24636 Twilio client initialized successfully
+INFO 2026-04-03 18:52:15,184 twilio_views 21712 23912 Twilio client initialized successfully
+INFO 2026-04-03 18:57:58,310 twilio_views 3584 9320 Twilio client initialized successfully
+INFO 2026-04-03 19:00:58,605 twilio_views 14868 24584 Twilio client initialized successfully
+ERROR 2026-04-03 19:01:08,925 twilio_views 14868 23136 Unexpected error in initiate_call: UNIQUE constraint failed: frontend_callsession.room_name
+ERROR 2026-04-03 19:01:11,604 twilio_views 14868 16008 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The phone number you are attempting to call, 0717474393, is not valid.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21211[0m
+
+
+ERROR 2026-04-03 19:01:43,392 twilio_views 14868 23136 Unexpected error in initiate_call: UNIQUE constraint failed: frontend_callsession.room_name
+ERROR 2026-04-03 19:01:43,707 twilio_views 14868 16008 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The phone number you are attempting to call, 0717474393, is not valid.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21211[0m
+
+
+ERROR 2026-04-03 19:01:54,432 twilio_views 14868 16008 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The phone number you are attempting to call, 0717474393, is not valid.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21211[0m
+
+
+ERROR 2026-04-03 19:01:55,463 twilio_views 14868 23136 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The phone number you are attempting to call, 0717474393, is not valid.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21211[0m
+
+
+ERROR 2026-04-03 19:02:25,628 twilio_views 14868 23136 Unexpected error in initiate_call: UNIQUE constraint failed: frontend_callsession.room_name
+ERROR 2026-04-03 19:02:25,973 twilio_views 14868 16008 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The phone number you are attempting to call, 0717474393, is not valid.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21211[0m
+
+
+ERROR 2026-04-03 19:02:32,503 twilio_views 14868 16008 Unexpected error in initiate_call: UNIQUE constraint failed: frontend_callsession.room_name
+ERROR 2026-04-03 19:02:33,191 twilio_views 14868 23136 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The phone number you are attempting to call, 0717474393, is not valid.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21211[0m
+
+
+ERROR 2026-04-03 19:04:33,976 twilio_views 14868 21000 Unexpected error in initiate_call: UNIQUE constraint failed: frontend_callsession.room_name
+ERROR 2026-04-03 19:04:34,358 twilio_views 14868 22560 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The phone number you are attempting to call, 0717474393, is not valid.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21211[0m
+
+
+ERROR 2026-04-03 19:05:33,068 twilio_views 14868 2960 Unexpected error in initiate_call: UNIQUE constraint failed: frontend_callsession.room_name
+INFO 2026-04-03 19:05:34,150 twilio_views 14868 11932 Phone call initiated: CAc7c25c52da0c41f9174a0fc665439662 to +254717140342
+ERROR 2026-04-03 19:07:04,518 twilio_views 14868 3816 Unexpected error in initiate_call: UNIQUE constraint failed: frontend_callsession.room_name
+ERROR 2026-04-03 19:07:05,398 twilio_views 14868 20788 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The number +254717474393 is unverified. Trial accounts may only make calls to verified numbers.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21219[0m
+
+
+ERROR 2026-04-03 19:07:11,149 twilio_views 14868 3816 Unexpected error in initiate_call: UNIQUE constraint failed: frontend_callsession.room_name
+ERROR 2026-04-03 19:07:11,519 twilio_views 14868 20788 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The number +254717474393 is unverified. Trial accounts may only make calls to verified numbers.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21219[0m
+
+
+ERROR 2026-04-03 19:07:53,664 twilio_views 14868 11932 Unexpected error in initiate_call: UNIQUE constraint failed: frontend_callsession.room_name
+ERROR 2026-04-03 19:07:54,459 twilio_views 14868 25356 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The number +254717474393 is unverified. Trial accounts may only make calls to verified numbers.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21219[0m
+
+
+ERROR 2026-04-03 19:08:00,408 twilio_views 14868 25356 Unexpected error in initiate_call: UNIQUE constraint failed: frontend_callsession.room_name
+ERROR 2026-04-03 19:08:01,149 twilio_views 14868 11932 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The number +254717474393 is unverified. Trial accounts may only make calls to verified numbers.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21219[0m
+
+
+ERROR 2026-04-03 19:08:07,335 twilio_views 14868 25356 Unexpected error in initiate_call: UNIQUE constraint failed: frontend_callsession.room_name
+ERROR 2026-04-03 19:08:08,045 twilio_views 14868 11932 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The number +254717474393 is unverified. Trial accounts may only make calls to verified numbers.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21219[0m
+
+
+ERROR 2026-04-03 19:08:28,663 twilio_views 14868 11932 Unexpected error in initiate_call: UNIQUE constraint failed: frontend_callsession.room_name
+ERROR 2026-04-03 19:08:29,123 twilio_views 14868 25356 Twilio error: 
+[31m[49mHTTP Error[0m [37m[49mYour request was:[0m
+
+[36m[49mPOST /Accounts/ACf55a0ef3566aa783141bf1a2e498d36c/Calls.json[0m
+
+[37m[49mTwilio returned the following information:[0m
+
+[34m[49mUnable to create record: The number +254717474393 is unverified. Trial accounts may only make calls to verified numbers.[0m
+
+[37m[49mMore information may be available here:[0m
+
+[34m[49mhttps://www.twilio.com/docs/errors/21219[0m
+
+

@@ -1,0 +1,717 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - MediaShare{% endblock %}
+
+{% block content %}
+<div class="homepage">
+    <!-- Hero Section with Banner -->
+    <section class="hero">
+        <div class="hero-banner">
+            <div class="banner-wrapper">
+                <img src="{% static 'images/banner1.png' %}" alt="MediaShare Banner" class="hero-banner-image">
+                <div class="banner-overlay">
+                    <div class="banner-content">
+                        <h1 class="banner-title">Share Your Stories</h1>
+                        <p class="banner-description">Connect with creators, share photos and videos, and build your community.</p>
+                        {% if user.is_authenticated %}
+                            <div class="banner-buttons">
+                                <a href="{% url 'frontend:feed' %}" class="btn btn-primary">Go to Feed</a>
+                                <a href="{% url 'frontend:upload_photo' %}" class="btn btn-outline">Upload Photo</a>
+                                <a href="{% url 'frontend:upload_video' %}" class="btn btn-outline">Upload Video</a>
+                            </div>
+                        {% else %}
+                            <div class="banner-buttons">
+                                <a href="{% url 'account_signup' %}" class="btn btn-primary">Get Started</a>
+                                <a href="{% url 'account_login' %}" class="btn btn-outline">Sign In</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid with Circular Images -->
+    <section class="features">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2 class="section-title">Why Choose MediaShare</h2>
+                <p class="section-subtitle">Everything you need to share and connect</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-image-wrapper">
+                        <div class="feature-image-circle">
+                            <img src="{% static 'images/choose.png' %}" alt="Photo Sharing" class="feature-img-circle">
+                        </div>
+                    </div>
+                    <h3 class="feature-title">Photo Sharing</h3>
+                    <p class="feature-description">Upload high-quality photos and showcase your creativity to the world.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-image-wrapper">
+                        <div class="feature-image-circle">
+                            <img src="{% static 'images/choose1.png' %}" alt="Video Sharing" class="feature-img-circle">
+                        </div>
+                    </div>
+                    <h3 class="feature-title">Video Sharing</h3>
+                    <p class="feature-description">Share your video content, from short clips to full-length productions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-image-wrapper">
+                        <div class="feature-image-circle">
+                            <img src="{% static 'images/choose4.png' %}" alt="Community" class="feature-img-circle">
+                        </div>
+                    </div>
+                    <h3 class="feature-title">Community Engagement</h3>
+                    <p class="feature-description">Like, comment, and message other creators to build meaningful connections.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-image-wrapper">
+                        <div class="feature-image-circle">
+                            <img src="{% static 'images/choose3.png' %}" alt="Video Calls" class="feature-img-circle">
+                        </div>
+                    </div>
+                    <h3 class="feature-title">Video Calls</h3>
+                    <p class="feature-description">Connect face-to-face with other creators through integrated video calls.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Photos - JustWatch Style -->
+    <section class="recent-content">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Recent Photos</h2>
+                    <p class="section-subtitle">Latest uploads from the community</p>
+                </div>
+                <a href="{% url 'frontend:feed' %}?filter=photos" class="link-arrow">View all photos →</a>
+            </div>
+            
+            {% if recent_photos %}
+                <div class="media-grid">
+                    {% for photo in recent_photos %}
+                        <div class="media-card">
+                            <a href="{% url 'frontend:photo_detail' photo.id %}" class="media-link">
+                                <div class="media-poster">
+                                    <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" class="media-image">
+                                    <div class="media-overlay">
+                                        <div class="media-stats">
+                                            <span class="stat-item">❤️ {{ photo.likes.count }}</span>
+                                            <span class="stat-item">👁️ {{ photo.views }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="media-info">
+                                    <div class="media-title">{{ photo.caption|default:"Untitled"|truncatechars:60 }}</div>
+                                    <div class="media-meta">
+                                        <span class="meta-user">{{ photo.author.username }}</span>
+                                        <span class="meta-time">{{ photo.created_at|timesince }} ago</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p class="empty-message">No photos uploaded yet.</p>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'frontend:upload_photo' %}" class="btn btn-primary">Upload your first photo</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Recent Videos - JustWatch Style -->
+    <section class="recent-content">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Recent Videos</h2>
+                    <p class="section-subtitle">Fresh video content from creators</p>
+                </div>
+                <a href="{% url 'frontend:feed' %}?filter=videos" class="link-arrow">View all videos →</a>
+            </div>
+            
+            {% if recent_videos %}
+                <div class="media-grid">
+                    {% for video in recent_videos %}
+                        <div class="media-card">
+                            <a href="{% url 'frontend:video_detail' video.id %}" class="media-link">
+                                <div class="media-poster">
+                                    <video class="media-video">
+                                        <source src="{{ video.video_file.url }}">
+                                    </video>
+                                    <div class="media-overlay">
+                                        <div class="play-icon"></div>
+                                        <div class="media-stats">
+                                            <span class="stat-item">❤️ {{ video.likes.count }}</span>
+                                            <span class="stat-item">👁️ {{ video.views }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="media-info">
+                                    <div class="media-title">{{ video.title|truncatechars:60 }}</div>
+                                    <div class="media-meta">
+                                        <span class="meta-user">{{ video.author.username }}</span>
+                                        <span class="meta-time">{{ video.created_at|timesince }} ago</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p class="empty-message">No videos uploaded yet.</p>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'frontend:upload_video' %}" class="btn btn-primary">Upload your first video</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<style>
+/* Reset and Base */
+.homepage {
+    width: 100%;
+    background: #0d1117;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Hero Banner Section */
+.hero {
+    width: 100%;
+    margin-bottom: 48px;
+}
+
+.hero-banner {
+    width: 100%;
+    background: #0d1117;
+}
+
+.banner-wrapper {
+    position: relative;
+    width: 100%;
+    max-height: 550px;
+    overflow: hidden;
+}
+
+.hero-banner-image {
+    width: 100%;
+    height: 550px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.5) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.banner-content {
+    text-align: center;
+    max-width: 800px;
+    padding: 32px 24px;
+}
+
+.banner-title {
+    font-size: 52px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: white;
+    margin-bottom: 16px;
+    line-height: 1.2;
+}
+
+.banner-description {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 32px;
+    line-height: 1.5;
+}
+
+.banner-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-family: inherit;
+    text-align: center;
+}
+
+.btn-primary {
+    background: #238636;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2ea043;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid white;
+    color: white;
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Features Section */
+.features {
+    padding: 60px 0;
+    background: #0d1117;
+    border-top: 1px solid #21262d;
+    border-bottom: 1px solid #21262d;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.section-header {
+    margin-bottom: 48px;
+}
+
+.section-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #e6edf3;
+    margin-bottom: 12px;
+}
+
+.section-subtitle {
+    font-size: 16px;
+    color: #7d8590;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.feature-card {
+    text-align: center;
+    padding: 32px 24px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 16px;
+    transition: all 0.2s ease;
+}
+
+.feature-card:hover {
+    border-color: #2f81f7;
+    transform: translateY(-4px);
+}
+
+.feature-image-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.feature-image-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #21262d;
+    border: 2px solid #30363d;
+    transition: all 0.2s ease;
+}
+
+.feature-card:hover .feature-image-circle {
+    border-color: #2f81f7;
+    transform: scale(1.05);
+}
+
+.feature-img-circle {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.feature-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e6edf3;
+    margin-bottom: 12px;
+}
+
+.feature-description {
+    font-size: 14px;
+    color: #7d8590;
+    line-height: 1.5;
+}
+
+/* Recent Content Sections */
+.recent-content {
+    padding: 60px 0;
+    border-bottom: 1px solid #21262d;
+}
+
+.recent-content:last-child {
+    border-bottom: none;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+}
+
+.section-header .section-title {
+    margin-bottom: 4px;
+    text-align: left;
+}
+
+.section-header .section-subtitle {
+    text-align: left;
+}
+
+.link-arrow {
+    font-size: 14px;
+    color: #2f81f7;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.link-arrow:hover {
+    text-decoration: underline;
+}
+
+/* Media Grid - JustWatch Style */
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 24px;
+}
+
+.media-card {
+    background: #161b22;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.media-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.media-link {
+    text-decoration: none;
+}
+
+/* Media Poster */
+.media-poster {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    background: #0d1117;
+}
+
+.media-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.media-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Media Overlay */
+.media-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.media-card:hover .media-overlay {
+    opacity: 1;
+}
+
+/* Play Icon for Videos */
+.play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+}
+
+.play-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 55%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 10px 0 10px 16px;
+    border-color: transparent transparent transparent #000;
+}
+
+/* Media Stats */
+.media-stats {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.stat-item {
+    background: rgba(0, 0, 0, 0.75);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #e6edf3;
+}
+
+/* Media Info */
+.media-info {
+    padding: 12px;
+}
+
+.media-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e6edf3;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.media-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.meta-user {
+    color: #2f81f7;
+}
+
+.meta-time {
+    color: #7d8590;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+}
+
+.empty-message {
+    font-size: 16px;
+    color: #7d8590;
+    margin-bottom: 16px;
+}
+
+/* Mobile Responsive Fixes */
+@media (max-width: 1024px) {
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .media-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+    
+    /* Hero Section Mobile */
+    .hero-banner-image {
+        height: 400px;
+    }
+    
+    .banner-title {
+        font-size: 32px;
+    }
+    
+    .banner-description {
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+    
+    .banner-buttons {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .banner-buttons .btn {
+        width: 100%;
+        text-align: center;
+        padding: 12px 16px;
+    }
+    
+    .banner-content {
+        padding: 20px 16px;
+        width: 100%;
+    }
+    
+    /* Features Grid Mobile */
+    .features {
+        padding: 40px 0;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .feature-card {
+        padding: 24px 20px;
+    }
+    
+    .feature-image-circle {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .section-title {
+        font-size: 24px;
+    }
+    
+    .section-subtitle {
+        font-size: 14px;
+    }
+    
+    /* Section Header Mobile */
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+    
+    /* Media Grid Mobile */
+    .recent-content {
+        padding: 40px 0;
+    }
+    
+    .media-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 16px;
+    }
+    
+    .media-info {
+        padding: 10px;
+    }
+    
+    .media-title {
+        font-size: 13px;
+    }
+    
+    .media-meta {
+        font-size: 11px;
+    }
+    
+    /* Empty State Mobile */
+    .empty-state {
+        padding: 40px 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-banner-image {
+        height: 350px;
+    }
+    
+    .banner-title {
+        font-size: 26px;
+    }
+    
+    .media-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+    }
+    
+    .feature-image-circle {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .feature-title {
+        font-size: 16px;
+    }
+    
+    .feature-description {
+        font-size: 13px;
+    }
+    
+    .media-info {
+        padding: 8px;
+    }
+    
+    .media-title {
+        font-size: 12px;
+    }
+}
+</style>
+{% endblock %}

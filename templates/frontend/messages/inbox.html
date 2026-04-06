@@ -1,0 +1,421 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Messages - MediaShare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .inbox-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .inbox-header {
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    
+    .inbox-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #f0f6fc;
+    }
+    
+    .new-message-btn {
+        background: #2f81f7;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: inline-block;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .new-message-btn:hover {
+        background: #3b8bff;
+        transform: translateY(-1px);
+    }
+    
+    .thread-list {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .thread-item {
+        display: flex;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #21262d;
+        text-decoration: none;
+        transition: background 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .thread-item:hover {
+        background: rgba(33, 38, 45, 0.5);
+    }
+    
+    .thread-item.unread {
+        background: rgba(47, 129, 247, 0.05);
+    }
+    
+    .thread-avatar {
+        margin-right: 16px;
+    }
+    
+    .thread-avatar img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .avatar-placeholder {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2f81f7, #8957e5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 18px;
+        color: white;
+    }
+    
+    .thread-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .thread-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 6px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .thread-user {
+        font-weight: 600;
+        color: #f0f6fc;
+        font-size: 15px;
+    }
+    
+    .thread-time {
+        font-size: 12px;
+        color: #7d8590;
+    }
+    
+    .thread-subject {
+        font-size: 13px;
+        color: #7d8590;
+        margin-bottom: 4px;
+    }
+    
+    .thread-preview {
+        font-size: 13px;
+        color: #e6edf3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .thread-badge {
+        background: #2f81f7;
+        color: white;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 20px;
+        margin-left: 12px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #7d8590;
+    }
+    
+    .empty-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(12px);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 500px;
+        padding: 24px;
+    }
+    
+    .modal-content h3 {
+        margin-bottom: 20px;
+        color: #f0f6fc;
+        font-size: 20px;
+    }
+    
+    .modal-input {
+        width: 100%;
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 10px 12px;
+        color: #e6edf3;
+        margin-bottom: 16px;
+        font-family: inherit;
+    }
+    
+    .modal-input:focus {
+        outline: none;
+        border-color: #2f81f7;
+    }
+    
+    .modal-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 8px;
+    }
+    
+    .btn-secondary {
+        background: #21262d;
+        color: #e6edf3;
+        border: 1px solid #30363d;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .btn-secondary:hover {
+        background: #30363d;
+    }
+    
+    .btn-primary {
+        background: #2f81f7;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        background: #3b8bff;
+    }
+    
+    .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.6s linear infinite;
+        margin-right: 8px;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container inbox-container">
+    <div class="inbox-header">
+        <h1>💬 Messages</h1>
+        <button class="new-message-btn" id="newMessageBtn">✏️ New Message</button>
+    </div>
+    
+    <div class="thread-list">
+        {% for thread_data in threads_data %}
+            <a href="{% url 'frontend:thread_detail' thread_data.thread.id %}" class="thread-item {% if thread_data.unread_count > 0 %}unread{% endif %}">
+                <div class="thread-avatar">
+                    {% if thread_data.other_user.profile.avatar %}
+                        <img src="{{ thread_data.other_user.profile.avatar.url }}" alt="{{ thread_data.other_user.username }}">
+                    {% else %}
+                        <div class="avatar-placeholder">{{ thread_data.other_user.username|first|upper }}</div>
+                    {% endif %}
+                </div>
+                <div class="thread-content">
+                    <div class="thread-header">
+                        <span class="thread-user">{{ thread_data.other_user.username }}</span>
+                        <span class="thread-time">{{ thread_data.updated_at|timesince }} ago</span>
+                    </div>
+                    <div class="thread-subject">{{ thread_data.subject }}</div>
+                    <div class="thread-preview">
+                        {% if thread_data.last_message %}
+                            {{ thread_data.last_message.sender.username }}: {{ thread_data.last_message.content|truncatechars:50 }}
+                        {% else %}
+                            No messages yet
+                        {% endif %}
+                    </div>
+                </div>
+                {% if thread_data.unread_count > 0 %}
+                    <div class="thread-badge">{{ thread_data.unread_count }}</div>
+                {% endif %}
+            </a>
+        {% empty %}
+            <div class="empty-state">
+                <div class="empty-icon">💬</div>
+                <h3>No messages yet</h3>
+                <p>Start a conversation with another creator</p>
+                <button class="btn btn-primary" id="emptyNewMessageBtn" style="margin-top: 20px;">Send a Message</button>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- New Message Modal -->
+<div id="newMessageModal" class="modal">
+    <div class="modal-content">
+        <h3>✏️ New Message</h3>
+        <form id="newMessageForm">
+            {% csrf_token %}
+            <input type="text" name="username" id="modalUsername" class="modal-input" placeholder="Recipient username" required>
+            <input type="text" name="subject" id="modalSubject" class="modal-input" placeholder="Subject" required>
+            <textarea name="content" id="modalContent" class="modal-input" rows="4" placeholder="Your message..." required></textarea>
+            <div class="modal-buttons">
+                <button type="button" class="btn-secondary" id="cancelModalBtn">Cancel</button>
+                <button type="submit" class="btn-primary" id="sendMessageBtn">Send Message</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Get CSRF token
+function getCookie(name) {
+    let value = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                value = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return value;
+}
+const csrf = getCookie('csrftoken');
+
+// Modal functionality
+const modal = document.getElementById('newMessageModal');
+const newMessageBtn = document.getElementById('newMessageBtn');
+const emptyNewMessageBtn = document.getElementById('emptyNewMessageBtn');
+const cancelModalBtn = document.getElementById('cancelModalBtn');
+const newMessageForm = document.getElementById('newMessageForm');
+
+function openModal() {
+    modal.classList.add('active');
+    // Clear form
+    document.getElementById('modalUsername').value = '';
+    document.getElementById('modalSubject').value = '';
+    document.getElementById('modalContent').value = '';
+}
+
+function closeModal() {
+    modal.classList.remove('active');
+}
+
+if (newMessageBtn) newMessageBtn.addEventListener('click', openModal);
+if (emptyNewMessageBtn) emptyNewMessageBtn.addEventListener('click', openModal);
+if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
+
+// Close modal when clicking outside
+modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+});
+
+// Handle form submission via AJAX
+if (newMessageForm) {
+    newMessageForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('modalUsername').value.trim();
+        const subject = document.getElementById('modalSubject').value.trim();
+        const content = document.getElementById('modalContent').value.trim();
+        
+        if (!username || !subject || !content) {
+            alert('Please fill in all fields');
+            return;
+        }
+        
+        const submitBtn = document.getElementById('sendMessageBtn');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span> Sending...';
+        
+        try {
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('subject', subject);
+            formData.append('content', content);
+            
+            const response = await fetch('/messages/send-ajax/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrf,
+                },
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                closeModal();
+                // Redirect to the new thread
+                window.location.href = `/messages/thread/${data.thread_id}/`;
+            } else {
+                alert(data.error || 'Error sending message');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Network error. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    });
+}
+</script>
+{% endblock %}

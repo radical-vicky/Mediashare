@@ -1,0 +1,259 @@
+from django.contrib import admin
+from django.utils.html import format_html
+from django.contrib.auth.models import User
+from .models import (
+    UserProfile, Photo, Video, Comment, Share, 
+    CallSession, MessageThread, Message, VideoView
+)
+
+# ========== USER PROFILE ADMIN ==========
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'phone_number', 'is_available_for_calls', 'call_price_per_minute', 'followers_count', 'is_verified']
+    list_filter = ['is_available_for_calls', 'is_verified', 'created_at']
+    search_fields = ['user__username', 'user__email', 'phone_number', 'location']
+    readonly_fields = ['followers_count', 'following_count', 'created_at', 'updated_at']
+    
+    fieldsets = (
+        ('User Information', {
+            'fields': ('user', 'bio', 'avatar', 'location', 'website')
+        }),
+        ('Contact Information', {
+            'fields': ('phone_number', 'is_verified')
+        }),
+        ('Call Settings', {
+            'fields': ('call_price_per_minute', 'is_available_for_calls'),
+            'classes': ('collapse',)
+        }),
+        ('Social', {
+            'fields': ('followers', 'following'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def followers_count(self, obj):
+        return obj.followers.count()
+    followers_count.short_description = 'Followers'
+    
+    def following_count(self, obj):
+        return obj.following.count()
+    following_count.short_description = 'Following'
+
+
+# ========== PHOTO ADMIN ==========
+
+@admin.register(Photo)
+class PhotoAdmin(admin.ModelAdmin):
+    list_display = ['id', 'author', 'thumbnail_preview', 'caption_preview', 'created_at', 'likes_count', 'views']
+    list_filter = ['created_at', 'author']
+    search_fields = ['author__username', 'caption']
+    readonly_fields = ['views', 'likes_count', 'created_at', 'updated_at']
+    
+    def thumbnail_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" width="50" height="50" style="object-fit: cover; border-radius: 5px;" />', obj.image.url)
+        return "No Image"
+    thumbnail_preview.short_description = 'Preview'
+    
+    def caption_preview(self, obj):
+        return obj.caption[:50] + '...' if len(obj.caption) > 50 else obj.caption
+    caption_preview.short_description = 'Caption'
+    
+    def likes_count(self, obj):
+        return obj.likes.count()
+    likes_count.short_description = 'Likes'
+
+
+# ========== VIDEO ADMIN ==========
+
+@admin.register(Video)
+class VideoAdmin(admin.ModelAdmin):
+    list_display = ['id', 'author', 'title', 'video_type', 'thumbnail_preview', 'created_at', 'likes_count', 'views']
+    list_filter = ['created_at', 'author', 'video_type']
+    search_fields = ['author__username', 'title', 'description']
+    readonly_fields = ['views', 'likes_count', 'created_at', 'updated_at', 'duration']
+    
+    def thumbnail_preview(self, obj):
+        if obj.thumbnail:
+            return format_html('<img src="{}" width="50" height="50" style="object-fit: cover; border-radius: 5px;" />', obj.thumbnail.url)
+        return format_html('<span style="color: gray;">No thumbnail</span>')
+    thumbnail_preview.short_description = 'Preview'
+    
+    def likes_count(self, obj):
+        return obj.likes.count()
+    likes_count.short_description = 'Likes'
+
+
+# ========== COMMENT ADMIN ==========
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ['id', 'author', 'content_type', 'content_preview', 'created_at']
+    list_filter = ['created_at', 'content_type', 'author']
+    search_fields = ['author__username', 'text']
+    readonly_fields = ['created_at']
+    
+    def content_preview(self, obj):
+        return obj.text[:50] + '...' if len(obj.text) > 50 else obj.text
+    content_preview.short_description = 'Comment'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('author', 'photo', 'video')
+
+
+# ========== SHARE ADMIN ==========
+
+@admin.register(Share)
+class ShareAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'content_type', 'content_link', 'platform', 'created_at']
+    list_filter = ['platform', 'content_type', 'created_at']
+    search_fields = ['user__username']
+    readonly_fields = ['created_at']
+    
+    def content_link(self, obj):
+        if obj.content_type == 'photo' and obj.photo:
+            return format_html('<a href="/admin/frontend/photo/{}/change/">Photo #{}</a>', obj.photo.id, obj.photo.id)
+        elif obj.content_type == 'video' and obj.video:
+            return format_html('<a href="/admin/frontend/video/{}/change/">Video #{}</a>', obj.video.id, obj.video.id)
+        elif obj.content_type == 'profile' and obj.profile_user:
+            return format_html('<a href="/admin/auth/user/{}/change/">User: {}</a>', obj.profile_user.id, obj.profile_user.username)
+        return "N/A"
+    content_link.short_description = 'Content'
+
+
+# ========== CALL SESSION ADMIN ==========
+
+@admin.register(CallSession)
+class CallSessionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'caller', 'receiver', 'call_type', 'status', 'formatted_duration', 'total_cost', 'created_at']
+    list_filter = ['call_type', 'status', 'created_at']
+    search_fields = ['caller__username', 'receiver__username', 'twilio_call_sid']
+    readonly_fields = ['room_name', 'twilio_call_sid', 'formatted_duration', 'created_at']
+    
+    fieldsets = (
+        ('Participants', {
+            'fields': ('caller', 'receiver')
+        }),
+        ('Call Details', {
+            'fields': ('call_type', 'status', 'receiver_phone_number')
+        }),
+        ('Duration & Pricing', {
+            'fields': ('duration', 'formatted_duration', 'price_per_minute', 'total_cost')
+        }),
+        ('Timestamps', {
+            'fields': ('started_at', 'ended_at', 'created_at')
+        }),
+        ('Tracking', {
+            'fields': ('room_name', 'twilio_call_sid', 'twilio_status'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def formatted_duration(self, obj):
+        return obj.formatted_duration
+    formatted_duration.short_description = 'Duration'
+    
+    actions = ['mark_as_completed', 'mark_as_cancelled']
+    
+    def mark_as_completed(self, request, queryset):
+        queryset.update(status='completed')
+    mark_as_completed.short_description = 'Mark selected calls as completed'
+    
+    def mark_as_cancelled(self, request, queryset):
+        queryset.update(status='cancelled')
+    mark_as_cancelled.short_description = 'Mark selected calls as cancelled'
+
+
+# ========== MESSAGE THREAD ADMIN ==========
+
+@admin.register(MessageThread)
+class MessageThreadAdmin(admin.ModelAdmin):
+    list_display = ['id', 'subject', 'participant_list', 'message_count', 'last_message_preview', 'updated_at']
+    list_filter = ['created_at', 'updated_at']
+    search_fields = ['subject', 'participants__username']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    def participant_list(self, obj):
+        return ", ".join([user.username for user in obj.participants.all()])
+    participant_list.short_description = 'Participants'
+    
+    def message_count(self, obj):
+        return obj.messages.count()
+    message_count.short_description = 'Messages'
+    
+    def last_message_preview(self, obj):
+        last_msg = obj.messages.first()
+        if last_msg:
+            return f"{last_msg.sender.username}: {last_msg.short_content}"
+        return "No messages"
+    last_message_preview.short_description = 'Last Message'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('participants', 'messages')
+
+
+# ========== MESSAGE ADMIN ==========
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ['id', 'sender', 'thread_subject', 'short_content', 'is_read', 'created_at']
+    list_filter = ['is_read', 'created_at', 'sender']
+    search_fields = ['sender__username', 'content', 'thread__subject']
+    readonly_fields = ['created_at']
+    
+    def thread_subject(self, obj):
+        return obj.thread.subject
+    thread_subject.short_description = 'Thread'
+    
+    def short_content(self, obj):
+        return obj.short_content
+    short_content.short_description = 'Message'
+    
+    actions = ['mark_as_read', 'mark_as_unread']
+    
+    def mark_as_read(self, request, queryset):
+        for message in queryset:
+            message.mark_as_read()
+        self.message_user(request, f'{queryset.count()} messages marked as read.')
+    mark_as_read.short_description = 'Mark selected messages as read'
+    
+    def mark_as_unread(self, request, queryset):
+        queryset.update(is_read=False)
+        self.message_user(request, f'{queryset.count()} messages marked as unread.')
+    mark_as_unread.short_description = 'Mark selected messages as unread'
+
+
+# ========== CUSTOM ADMIN SITE CONFIGURATION ==========
+
+admin.site.site_header = 'MediaShare Administration'
+admin.site.site_title = 'MediaShare Admin Portal'
+admin.site.index_title = 'Welcome to MediaShare Admin Portal'
+
+# Register User model with custom display (optional)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ['username', 'email', 'first_name', 'last_name', 'is_staff', 'date_joined']
+    list_filter = ['is_staff', 'is_active', 'date_joined']
+    search_fields = ['username', 'email']
+
+
+    
+# Unregister default User admin and register custom one
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
+
+
+
+@admin.register(VideoView)
+class VideoViewAdmin(admin.ModelAdmin):
+    list_display = ['id', 'video', 'user', 'session_key', 'watch_time', 'completed', 'viewed_at']
+    list_filter = ['completed', 'viewed_at']
+    search_fields = ['video__title', 'user__username', 'session_key']
+    readonly_fields = ['viewed_at']
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('video', 'user')

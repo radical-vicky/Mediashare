@@ -1,0 +1,507 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upload Video - MediaShare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 30px;
+        background: #161b22;
+        border-radius: 16px;
+        border: 1px solid #30363d;
+    }
+    
+    .upload-area {
+        border: 2px dashed #30363d;
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-area:hover {
+        border-color: #2f81f7;
+        background: rgba(47, 129, 247, 0.05);
+    }
+    
+    .upload-area.drag-over {
+        border-color: #2f81f7;
+        background: rgba(47, 129, 247, 0.1);
+    }
+    
+    .file-info {
+        margin-top: 20px;
+        padding: 15px;
+        background: #0d1117;
+        border-radius: 8px;
+        display: none;
+    }
+    
+    .file-info.active {
+        display: block;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: #30363d;
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 10px;
+        display: none;
+    }
+    
+    .progress-bar.active {
+        display: block;
+    }
+    
+    .progress-fill {
+        width: 0%;
+        height: 100%;
+        background: #2f81f7;
+        transition: width 0.3s ease;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+    
+    .upload-btn {
+        flex: 2;
+        padding: 12px;
+        font-size: 16px;
+    }
+    
+    .back-btn {
+        flex: 1;
+        padding: 12px;
+        font-size: 16px;
+        background: #21262d;
+        border: 1px solid #30363d;
+        color: #e6edf3;
+        text-decoration: none;
+        text-align: center;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+    
+    .back-btn:hover {
+        background: #30363d;
+        border-color: #2f81f7;
+        text-decoration: none;
+        color: #2f81f7;
+    }
+    
+    /* Confirmation Modal */
+    .confirm-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(12px);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .confirm-modal.active {
+        display: flex;
+    }
+    
+    .confirm-modal-content {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 16px;
+        max-width: 400px;
+        width: 90%;
+        padding: 24px;
+        text-align: center;
+    }
+    
+    .confirm-modal-content h3 {
+        margin-bottom: 12px;
+        color: #f0f6fc;
+    }
+    
+    .confirm-modal-content p {
+        margin-bottom: 24px;
+        color: #7d8590;
+    }
+    
+    .confirm-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+    
+    .confirm-buttons button {
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        border: none;
+    }
+    
+    .confirm-leave {
+        background: #f85149;
+        color: white;
+    }
+    
+    .confirm-leave:hover {
+        background: #da3633;
+    }
+    
+    .confirm-stay {
+        background: #21262d;
+        color: #e6edf3;
+        border: 1px solid #30363d;
+    }
+    
+    .confirm-stay:hover {
+        background: #30363d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="upload-container">
+        <h2 style="margin-bottom: 24px; text-align: center;">📤 Upload Video</h2>
+        <p style="text-align: center; color: #7d8590; margin-bottom: 24px;">
+            No size limits • Any format supported
+        </p>
+        
+        <form id="uploadForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="upload-area" id="uploadArea">
+                <div style="font-size: 48px; margin-bottom: 16px;">🎥</div>
+                <p style="margin-bottom: 8px;">Click or drag video file here</p>
+                <p style="font-size: 12px; color: #7d8590;">No size limit • Any video format supported</p>
+                <input type="file" name="video_file" id="videoInput" accept="video/*" style="display: none;">
+            </div>
+            
+            <div class="file-info" id="fileInfo">
+                <strong>Selected file:</strong>
+                <span id="fileName"></span>
+                <br>
+                <strong>Size:</strong>
+                <span id="fileSize"></span>
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 20px;">
+                <label class="form-label">Video Title</label>
+                <input type="text" name="title" class="form-control" required placeholder="Enter video title...">
+            </div>
+            
+            <div class="form-group" style="margin-top: 16px;">
+                <label class="form-label">Description (Optional)</label>
+                <textarea name="description" class="form-control" rows="4" placeholder="Describe your video..."></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary upload-btn" id="uploadBtn">
+                    📤 Upload Video
+                </button>
+                <button type="button" class="back-btn" id="backBtn">
+                    ← Back
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="confirm-modal">
+    <div class="confirm-modal-content">
+        <h3>⚠️ Cancel Upload?</h3>
+        <p>Are you sure you want to go back? Your uploaded file will be lost.</p>
+        <div class="confirm-buttons">
+            <button class="confirm-leave" id="confirmLeave">Yes, Go Back</button>
+            <button class="confirm-stay" id="confirmStay">No, Stay Here</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const uploadArea = document.getElementById('uploadArea');
+const videoInput = document.getElementById('videoInput');
+const fileInfo = document.getElementById('fileInfo');
+const fileName = document.getElementById('fileName');
+const fileSize = document.getElementById('fileSize');
+const uploadForm = document.getElementById('uploadForm');
+const uploadBtn = document.getElementById('uploadBtn');
+const progressBar = document.getElementById('progressBar');
+const progressFill = document.getElementById('progressFill');
+const backBtn = document.getElementById('backBtn');
+const confirmModal = document.getElementById('confirmModal');
+const confirmLeave = document.getElementById('confirmLeave');
+const confirmStay = document.getElementById('confirmStay');
+
+let hasSelectedFile = false;
+let isUploading = false;
+
+// Get the previous video ID from URL parameter or session storage
+let previousVideoId = null;
+
+// Try to get previous video ID from URL parameter
+const urlParams = new URLSearchParams(window.location.search);
+previousVideoId = urlParams.get('from');
+
+// If not in URL, check session storage
+if (!previousVideoId) {
+    previousVideoId = sessionStorage.getItem('last_video_id');
+}
+
+// Function to go back to video detail or feed
+function goBack() {
+    if (previousVideoId) {
+        // Go back to the specific video detail page
+        window.location.href = `/video/${previousVideoId}/`;
+    } else {
+        // Fallback to feed page
+        window.location.href = '/feed/';
+    }
+}
+
+// Click to upload
+uploadArea.addEventListener('click', () => {
+    videoInput.click();
+});
+
+// File selection
+videoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        hasSelectedFile = true;
+        displayFileInfo(file);
+    }
+});
+
+// Drag and drop
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('drag-over');
+});
+
+uploadArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('drag-over');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('video/')) {
+        hasSelectedFile = true;
+        videoInput.files = e.dataTransfer.files;
+        displayFileInfo(file);
+    } else {
+        showToast('Please drop a video file', 'error');
+    }
+});
+
+function displayFileInfo(file) {
+    fileName.textContent = file.name;
+    
+    // Format file size
+    let size = file.size;
+    let sizeText = '';
+    if (size < 1024 * 1024) {
+        sizeText = (size / 1024).toFixed(2) + ' KB';
+    } else if (size < 1024 * 1024 * 1024) {
+        sizeText = (size / (1024 * 1024)).toFixed(2) + ' MB';
+    } else {
+        sizeText = (size / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+    }
+    fileSize.textContent = sizeText;
+    fileInfo.classList.add('active');
+}
+
+// Back button functionality
+backBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    
+    // Check if user has selected a file or entered any data
+    const hasTitle = document.querySelector('input[name="title"]').value.trim() !== '';
+    const hasDescription = document.querySelector('textarea[name="description"]').value.trim() !== '';
+    
+    if (hasSelectedFile || hasTitle || hasDescription) {
+        // Show confirmation modal
+        confirmModal.classList.add('active');
+    } else {
+        // No data entered, go back immediately
+        goBack();
+    }
+});
+
+// Confirm leave
+confirmLeave.addEventListener('click', () => {
+    confirmModal.classList.remove('active');
+    goBack();
+});
+
+// Stay on page
+confirmStay.addEventListener('click', () => {
+    confirmModal.classList.remove('active');
+});
+
+// Close modal when clicking outside
+confirmModal.addEventListener('click', (e) => {
+    if (e.target === confirmModal) {
+        confirmModal.classList.remove('active');
+    }
+});
+
+// Form submission with progress tracking
+uploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(uploadForm);
+    const file = videoInput.files[0];
+    
+    if (!file) {
+        showToast('Please select a video file', 'error');
+        return;
+    }
+    
+    // Show progress bar
+    isUploading = true;
+    progressBar.classList.add('active');
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = '<span class="spinner"></span> Uploading...';
+    
+    // Use XMLHttpRequest for progress tracking
+    const xhr = new XMLHttpRequest();
+    
+    xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+            const percent = (e.loaded / e.total) * 100;
+            progressFill.style.width = percent + '%';
+        }
+    });
+    
+    xhr.addEventListener('load', () => {
+        isUploading = false;
+        if (xhr.status === 200) {
+            showToast('Video uploaded successfully!');
+            setTimeout(() => {
+                window.location.href = xhr.responseURL;
+            }, 1000);
+        } else {
+            showToast('Upload failed. Please try again.', 'error');
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = '📤 Upload Video';
+            progressBar.classList.remove('active');
+            progressFill.style.width = '0%';
+        }
+    });
+    
+    xhr.addEventListener('error', () => {
+        isUploading = false;
+        showToast('Network error. Please check your connection.', 'error');
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '📤 Upload Video';
+        progressBar.classList.remove('active');
+        progressFill.style.width = '0%';
+    });
+    
+    xhr.open('POST', uploadForm.action);
+    xhr.send(formData);
+});
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-custom ${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// Warn before leaving page if upload is in progress
+window.addEventListener('beforeunload', (e) => {
+    if (isUploading) {
+        e.preventDefault();
+        e.returnValue = 'Upload in progress. Are you sure you want to leave?';
+        return e.returnValue;
+    }
+    
+    if (hasSelectedFile && !isUploading) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return e.returnValue;
+    }
+});
+</script>
+
+<style>
+    .toast-custom {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-left: 4px solid #238636;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: #e6edf3;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+    }
+    
+    .toast-custom.error {
+        border-left-color: #f85149;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.6s linear infinite;
+        margin-right: 8px;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .form-control:focus {
+        border-color: #2f81f7;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.2);
+    }
+</style>
+{% endblock %}

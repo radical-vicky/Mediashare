@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+
+{% block title %}Call with {{ receiver.username }} - MediaShare{% endblock %}
+
+{% block content %}
+<div class="container-fluid call-container">
+    <div class="row vh-100">
+        <div class="col-12">
+            <div class="call-wrapper">
+                <!-- Remote Video -->
+                <div class="remote-video-container">
+                    <video id="remoteVideo" autoplay playsinline></video>
+                    <div class="remote-info">
+                        <h5>{{ receiver.username }}</h5>
+                        <span id="call-timer">00:00</span>
+                    </div>
+                </div>
+                
+                <!-- Local Video -->
+                <div class="local-video-container">
+                    <video id="localVideo" autoplay playsinline muted></video>
+                    <div class="local-controls">
+                        <button class="control-btn end-call" id="end-call-btn">✕</button>
+                        <button class="control-btn mic-toggle" id="toggle-mic-btn">🎤</button>
+                        <button class="control-btn cam-toggle" id="toggle-cam-btn">📷</button>
+                    </div>
+                </div>
+                
+                <!-- Call Controls -->
+                <div class="call-controls">
+                    <button class="end-call-main" id="end-call-btn-bottom">End Call</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<style>
+.call-container {
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+    height: 100vh;
+    margin: -20px -12px 0 -12px;
+}
+
+.call-wrapper {
+    position: relative;
+    height: 100%;
+}
+
+.remote-video-container {
+    position: relative;
+    height: 100%;
+    background: linear-gradient(135deg, #0a0e27, #1a1f3a);
+}
+
+#remoteVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.remote-info {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    background: rgba(10, 14, 39, 0.8);
+    backdrop-filter: blur(20px);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    z-index: 10;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.remote-info h5 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#call-timer {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: monospace;
+    color: #3b82f6;
+}
+
+.local-video-container {
+    position: absolute;
+    bottom: 100px;
+    right: 24px;
+    width: 240px;
+    height: 180px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 2px solid rgba(59, 130, 246, 0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 20;
+    background: #0a0e27;
+}
+
+#localVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.local-controls {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.control-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    color: white;
+}
+
+.control-btn:hover {
+    transform: scale(1.1);
+}
+
+.control-btn.end-call {
+    background: rgba(239, 68, 68, 0.8);
+}
+
+.control-btn.end-call:hover {
+    background: #ef4444;
+}
+
+.call-controls {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 30;
+}
+
+.end-call-main {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    padding: 14px 48px;
+    border-radius: 40px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+.end-call-main:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .local-video-container {
+        width: 160px;
+        height: 120px;
+        bottom: 80px;
+        right: 16px;
+    }
+    
+    .remote-info {
+        bottom: 16px;
+        left: 16px;
+        padding: 8px 16px;
+    }
+    
+    .remote-info h5 {
+        font-size: 14px;
+    }
+    
+    #call-timer {
+        font-size: 16px;
+    }
+    
+    .control-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+    
+    .end-call-main {
+        padding: 12px 32px;
+        font-size: 14px;
+    }
+}
+</style>
+
+{% block extra_js %}
+<script>
+let localStream;
+let peerConnection;
+let callDuration = 0;
+let callTimer;
+
+const configuration = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+};
+
+// Show toast notification
+function showToast(message, type = 'success') {
+    const toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) return;
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// Get local media stream
+async function startLocalStream() {
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideo').srcObject = localStream;
+        return localStream;
+    } catch (error) {
+        console.error('Error accessing media devices:', error);
+        showToast('Could not access camera/microphone', 'danger');
+    }
+}
+
+// Initialize WebSocket connection
+const roomName = '{{ room_name }}';
+const callSocket = new WebSocket(
+    `ws://${window.location.host}/ws/call/${roomName}/`
+);
+
+callSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    
+    if (data.type === 'signal') {
+        handleSignal(data);
+    } else if (data.type === 'user_joined') {
+        showToast(`${data.user} joined the call`, 'info');
+        initiateCall();
+    } else if (data.type === 'user_left') {
+        showToast(`${data.user} left the call`, 'info');
+        endCall();
+    }
+};
+
+async function initiateCall() {
+    const stream = await startLocalStream();
+    createPeerConnection();
+    
+    stream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, stream);
+    });
+}
+
+function createPeerConnection() {
+    peerConnection = new RTCPeerConnection(configuration);
+    
+    peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+            sendSignal('ice_candidate', { candidate: event.candidate });
+        }
+    };
+    
+    peerConnection.ontrack = (event) => {
+        document.getElementById('remoteVideo').srcObject = event.streams[0];
+        startCallTimer();
+    };
+}
+
+async function handleSignal(data) {
+    if (data.signal.type === 'offer') {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.signal));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        sendSignal('signal', { signal: answer });
+    } else if (data.signal.type === 'answer') {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.signal));
+    } else if (data.signal.type === 'ice_candidate') {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(data.signal.candidate));
+    }
+}
+
+function sendSignal(type, data) {
+    callSocket.send(JSON.stringify({
+        type: type,
+        from: '{{ user.username }}',
+        from_id: {{ user.id }},
+        ...data
+    }));
+}
+
+function startCallTimer() {
+    callTimer = setInterval(() => {
+        callDuration++;
+        const minutes = Math.floor(callDuration / 60);
+        const seconds = callDuration % 60;
+        document.getElementById('call-timer').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+function endCall() {
+    if (callTimer) clearInterval(callTimer);
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+    }
+    if (peerConnection) {
+        peerConnection.close();
+    }
+    if (callSocket) {
+        callSocket.close();
+    }
+    window.location.href = '/feed/';
+}
+
+// Toggle microphone
+document.getElementById('toggle-mic-btn').addEventListener('click', () => {
+    const audioTrack = localStream.getAudioTracks()[0];
+    audioTrack.enabled = !audioTrack.enabled;
+    const btn = document.getElementById('toggle-mic-btn');
+    if (audioTrack.enabled) {
+        btn.textContent = '🎤';
+        btn.style.background = 'rgba(0, 0, 0, 0.7)';
+    } else {
+        btn.textContent = '🔇';
+        btn.style.background = 'rgba(239, 68, 68, 0.7)';
+    }
+});
+
+// Toggle camera
+document.getElementById('toggle-cam-btn').addEventListener('click', () => {
+    const videoTrack = localStream.getVideoTracks()[0];
+    videoTrack.enabled = !videoTrack.enabled;
+    const btn = document.getElementById('toggle-cam-btn');
+    if (videoTrack.enabled) {
+        btn.textContent = '📷';
+        btn.style.background = 'rgba(0, 0, 0, 0.7)';
+    } else {
+        btn.textContent = '🚫';
+        btn.style.background = 'rgba(239, 68, 68, 0.7)';
+    }
+});
+
+// End call buttons
+document.getElementById('end-call-btn').addEventListener('click', endCall);
+document.getElementById('end-call-btn-bottom').addEventListener('click', endCall);
+
+// Initialize call
+initiateCall();
+
+// Handle page unload
+window.addEventListener('beforeunload', () => {
+    if (callSocket) {
+        callSocket.close();
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

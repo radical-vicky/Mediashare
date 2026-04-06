@@ -1,0 +1,1166 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ video.title }} - MediaShare{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       PREMIUM VIDEO DETAIL STYLES
+       ============================================ */
+    
+    /* Sticky Header */
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        background: rgba(1, 4, 9, 0.95);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid #30363d;
+        padding: 12px 32px;
+        z-index: 100;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+    
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        padding: 6px 12px;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+    
+    .user-info:hover {
+        background: rgba(47, 129, 247, 0.1);
+        transform: translateX(2px);
+    }
+    
+    .user-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .username {
+        font-weight: 600;
+        font-size: 15px;
+        color: #f0f6fc;
+    }
+    
+    /* Video Container */
+    .video-container {
+        position: relative;
+        background: #000;
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    
+    .video-wrapper {
+        position: relative;
+        width: 100%;
+        background: #000;
+    }
+    
+    .video-wrapper video {
+        width: 100%;
+        max-height: 70vh;
+        object-fit: contain;
+        display: block;
+    }
+    
+    /* Next Video Button */
+    .next-video-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: rgba(22, 27, 34, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid #30363d;
+        border-radius: 50px;
+        padding: 12px 24px;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        z-index: 99;
+        text-decoration: none;
+    }
+    
+    .next-video-btn:hover {
+        background: #2f81f7;
+        border-color: #2f81f7;
+        transform: translateX(-5px);
+    }
+    
+    /* Stats Cards */
+    .stats {
+        display: flex;
+        gap: 20px;
+        margin: 24px 0;
+        flex-wrap: wrap;
+    }
+    
+    .stat {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 16px 24px;
+        text-align: center;
+        flex: 1;
+        min-width: 120px;
+        transition: all 0.3s ease;
+    }
+    
+    .stat:hover {
+        transform: translateY(-2px);
+        border-color: #2f81f7;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #7d8590;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #f0f6fc;
+    }
+    
+    /* Title Section */
+    .title-section {
+        margin: 24px 0 16px;
+    }
+    
+    .title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #f0f6fc;
+        margin-bottom: 12px;
+        line-height: 1.3;
+    }
+    
+    .description {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #e6edf3;
+        margin-bottom: 24px;
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 24px 0;
+    }
+    
+    /* Comments Section */
+    .comments-section {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        margin-top: 48px;
+        overflow: hidden;
+    }
+    
+    .comments-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #30363d;
+        background: rgba(13, 17, 23, 0.5);
+    }
+    
+    .comments-header h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .comment {
+        padding: 20px 24px;
+        border-bottom: 1px solid #21262d;
+        transition: background 0.2s ease;
+    }
+    
+    .comment:hover {
+        background: rgba(33, 38, 45, 0.3);
+    }
+    
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .comment-author {
+        font-weight: 700;
+        color: #f0f6fc;
+        text-decoration: none;
+        font-size: 14px;
+    }
+    
+    .comment-author:hover {
+        color: #2f81f7;
+    }
+    
+    .comment-time {
+        font-size: 12px;
+        color: #7d8590;
+    }
+    
+    .comment-text {
+        font-size: 14px;
+        line-height: 1.5;
+        color: #e6edf3;
+        margin: 0;
+    }
+    
+    /* Related Videos Grid */
+    .related-section {
+        margin-top: 60px;
+    }
+    
+    .related-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 24px;
+    }
+    
+    .related-header h3 {
+        font-size: 22px;
+        font-weight: 600;
+        color: #f0f6fc;
+        margin: 0;
+    }
+    
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+    }
+    
+    .related-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        overflow: hidden;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .related-card:hover {
+        border-color: #2f81f7;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    
+    .related-thumbnail {
+        position: relative;
+        background: #000;
+        overflow: hidden;
+    }
+    
+    .related-thumbnail video {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+        pointer-events: none;
+    }
+    
+    .related-card:hover .related-thumbnail video {
+        transform: scale(1.05);
+    }
+    
+    .play-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 48px;
+        height: 48px;
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .related-card:hover .play-overlay {
+        opacity: 1;
+    }
+    
+    .duration-badge {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        color: white;
+        font-family: monospace;
+    }
+    
+    .related-info {
+        padding: 14px;
+    }
+    
+    .related-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #f0f6fc;
+        margin-bottom: 6px;
+        line-height: 1.4;
+    }
+    
+    .related-user {
+        font-size: 12px;
+        color: #2f81f7;
+        font-weight: 500;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #7d8590;
+    }
+    
+    /* Toast */
+    .toast-custom {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-left: 4px solid #238636;
+        padding: 14px 24px;
+        border-radius: 12px;
+        color: #e6edf3;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    
+    .toast-custom.error {
+        border-left-color: #f85149;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .sticky-header {
+            padding: 12px 20px;
+        }
+        
+        .title {
+            font-size: 22px;
+        }
+        
+        .description {
+            font-size: 14px;
+        }
+        
+        .stats {
+            gap: 12px;
+        }
+        
+        .stat {
+            padding: 12px 16px;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+        }
+        
+        .related-grid {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+        }
+        
+        .comment {
+            padding: 16px 20px;
+        }
+        
+        .comments-header {
+            padding: 16px 20px;
+        }
+        
+        .next-video-btn {
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .action-buttons .btn span:last-child {
+            display: none;
+        }
+        
+        .related-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Sticky Header -->
+<div class="sticky-header">
+    <a href="{% url 'frontend:user_profile' video.author.username %}" class="user-info">
+        {% if video.author.profile.avatar %}
+            <img src="{{ video.author.profile.avatar.url }}" class="avatar" style="width: 44px; height: 44px;">
+        {% else %}
+            <div class="avatar-placeholder" style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #2f81f7, #8957e5); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: white;">
+                {{ video.author.username|first|upper }}
+            </div>
+        {% endif %}
+        <div class="user-text">
+            <span class="username">{{ video.author.username }}</span>
+            {% if video.author.profile.is_available_for_calls %}
+                <div class="available-badge" style="font-size: 10px; color: #2f81f7; background: rgba(47, 129, 247, 0.15); padding: 2px 8px; border-radius: 20px; display: inline-block; width: fit-content;">✨ Available for hire</div>
+            {% endif %}
+        </div>
+    </a>
+    <div class="btn-group">
+        <button class="btn like-btn" data-url="{% url 'frontend:like_video' video.id %}" data-type="video">
+            ❤️ <span class="like-count">{{ video.likes.count }}</span>
+        </button>
+        <button class="btn" id="shareBtn">
+            🔗 <span>Share</span>
+        </button>
+        <a href="{% url 'frontend:download_media' 'video' video.id %}" class="btn" id="downloadBtn">
+            📥 <span>Download</span>
+        </a>
+        {% if user == video.author %}
+            <a href="{% url 'frontend:upload_video' %}" class="btn btn-primary">
+                📤 <span>Upload New</span>
+            </a>
+            <button class="btn btn-danger" id="deleteButton" data-url="{% url 'frontend:delete_post' 'video' video.id %}">
+                🗑️ <span>Delete</span>
+            </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Video Player -->
+    <div class="video-container">
+        <div class="video-wrapper">
+            <video id="mainVideo" controls preload="metadata">
+                <source src="{{ video.video_file.url }}" type="video/mp4">
+                Your browser doesn't support video playback.
+            </video>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-label">👁️ Views</div>
+            <div class="stat-value" id="viewsCount">{{ video.views|default:"0" }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">❤️ Likes</div>
+            <div class="stat-value" id="likesCount">{{ video.likes.count }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">💬 Comments</div>
+            <div class="stat-value">{{ video.comments.count }}</div>
+        </div>
+        {% if video.duration %}
+        <div class="stat">
+            <div class="stat-label">⏱️ Duration</div>
+            <div class="stat-value">{{ video.formatted_duration }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Title & Description -->
+    <div class="title-section">
+        <h1 class="title" id="videoTitle">{{ video.title }}</h1>
+        <p class="description" id="videoDescription">{{ video.description|linebreaksbr }}</p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        {% if user.is_authenticated and user != video.author %}
+            <a href="{% url 'frontend:initiate_call' video.author.username %}" class="btn btn-primary">
+                📞 Call Creator
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Comments Section -->
+    <div class="comments-section">
+        <div class="comments-header">
+            <h3>💬 Conversation (<span id="commentsCount">{{ video.comments.count }}</span>)</h3>
+        </div>
+        
+        <div id="commentsList">
+            {% for comment in video.comments.all %}
+                {% if not comment.parent %}
+                <div class="comment" id="comment-{{ comment.id }}">
+                    <div class="comment-header">
+                        <a href="{% url 'frontend:user_profile' comment.author.username %}" class="comment-author">{{ comment.author.username }}</a>
+                        <span class="comment-time">{{ comment.created_at|timesince }} ago</span>
+                    </div>
+                    <p class="comment-text">{{ comment.text|linebreaksbr }}</p>
+                </div>
+                {% endif %}
+            {% empty %}
+            <div class="empty-state">
+                <div style="font-size: 48px; margin-bottom: 16px;">💬</div>
+                <p>No comments yet. Start the conversation!</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if user.is_authenticated %}
+        <div class="comment-form" style="padding: 20px 24px; border-top: 1px solid #30363d;">
+            <form id="commentForm" method="POST" action="{% url 'frontend:add_comment' 'video' video.id %}">
+                {% csrf_token %}
+                <textarea class="comment-input" name="text" rows="3" placeholder="Share your thoughts..." required style="width: 100%; background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 12px 16px; color: #e6edf3; font-family: inherit; font-size: 14px; resize: vertical;"></textarea>
+                <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                    <button type="submit" class="btn btn-primary">📝 Post Comment</button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div class="comment-form" style="padding: 20px 24px; border-top: 1px solid #30363d; text-align: center;">
+            <p><a href="{% url 'account_login' %}" style="color: #2f81f7; text-decoration: none; font-weight: 500;">Sign in</a> to join the conversation</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Related Videos -->
+    {% if related_videos %}
+    <div class="related-section">
+        <div class="related-header">
+            <h3>More from {{ video.author.username }}</h3>
+            <a href="{% url 'frontend:user_profile' video.author.username %}" class="related-link" style="color: #2f81f7; text-decoration: none; font-size: 14px;">View all →</a>
+        </div>
+        <div class="related-grid">
+            {% for related in related_videos|slice:":6" %}
+            <a href="{% url 'frontend:video_detail' related.id %}" class="related-card" data-video-id="{{ related.id }}">
+                <div class="related-thumbnail">
+                    <video preload="metadata">
+                        <source src="{{ related.video_file.url }}" type="video/mp4">
+                    </video>
+                    <div class="play-overlay">▶️</div>
+                    {% if related.duration %}
+                    <div class="duration-badge">{{ related.formatted_duration }}</div>
+                    {% endif %}
+                </div>
+                <div class="related-info">
+                    <div class="related-title">{{ related.title|truncatechars:50 }}</div>
+                    <div class="related-user">{{ related.author.username }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Next Video Button (floating) -->
+{% if next_video %}
+<a href="{% url 'frontend:video_detail' next_video.id %}" class="next-video-btn" id="nextVideoBtn">
+    ▶️ Next: {{ next_video.title|truncatechars:30 }}
+    <span>→</span>
+</a>
+{% endif %}
+
+<!-- Share Modal -->
+<div id="shareModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px); z-index: 1500; align-items: center; justify-content: center;">
+    <div class="modal-content" style="background: #161b22; border: 1px solid #30363d; border-radius: 16px; width: 90%; max-width: 420px; animation: slideUp 0.3s ease; overflow: hidden;">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #30363d;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0;">🔗 Share this video</h3>
+            <button class="modal-close" style="background: none; border: none; color: #7d8590; font-size: 28px; cursor: pointer; transition: all 0.2s ease; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px;">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+            <div class="share-option" data-platform="facebook" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; background: #0d1117; border: 1px solid #30363d; border-radius: 12px; cursor: pointer; margin-bottom: 10px; transition: all 0.2s ease; font-weight: 500;">📘 Facebook</div>
+            <div class="share-option" data-platform="twitter" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; background: #0d1117; border: 1px solid #30363d; border-radius: 12px; cursor: pointer; margin-bottom: 10px; transition: all 0.2s ease; font-weight: 500;">🐦 Twitter</div>
+            <div class="share-option" data-platform="whatsapp" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; background: #0d1117; border: 1px solid #30363d; border-radius: 12px; cursor: pointer; margin-bottom: 10px; transition: all 0.2s ease; font-weight: 500;">📱 WhatsApp</div>
+            <div class="share-option" data-platform="telegram" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; background: #0d1117; border: 1px solid #30363d; border-radius: 12px; cursor: pointer; margin-bottom: 10px; transition: all 0.2s ease; font-weight: 500;">✈️ Telegram</div>
+            <div class="share-option" data-platform="copy" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; background: #0d1117; border: 1px solid #30363d; border-radius: 12px; cursor: pointer; margin-bottom: 10px; transition: all 0.2s ease; font-weight: 500;">📋 Copy Link</div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================
+// UTILITIES
+// ============================================
+function getCookie(name) {
+    let value = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                value = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return value;
+}
+const csrf = getCookie('csrftoken');
+const videoId = {{ video.id }};
+
+function showToast(message, type = 'success') {
+    const existing = document.querySelector('.toast-custom');
+    if (existing) existing.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-custom ' + type;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// ============================================
+// INSTANT LIKE BUTTON (Updates immediately)
+// ============================================
+const likeBtn = document.querySelector('.like-btn');
+if (likeBtn) {
+    likeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const url = this.dataset.url;
+        const countSpan = this.querySelector('.like-count');
+        const currentCount = parseInt(countSpan.textContent);
+        
+        // Optimistic update - update UI immediately
+        const isCurrentlyLiked = this.classList.contains('liked');
+        
+        if (isCurrentlyLiked) {
+            // Unlike
+            this.classList.remove('liked');
+            countSpan.textContent = currentCount - 1;
+            // Also update stats card
+            const likesStatSpan = document.getElementById('likesCount');
+            if (likesStatSpan) likesStatSpan.textContent = currentCount - 1;
+        } else {
+            // Like
+            this.classList.add('liked');
+            countSpan.textContent = currentCount + 1;
+            // Also update stats card
+            const likesStatSpan = document.getElementById('likesCount');
+            if (likesStatSpan) likesStatSpan.textContent = currentCount + 1;
+        }
+        
+        // Send request to server
+        fetch(url, {
+            method: 'POST',
+            headers: { 
+                'X-CSRFToken': csrf,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.liked !== undefined) {
+                // Sync with server response
+                if (data.liked) {
+                    this.classList.add('liked');
+                    countSpan.textContent = data.count;
+                    if (likesStatSpan) likesStatSpan.textContent = data.count;
+                    showToast('❤️ Liked!');
+                } else {
+                    this.classList.remove('liked');
+                    countSpan.textContent = data.count;
+                    if (likesStatSpan) likesStatSpan.textContent = data.count;
+                    showToast('💔 Unliked');
+                }
+            }
+        })
+        .catch(error => {
+            // Revert on error
+            console.error('Error:', error);
+            if (isCurrentlyLiked) {
+                this.classList.add('liked');
+                countSpan.textContent = currentCount;
+                if (likesStatSpan) likesStatSpan.textContent = currentCount;
+            } else {
+                this.classList.remove('liked');
+                countSpan.textContent = currentCount;
+                if (likesStatSpan) likesStatSpan.textContent = currentCount;
+            }
+            showToast('Error processing like', 'error');
+        });
+    });
+}
+
+// ============================================
+// VIDEO VIEW TRACKING (Database-based)
+// ============================================
+const videoElement = document.getElementById('mainVideo');
+let viewTracked = false;
+let playbackStartTime = null;
+let totalPlayTime = 0;
+let videoDuration = 0;
+
+if (videoElement) {
+    videoElement.addEventListener('loadedmetadata', () => {
+        videoDuration = videoElement.duration;
+    });
+    
+    videoElement.addEventListener('play', () => {
+        if (!playbackStartTime) {
+            playbackStartTime = Date.now();
+        }
+    });
+    
+    videoElement.addEventListener('pause', () => {
+        if (playbackStartTime) {
+            totalPlayTime += (Date.now() - playbackStartTime) / 1000;
+            playbackStartTime = null;
+        }
+    });
+    
+    async function trackVideoView(completed = false) {
+        if (viewTracked) return;
+        
+        if (playbackStartTime) {
+            totalPlayTime += (Date.now() - playbackStartTime) / 1000;
+            playbackStartTime = Date.now();
+        }
+        
+        try {
+            const response = await fetch('/video/' + videoId + '/track-view/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrf,
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    watch_time: Math.floor(totalPlayTime),
+                    completed: completed || videoElement.ended
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                viewTracked = true;
+                const viewsSpan = document.getElementById('viewsCount');
+                if (viewsSpan && data.view_count) {
+                    viewsSpan.textContent = data.view_count;
+                }
+            }
+        } catch (error) {
+            console.error('Error tracking view:', error);
+        }
+    }
+    
+    videoElement.addEventListener('timeupdate', () => {
+        const threshold = Math.min(30, videoDuration * 0.3);
+        
+        if (!viewTracked && videoElement.currentTime >= threshold && threshold > 0) {
+            if (playbackStartTime) {
+                totalPlayTime += (Date.now() - playbackStartTime) / 1000;
+                playbackStartTime = Date.now();
+            }
+            trackVideoView();
+        }
+        
+        if (!viewTracked && videoElement.currentTime > 5) {
+            localStorage.setItem('video_' + videoId + '_position', videoElement.currentTime);
+        }
+    });
+    
+    videoElement.addEventListener('ended', () => {
+        if (playbackStartTime) {
+            totalPlayTime += (Date.now() - playbackStartTime) / 1000;
+            playbackStartTime = null;
+        }
+        if (!viewTracked) {
+            trackVideoView(true);
+        }
+    });
+    
+    window.addEventListener('beforeunload', () => {
+        if (playbackStartTime) {
+            totalPlayTime += (Date.now() - playbackStartTime) / 1000;
+        }
+        if (!viewTracked && totalPlayTime > 5) {
+            const data = JSON.stringify({
+                watch_time: Math.floor(totalPlayTime),
+                completed: videoElement.ended
+            });
+            navigator.sendBeacon('/video/' + videoId + '/track-view/', new Blob([data], {type: 'application/json'}));
+        }
+    });
+    
+    // Continuous playback when switching tabs
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            console.log('Video playing in background tab');
+        }
+    });
+    
+    videoElement.addEventListener('pause', (e) => {
+        if (document.hidden && !videoElement.ended && !videoElement.paused) {
+            setTimeout(() => {
+                if (document.hidden && !videoElement.ended) {
+                    videoElement.play().catch(() => {});
+                }
+            }, 100);
+        }
+    });
+    
+    videoElement.setAttribute('preload', 'auto');
+    
+    const storedTime = localStorage.getItem('video_' + videoId + '_position');
+    if (storedTime && parseFloat(storedTime) > 10) {
+        const minutes = Math.floor(parseFloat(storedTime) / 60);
+        const seconds = Math.floor(parseFloat(storedTime) % 60);
+        const shouldResume = confirm('You were watching at ' + minutes + ':' + (seconds < 10 ? '0' + seconds : seconds) + '. Resume from where you left off?');
+        if (shouldResume) {
+            videoElement.currentTime = parseFloat(storedTime);
+        }
+        localStorage.removeItem('video_' + videoId + '_position');
+    }
+    
+    videoElement.muted = true;
+    videoElement.play().catch(error => {
+        console.log('Auto-play prevented:', error);
+    });
+    
+    setInterval(() => {
+        if (videoElement && videoElement.currentTime > 10 && !videoElement.ended) {
+            localStorage.setItem('video_' + videoId + '_position', videoElement.currentTime);
+        }
+    }, 5000);
+    
+    videoElement.addEventListener('click', () => {
+        if (videoElement.muted) {
+            videoElement.muted = false;
+            showToast('🔊 Sound enabled');
+        }
+    });
+    
+    videoElement.addEventListener('volumechange', () => {
+        if (videoElement.volume > 0) {
+            videoElement.muted = false;
+        }
+    });
+}
+
+// ============================================
+// SHARE MODAL
+// ============================================
+const modal = document.getElementById('shareModal');
+const shareBtn = document.getElementById('shareBtn');
+
+shareBtn?.addEventListener('click', () => {
+    modal.style.display = 'flex';
+});
+
+modal?.querySelector('.modal-close')?.addEventListener('click', () => {
+    modal.style.display = 'none';
+});
+
+modal?.addEventListener('click', (e) => {
+    if (e.target === modal) modal.style.display = 'none';
+});
+
+const shareUrl = window.location.href;
+const shareTitle = encodeURIComponent(document.querySelector('.title')?.textContent || 'Check out this video!');
+
+document.querySelectorAll('.share-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+        const platform = opt.dataset.platform;
+        
+        if (platform === 'copy') {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showToast('📋 Link copied!');
+            }).catch(() => showToast('Failed to copy', 'error'));
+            modal.style.display = 'none';
+            return;
+        }
+        
+        const urls = {
+            facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl),
+            twitter: 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(shareUrl) + '&text=' + shareTitle,
+            whatsapp: 'https://wa.me/?text=' + shareTitle + '%20' + encodeURIComponent(shareUrl),
+            telegram: 'https://t.me/share/url?url=' + encodeURIComponent(shareUrl) + '&text=' + shareTitle
+        };
+        
+        if (urls[platform]) {
+            window.open(urls[platform], '_blank', 'width=600,height=400');
+            showToast('Opening ' + platform + '...');
+        }
+        modal.style.display = 'none';
+    });
+});
+
+// ============================================
+// DELETE VIDEO
+// ============================================
+const deleteButton = document.getElementById('deleteButton');
+if (deleteButton) {
+    deleteButton.addEventListener('click', function() {
+        if (!confirm('⚠️ Delete this video? This action cannot be undone.')) return;
+        
+        const url = this.dataset.url;
+        const btn = this;
+        const originalHtml = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner" style="display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.6s linear infinite;"></span> Deleting...';
+        
+        fetch(url, {
+            method: 'POST',
+            headers: { 
+                'X-CSRFToken': csrf,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('✅ Video deleted! Redirecting...');
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.3s';
+                setTimeout(() => {
+                    window.location.href = data.redirect_url || '/feed/';
+                }, 400);
+            } else {
+                showToast(data.error || 'Error deleting video', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        })
+        .catch(() => {
+            showToast('Network error', 'error');
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        });
+    });
+}
+
+// ============================================
+// POST COMMENT
+// ============================================
+const commentForm = document.getElementById('commentForm');
+if (commentForm) {
+    commentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const textarea = form.querySelector('textarea[name="text"]');
+        const commentText = textarea?.value.trim();
+        
+        if (!commentText) {
+            showToast('Please enter a comment', 'error');
+            return;
+        }
+        
+        const originalHtml = submitBtn?.innerHTML;
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner" style="display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.6s linear infinite;"></span> Posting...';
+        }
+        
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            headers: { 
+                'X-CSRFToken': csrf,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('✅ Comment posted!');
+                if (textarea) textarea.value = '';
+                setTimeout(() => location.reload(), 500);
+            } else {
+                showToast(data.error || 'Error posting comment', 'error');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalHtml;
+                }
+            }
+        })
+        .catch(() => {
+            showToast('Network error', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHtml;
+            }
+        });
+    });
+}
+
+// ============================================
+// RELATED VIDEOS THUMBNAIL PREVIEW
+// ============================================
+document.querySelectorAll('.related-card video').forEach(video => {
+    video.addEventListener('mouseenter', () => {
+        video.play().catch(() => {});
+    });
+    
+    video.addEventListener('mouseleave', () => {
+        video.pause();
+        video.currentTime = 0;
+    });
+});
+
+// ============================================
+// KEYBOARD SHORTCUTS
+// ============================================
+document.addEventListener('keydown', (e) => {
+    if (e.key === ' ' && document.activeElement?.tagName !== 'TEXTAREA' && document.activeElement?.tagName !== 'INPUT') {
+        e.preventDefault();
+        if (videoElement) {
+            if (videoElement.paused) {
+                videoElement.play();
+            } else {
+                videoElement.pause();
+            }
+        }
+    }
+    
+    if (e.key === 'ArrowLeft' && videoElement) {
+        videoElement.currentTime = Math.max(0, videoElement.currentTime - 5);
+        showToast('⏪ Seeked to ' + Math.floor(videoElement.currentTime) + 's');
+    }
+    if (e.key === 'ArrowRight' && videoElement) {
+        videoElement.currentTime = Math.min(videoElement.duration, videoElement.currentTime + 5);
+        showToast('⏩ Seeked to ' + Math.floor(videoElement.currentTime) + 's');
+    }
+    
+    if (e.key === 'ArrowUp' && videoElement) {
+        videoElement.volume = Math.min(1, videoElement.volume + 0.1);
+        videoElement.muted = false;
+        showToast('🔊 Volume: ' + Math.floor(videoElement.volume * 100) + '%');
+    }
+    if (e.key === 'ArrowDown' && videoElement) {
+        videoElement.volume = Math.max(0, videoElement.volume - 0.1);
+        if (videoElement.volume === 0) {
+            showToast('🔇 Muted');
+        } else {
+            showToast('🔉 Volume: ' + Math.floor(videoElement.volume * 100) + '%');
+        }
+    }
+    
+    if (e.key === 'm' || e.key === 'M') {
+        videoElement.muted = !videoElement.muted;
+        showToast(videoElement.muted ? '🔇 Muted' : '🔊 Unmuted');
+    }
+    
+    if (e.key === 'f' || e.key === 'F') {
+        if (videoElement) {
+            if (videoElement.requestFullscreen) {
+                videoElement.requestFullscreen();
+            }
+        }
+    }
+});
+
+// ============================================
+// MEDIA SESSION API
+// ============================================
+if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', () => {
+        videoElement.play();
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+        videoElement.pause();
+    });
+}
+
+// Save video progress before page unload
+window.addEventListener('beforeunload', () => {
+    if (videoElement && videoElement.currentTime > 10 && !videoElement.ended) {
+        localStorage.setItem('video_' + videoId + '_position', videoElement.currentTime);
+    }
+});
+</script>
+
+<style>
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .btn.liked {
+        color: #f85149;
+        border-color: #f85149;
+        background: rgba(248, 81, 73, 0.1);
+    }
+    
+    .comment-input:focus {
+        border-color: #2f81f7;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.2);
+    }
+    
+    .share-option:hover {
+        background: #21262d;
+        border-color: #2f81f7;
+        transform: translateX(6px);
+    }
+</style>
+{% endblock %}

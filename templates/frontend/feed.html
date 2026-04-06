@@ -1,0 +1,561 @@
+{% extends 'base.html' %}
+
+{% block title %}Feed - MediaShare{% endblock %}
+
+{% block content %}
+<div class="feed-container">
+    <div class="container">
+        <!-- Filter Tabs -->
+        <div class="filter-section">
+            <div class="filter-tabs">
+                <a href="?filter=all" class="filter-tab {% if current_filter == 'all' %}active{% endif %}">All</a>
+                <a href="?filter=photos" class="filter-tab {% if current_filter == 'photos' %}active{% endif %}">Photos</a>
+                <a href="?filter=videos" class="filter-tab {% if current_filter == 'videos' %}active{% endif %}">Videos</a>
+            </div>
+            <div class="filter-info">
+                <span class="filter-count">
+                    {% if current_filter == 'all' %}
+                        Showing all content
+                    {% elif current_filter == 'photos' %}
+                        Showing {{ photos|length }} photos
+                    {% else %}
+                        Showing {{ videos|length }} videos
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- Photos Section -->
+        {% if current_filter == 'all' or current_filter == 'photos' %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">Photos</h2>
+                    {% if current_filter == 'all' %}
+                        <a href="?filter=photos" class="section-link">View all photos</a>
+                    {% endif %}
+                </div>
+
+                {% if photos %}
+                    <div class="media-grid">
+                        {% for photo in photos %}
+                            <div class="media-card">
+                                <a href="{% url 'frontend:photo_detail' photo.id %}" class="media-link">
+                                    <div class="media-poster">
+                                        <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" class="media-image">
+                                        <div class="media-overlay">
+                                            <div class="media-stats">
+                                                <span class="stat-item">❤️ {{ photo.likes.count }}</span>
+                                                <span class="stat-item">👁️ {{ photo.views }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="media-info">
+                                        <div class="media-title">{{ photo.caption|default:"Untitled"|truncatechars:60 }}</div>
+                                        <div class="media-meta">
+                                            <span class="meta-user">{{ photo.author.username }}</span>
+                                            <span class="meta-time">{{ photo.created_at|timesince }} ago</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if photos.has_other_pages %}
+                        <div class="pagination">
+                            {% if photos.has_previous %}
+                                <a href="?photos_page={{ photos.previous_page_number }}{% if current_filter != 'all' %}&filter={{ current_filter }}{% endif %}" class="page-link prev">Previous</a>
+                            {% endif %}
+                            <span class="page-current">{{ photos.number }} of {{ photos.paginator.num_pages }}</span>
+                            {% if photos.has_next %}
+                                <a href="?photos_page={{ photos.next_page_number }}{% if current_filter != 'all' %}&filter={{ current_filter }}{% endif %}" class="page-link next">Next</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <p class="empty-message">No photos yet.</p>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'frontend:upload_photo' %}" class="btn btn-primary">Upload your first photo</a>
+                        {% else %}
+                            <a href="{% url 'account_login' %}" class="btn btn-primary">Login to upload photos</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Videos Section -->
+        {% if current_filter == 'all' or current_filter == 'videos' %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">Videos</h2>
+                    {% if current_filter == 'all' %}
+                        <a href="?filter=videos" class="section-link">View all videos</a>
+                    {% endif %}
+                </div>
+
+                {% if videos %}
+                    <div class="media-grid">
+                        {% for video in videos %}
+                            <div class="media-card">
+                                <a href="{% url 'frontend:video_detail' video.id %}" class="media-link">
+                                    <div class="media-poster">
+                                        <video class="media-video">
+                                            <source src="{{ video.video_file.url }}">
+                                        </video>
+                                        <div class="media-overlay">
+                                            <div class="play-icon"></div>
+                                            <div class="media-stats">
+                                                <span class="stat-item">❤️ {{ video.likes.count }}</span>
+                                                <span class="stat-item">👁️ {{ video.views }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="media-info">
+                                        <div class="media-title">{{ video.title|truncatechars:60 }}</div>
+                                        <div class="media-meta">
+                                            <span class="meta-user">{{ video.author.username }}</span>
+                                            <span class="meta-time">{{ video.created_at|timesince }} ago</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if videos.has_other_pages %}
+                        <div class="pagination">
+                            {% if videos.has_previous %}
+                                <a href="?videos_page={{ videos.previous_page_number }}{% if current_filter != 'all' %}&filter={{ current_filter }}{% endif %}" class="page-link prev">Previous</a>
+                            {% endif %}
+                            <span class="page-current">{{ videos.number }} of {{ videos.paginator.num_pages }}</span>
+                            {% if videos.has_next %}
+                                <a href="?videos_page={{ videos.next_page_number }}{% if current_filter != 'all' %}&filter={{ current_filter }}{% endif %}" class="page-link next">Next</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <p class="empty-message">No videos yet.</p>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'frontend:upload_video' %}" class="btn btn-primary">Upload your first video</a>
+                        {% else %}
+                            <a href="{% url 'account_login' %}" class="btn btn-primary">Login to upload videos</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Feed Container */
+.feed-container {
+    padding: 32px 0;
+    background: #0d1117;
+    min-height: calc(100vh - 200px);
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Filter Section */
+.filter-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #30363d;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-tab {
+    padding: 8px 16px;
+    color: #7d8590;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.filter-tab:hover {
+    color: #e6edf3;
+    background: #21262d;
+}
+
+.filter-tab.active {
+    color: #f0f6fc;
+    background: #238636;
+}
+
+.filter-info {
+    color: #7d8590;
+    font-size: 13px;
+}
+
+.filter-count {
+    font-weight: 500;
+}
+
+/* Content Section */
+.content-section {
+    margin-bottom: 48px;
+}
+
+.content-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #e6edf3;
+    margin: 0;
+}
+
+.section-link {
+    font-size: 14px;
+    color: #2f81f7;
+    text-decoration: none;
+}
+
+.section-link:hover {
+    text-decoration: underline;
+}
+
+/* Media Grid - JustWatch Style */
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 24px;
+}
+
+.media-card {
+    background: #161b22;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.media-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.media-link {
+    text-decoration: none;
+}
+
+/* Media Poster */
+.media-poster {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    background: #0d1117;
+}
+
+.media-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.media-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Media Overlay */
+.media-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.media-card:hover .media-overlay {
+    opacity: 1;
+}
+
+/* Play Icon for Videos */
+.play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+}
+
+.play-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 55%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 10px 0 10px 16px;
+    border-color: transparent transparent transparent #000;
+}
+
+/* Media Stats */
+.media-stats {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.stat-item {
+    background: rgba(0, 0, 0, 0.75);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #e6edf3;
+}
+
+/* Media Info */
+.media-info {
+    padding: 12px;
+}
+
+.media-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e6edf3;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.media-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.meta-user {
+    color: #2f81f7;
+}
+
+.meta-time {
+    color: #7d8590;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+}
+
+.empty-message {
+    font-size: 16px;
+    color: #7d8590;
+    margin-bottom: 16px;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 16px;
+}
+
+.page-link {
+    padding: 8px 16px;
+    background: #21262d;
+    color: #e6edf3;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+.page-link:hover {
+    background: #30363d;
+}
+
+.page-current {
+    color: #7d8590;
+    font-size: 14px;
+}
+
+/* Buttons */
+.btn-primary {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #238636;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #2ea043;
+}
+
+/* Like Button */
+.like-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.like-btn.liked {
+    color: #f85149;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .media-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+
+    .filter-section {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .filter-tabs {
+        justify-content: center;
+    }
+
+    .filter-info {
+        text-align: center;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .media-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 16px;
+    }
+
+    .media-title {
+        font-size: 13px;
+    }
+
+    .media-meta {
+        font-size: 11px;
+    }
+
+    .pagination {
+        gap: 12px;
+    }
+
+    .page-link {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .media-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+    }
+
+    .filter-tab {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .media-info {
+        padding: 10px;
+    }
+
+    .media-title {
+        font-size: 12px;
+    }
+}
+</style>
+
+<script>
+// Like functionality
+document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const url = this.dataset.url;
+        const countSpan = this.querySelector('.likes-count');
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.liked) {
+                this.classList.add('liked');
+            } else {
+                this.classList.remove('liked');
+            }
+            countSpan.textContent = data.count;
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+</script>
+{% endblock %}
