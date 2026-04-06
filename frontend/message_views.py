@@ -11,38 +11,49 @@ import json
 @login_required
 def inbox(request):
     """Display user's message threads"""
-    threads = MessageThread.objects.filter(participants=request.user).prefetch_related('participants', 'messages')
+    import logging
+    logger = logging.getLogger(__name__)
     
-    # Prepare thread data with unread counts
+    # Get all threads where user is a participant
+    threads = MessageThread.objects.filter(participants=request.user).order_by('-updated_at')
+    
+    logger.info(f"Found {threads.count()} threads for user {request.user.username}")
+    
     threads_data = []
     for thread in threads:
-        # Get other participant
-        other_participant = None
+        logger.info(f"Processing thread {thread.id}: {thread.subject}")
+        
+        # Get the other participant
+        other_user = None
         for participant in thread.participants.all():
+            logger.info(f"Participant: {participant.username}")
             if participant != request.user:
-                other_participant = participant
+                other_user = participant
                 break
         
-        # Get unread count for this thread
-        unread_count = Message.objects.filter(
-            thread=thread, 
-            is_read=False
-        ).exclude(sender=request.user).count()
-        
-        # Get last message
-        last_message = thread.messages.first()
-        
-        threads_data.append({
-            'thread': thread,
-            'other_user': other_participant,
-            'unread_count': unread_count,
-            'last_message': last_message,
-            'updated_at': thread.updated_at,
-            'subject': thread.subject,
-        })
+        if other_user:
+            # Get unread count
+            unread_count = Message.objects.filter(
+                thread=thread, 
+                is_read=False
+            ).exclude(sender=request.user).count()
+            
+            # Get last message
+            last_message = thread.messages.first()
+            
+            threads_data.append({
+                'thread': thread,
+                'other_user': other_user,
+                'unread_count': unread_count,
+                'last_message': last_message,
+                'updated_at': thread.updated_at,
+                'subject': thread.subject,
+            })
+            logger.info(f"Added thread with user: {other_user.username}")
+        else:
+            logger.warning(f"No other user found for thread {thread.id}")
     
-    # Sort by updated_at (most recent first)
-    threads_data.sort(key=lambda x: x['updated_at'], reverse=True)
+    logger.info(f"Final threads_data count: {len(threads_data)}")
     
     context = {
         'threads_data': threads_data,
@@ -141,30 +152,25 @@ def new_message(request, username=None):
 
 @login_required
 def send_ajax_message(request):
-    """Send a message via AJAX (handles both new threads and replies)"""
+    """Send a message via AJAX (handles both new threads and replies) with file support - NO SIZE LIMITS"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
-    # Try to get data from both POST and JSON
-    if request.content_type == 'application/json':
-        data = json.loads(request.body)
-        thread_id = data.get('thread_id')
-        username = data.get('username')
-        subject = data.get('subject')
-        content = data.get('content')
-    else:
-        thread_id = request.POST.get('thread_id')
-        username = request.POST.get('username')
-        subject = request.POST.get('subject')
-        content = request.POST.get('content')
+    # Get data from POST (supports files)
+    thread_id = request.POST.get('thread_id')
+    username = request.POST.get('username')
+    subject = request.POST.get('subject')
+    content = request.POST.get('content', '')
+    file = request.FILES.get('file')
+    file_type = request.POST.get('file_type')
     
-    if not content:
-        return JsonResponse({'error': 'Message content is required'}, status=400)
+    if not content and not file:
+        return JsonResponse({'error': 'Message content or file is required'}, status=400)
     
     try:
         # If thread_id is provided, reply to existing thread
-        if thread_id:
-            thread = get_object_or_404(MessageThread, id=thread_id)
+        if thread_id and thread_id != 'null' and thread_id != 'undefined':
+            thread = get_object_or_404(MessageThread, id=int(thread_id))
             
             # Check if user is a participant
             if request.user not in thread.participants.all():
@@ -201,10 +207,40 @@ def send_ajax_message(request):
             content=content
         )
         
+        # Handle file upload - NO SIZE LIMIT
+        file_info = None
+        if file:
+            # Determine file type from extension or content type
+            file_ext = file.name.split('.')[-1].lower()
+            if file_type:
+                detected_type = file_type
+            elif file.content_type and file.content_type.startswith('image/'):
+                detected_type = 'image'
+            elif file.content_type and file.content_type.startswith('video/'):
+                detected_type = 'video'
+            elif file.content_type and file.content_type.startswith('audio/'):
+                detected_type = 'audio' if 'voice' not in file.name.lower() else 'voice'
+            else:
+                detected_type = 'document'
+            
+            message.file = file
+            message.file_type = detected_type
+            message.file_name = file.name
+            message.file_size = file.size
+            message.save()
+            
+            file_info = {
+                'url': message.file.url,
+                'type': detected_type,
+                'name': message.file_name,
+                'size': message.file_size_display if hasattr(message, 'file_size_display') else f"{file.size} bytes",
+                'file_type_display': message.get_file_type_display() if hasattr(message, 'get_file_type_display') else detected_type
+            }
+        
         # Update thread timestamp
         thread.save()
         
-        return JsonResponse({
+        response_data = {
             'success': True,
             'thread_id': thread.id,
             'message': {
@@ -212,13 +248,18 @@ def send_ajax_message(request):
                 'content': message.content,
                 'sender': request.user.username,
                 'time': message.created_at.strftime('%I:%M %p'),
-                'timestamp': message.created_at.isoformat()
+                'timestamp': message.created_at.isoformat(),
+                'file': file_info
             }
-        })
+        }
+        
+        return JsonResponse(response_data)
         
     except MessageThread.DoesNotExist:
         return JsonResponse({'error': 'Thread not found'}, status=404)
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
@@ -253,6 +294,83 @@ def delete_thread(request, thread_id):
     return redirect('frontend:inbox')
 
 @login_required
+def delete_message(request, message_id):
+    """Delete a single message (only the sender can delete)"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    # Get the message
+    message = get_object_or_404(Message, id=message_id)
+    
+    # Check if user is the sender
+    if message.sender != request.user:
+        return JsonResponse({'error': 'You can only delete your own messages'}, status=403)
+    
+    # Store thread ID before deleting
+    thread_id = message.thread.id
+    
+    # Delete the message
+    message.delete()
+    
+    # Return JSON response for AJAX
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True, 'thread_id': thread_id})
+    
+    # For non-AJAX requests
+    messages.success(request, 'Message deleted successfully')
+    return redirect('frontend:thread_detail', thread_id=thread_id)
+
+@login_required
+def edit_message(request, message_id):
+    """Edit a message (only if not read by receiver)"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    # Get the message
+    message = get_object_or_404(Message, id=message_id)
+    
+    # Check if user is the sender
+    if message.sender != request.user:
+        return JsonResponse({'error': 'You can only edit your own messages'}, status=403)
+    
+    # Check if message has been read
+    if message.is_read:
+        return JsonResponse({'error': 'Message has already been read and cannot be edited'}, status=400)
+    
+    # Get new content
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            new_content = data.get('content', '').strip()
+        else:
+            new_content = request.POST.get('content', '').strip()
+    except:
+        new_content = request.POST.get('content', '').strip()
+    
+    if not new_content:
+        return JsonResponse({'error': 'Message content cannot be empty'}, status=400)
+    
+    # Update the message
+    old_content = message.content
+    message.content = new_content
+    message.edited = True
+    message.edited_at = timezone.now()
+    message.save()
+    
+    # Return JSON response for AJAX
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True, 
+            'message_id': message.id,
+            'new_content': new_content,
+            'edited_at': message.edited_at.strftime('%I:%M %p'),
+            'old_content': old_content
+        })
+    
+    messages.success(request, 'Message edited successfully')
+    return redirect('frontend:thread_detail', thread_id=message.thread.id)
+
+@login_required
 def get_thread_messages(request, thread_id):
     """Get new messages for a thread via AJAX polling"""
     thread = get_object_or_404(MessageThread, id=thread_id)
@@ -267,12 +385,26 @@ def get_thread_messages(request, thread_id):
     
     messages_data = []
     for message in messages_list:
+        file_info = None
+        if message.file:
+            file_info = {
+                'url': message.file.url,
+                'type': message.file_type,
+                'name': message.file_name,
+                'size': message.file_size_display,
+                'file_type_display': message.get_file_type_display()
+            }
+        
         messages_data.append({
             'id': message.id,
             'content': message.content,
             'sender': message.sender.username,
             'time': message.created_at.strftime('%I:%M %p'),
-            'timestamp': message.created_at.isoformat()
+            'timestamp': message.created_at.isoformat(),
+            'is_read': message.is_read,
+            'edited': message.edited,
+            'edited_at': message.edited_at.strftime('%I:%M %p') if message.edited_at else None,
+            'file': file_info
         })
     
     return JsonResponse({'messages': messages_data})

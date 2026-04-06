@@ -58,6 +58,8 @@ urlpatterns = [
     path('messages/send-ajax/', message_views.send_ajax_message, name='send_ajax_message'),
     path('messages/unread-count/', message_views.get_unread_count, name='get_unread_count'),
     path('messages/delete/<int:thread_id>/', message_views.delete_thread, name='delete_thread'),
+    path('messages/delete-message/<int:message_id>/', message_views.delete_message, name='delete_message'),
+    path('messages/edit-message/<int:message_id>/', message_views.edit_message, name='edit_message'),  # ADD THIS LINE
     
     # Comment delete endpoint
     path('comment/<int:comment_id>/delete/', views.delete_comment, name='delete_comment'),
@@ -66,9 +68,7 @@ urlpatterns = [
     path('api/photos/ids/', views.get_all_photo_ids, name='api_photo_ids'),
     path('api/photo/<int:photo_id>/data/', views.get_photo_data, name='api_photo_data'),
     path('api/photos/all/', views.get_all_photos_api, name='api_all_photos'),
-    # Add to urls.py
     path('video/<int:video_id>/track-view/', views.track_video_view, name='track_video_view'),
-    # Add this to your messaging endpoints
     path('messages/thread/<int:thread_id>/messages/', message_views.get_thread_messages, name='get_thread_messages'),
     path('messages/thread/<int:thread_id>/read/', message_views.mark_thread_read, name='mark_thread_read'),
     path('messages/thread/<int:thread_id>/typing/', message_views.typing_indicator, name='typing_indicator'),

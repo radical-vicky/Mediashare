@@ -8,6 +8,9 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
         * {
             margin: 0;
@@ -73,6 +76,7 @@
             font-size: 0.875rem;
             transition: color 0.2s ease;
             padding: 8px 0;
+            position: relative;
         }
         
         .nav-link:hover {
@@ -519,6 +523,17 @@
             }
         }
         
+        /* Notification Badge Pulse Animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .notification-pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+        
         /* Scrollbar - GitHub style */
         ::-webkit-scrollbar {
             width: 10px;
@@ -565,46 +580,77 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'frontend:home' %}">MediaShare</a>
+            <a class="navbar-brand" href="{% url 'frontend:home' %}">
+                <i class="fas fa-camera" style="margin-right: 8px;"></i>
+                MediaShare
+            </a>
             
             <form class="search-form" method="GET" action="{% url 'frontend:feed' %}">
                 <input type="search" name="search" class="search-input" placeholder="Search users or content..." aria-label="Search">
-                <button type="submit" class="search-button">Search</button>
+                <button type="submit" class="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
             </form>
             
             <ul class="navbar-nav">
                 {% if user.is_authenticated %}
-                    <li><a class="nav-link" href="{% url 'frontend:feed' %}">Feed</a></li>
+                    <li><a class="nav-link" href="{% url 'frontend:feed' %}">
+                        <i class="fas fa-rss"></i> Feed
+                    </a></li>
                     <li class="dropdown">
-                        <button class="dropdown-toggle">Upload</button>
+                        <button class="dropdown-toggle">
+                            <i class="fas fa-upload"></i> Upload
+                        </button>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item" href="{% url 'frontend:upload_photo' %}">Upload Photo</a>
-                            <a class="dropdown-item" href="{% url 'frontend:upload_video' %}">Upload Video</a>
+                            <a class="dropdown-item" href="{% url 'frontend:upload_photo' %}">
+                                <i class="fas fa-image"></i> Upload Photo
+                            </a>
+                            <a class="dropdown-item" href="{% url 'frontend:upload_video' %}">
+                                <i class="fas fa-video"></i> Upload Video
+                            </a>
                         </div>
                     </li>
-                    <li><a class="nav-link" href="{% url 'frontend:inbox' %}">Messages
-                        {% if unread_thread_count %}
-                            <span class="badge badge-danger" style="margin-left: 4px;">{{ unread_thread_count }}</span>
-                        {% endif %}
+                    <li>
+                        <a class="nav-link" href="{% url 'frontend:inbox' %}" id="messagesNavLink">
+                            <i class="fas fa-envelope"></i> Messages
+                            <span id="globalUnreadBadge" class="badge" style="background: #da3633; color: white; margin-left: 4px; display: none;">0</span>
+                        </a>
+                    </li>
+                    <li><a class="nav-link" href="{% url 'frontend:calls_history' %}">
+                        <i class="fas fa-phone"></i> Calls
                     </a></li>
                     <li class="dropdown">
                         <button class="dropdown-toggle">
                             {% if user.profile.avatar %}
                                 <img src="{{ user.profile.avatar.url }}" class="avatar avatar-sm" style="vertical-align: middle;">
                             {% else %}
-                                <span style="vertical-align: middle;">{{ user.username }}</span>
+                                <i class="fas fa-user-circle" style="font-size: 1.25rem; vertical-align: middle;"></i>
                             {% endif %}
+                            <span style="margin-left: 4px;">{{ user.username }}</span>
                         </button>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item" href="{% url 'frontend:user_profile' user.username %}">Profile</a>
-                            <a class="dropdown-item" href="{% url 'frontend:edit_profile' %}">Settings</a>
+                            <a class="dropdown-item" href="{% url 'frontend:user_profile' user.username %}">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                            <a class="dropdown-item" href="{% url 'frontend:edit_profile' %}">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                            <a class="dropdown-item" href="{% url 'frontend:call_settings' %}">
+                                <i class="fas fa-phone-alt"></i> Call Settings
+                            </a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{% url 'account_logout' %}">Sign out</a>
+                            <a class="dropdown-item" href="{% url 'account_logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Sign out
+                            </a>
                         </div>
                     </li>
                 {% else %}
-                    <li><a class="nav-link" href="{% url 'account_login' %}">Sign in</a></li>
-                    <li><a class="btn btn-primary" href="{% url 'account_signup' %}">Sign up</a></li>
+                    <li><a class="nav-link" href="{% url 'account_login' %}">
+                        <i class="fas fa-sign-in-alt"></i> Sign in
+                    </a></li>
+                    <li><a class="btn btn-primary" href="{% url 'account_signup' %}">
+                        <i class="fas fa-user-plus"></i> Sign up
+                    </a></li>
                 {% endif %}
             </ul>
         </div>
@@ -614,6 +660,7 @@
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }}">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
                     {{ message }}
                 </div>
             {% endfor %}
@@ -634,18 +681,19 @@
                 <div class="col-4">
                     <h5 style="margin-bottom: 16px; font-size: 0.875rem;">Quick Links</h5>
                     <ul style="list-style: none;">
-                        <li><a href="{% url 'frontend:feed' %}" class="text-muted" style="text-decoration: none; font-size: 0.875rem;">Feed</a></li>
-                        <li class="mt-2"><a href="#" class="text-muted" style="text-decoration: none; font-size: 0.875rem;">About</a></li>
-                        <li class="mt-2"><a href="#" class="text-muted" style="text-decoration: none; font-size: 0.875rem;">Terms</a></li>
-                        <li class="mt-2"><a href="#" class="text-muted" style="text-decoration: none; font-size: 0.875rem;">Privacy</a></li>
+                        <li><a href="{% url 'frontend:feed' %}" class="text-muted">Feed</a></li>
+                        <li class="mt-2"><a href="{% url 'frontend:home' %}" class="text-muted">Home</a></li>
+                        <li class="mt-2"><a href="#" class="text-muted">About</a></li>
+                        <li class="mt-2"><a href="#" class="text-muted">Terms</a></li>
+                        <li class="mt-2"><a href="#" class="text-muted">Privacy</a></li>
                     </ul>
                 </div>
                 <div class="col-4">
                     <h5 style="margin-bottom: 16px; font-size: 0.875rem;">Connect</h5>
                     <div class="d-flex gap-3">
-                        <a href="#" class="text-muted" style="text-decoration: none; font-size: 0.875rem;">Twitter</a>
-                        <a href="#" class="text-muted" style="text-decoration: none; font-size: 0.875rem;">Instagram</a>
-                        <a href="#" class="text-muted" style="text-decoration: none; font-size: 0.875rem;">GitHub</a>
+                        <a href="#" class="text-muted"><i class="fab fa-twitter"></i> Twitter</a>
+                        <a href="#" class="text-muted"><i class="fab fa-instagram"></i> Instagram</a>
+                        <a href="#" class="text-muted"><i class="fab fa-github"></i> GitHub</a>
                     </div>
                 </div>
             </div>
@@ -658,6 +706,7 @@
     <div class="toast-container"></div>
     
     <script>
+        // CSRF Token setup
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -675,46 +724,104 @@
         
         const csrftoken = getCookie('csrftoken');
         
+        // Show toast notification
         function showToast(message, type = 'success') {
             const toastContainer = document.querySelector('.toast-container');
             if (!toastContainer) return;
             
             const toast = document.createElement('div');
             toast.className = 'toast';
-            toast.textContent = message;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="margin-right: 8px;"></i>
+                ${message}
+            `;
             toastContainer.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
         
+        // Global unread message count updater
+        function updateGlobalUnreadCount() {
+            fetch('/messages/unread-count/', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('globalUnreadBadge');
+                if (badge) {
+                    if (data.unread_count > 0) {
+                        badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                        badge.style.display = 'inline-block';
+                        badge.classList.add('notification-pulse');
+                        setTimeout(() => badge.classList.remove('notification-pulse'), 500);
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching unread count:', error));
+        }
+        
+        // Request notification permission
+        function requestNotificationPermission() {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        console.log('Notification permission granted');
+                    }
+                });
+            }
+        }
+        
+        // Like functionality
         document.querySelectorAll('.like-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
                 const url = this.dataset.url;
                 const countSpan = this.querySelector('.likes-count');
+                const icon = this.querySelector('i');
                 
                 fetch(url, {
                     method: 'POST',
-                    headers: { 'X-CSRFToken': csrftoken }
+                    headers: { 
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.liked) {
                         this.classList.add('liked');
+                        if (icon) icon.style.color = '#db61a2';
                     } else {
                         this.classList.remove('liked');
+                        if (icon) icon.style.color = '';
                     }
-                    countSpan.textContent = data.count;
-                });
+                    if (countSpan) countSpan.textContent = data.count;
+                    showToast(data.liked ? 'Liked!' : 'Unliked');
+                })
+                .catch(error => console.error('Error:', error));
             });
         });
         
+        // Follow functionality
         document.querySelectorAll('.follow-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
                 const url = this.dataset.url;
                 const followersSpan = document.getElementById('followers-count');
+                const originalText = this.textContent;
+                
+                this.disabled = true;
+                this.textContent = 'Loading...';
                 
                 fetch(url, {
                     method: 'POST',
-                    headers: { 'X-CSRFToken': csrftoken }
+                    headers: { 
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -722,17 +829,75 @@
                         this.textContent = 'Following';
                         this.classList.remove('btn-primary');
                         this.classList.add('btn-success');
+                        showToast(`You are now following ${this.dataset.username || 'this user'}`);
                     } else {
                         this.textContent = 'Follow';
                         this.classList.remove('btn-success');
                         this.classList.add('btn-primary');
+                        showToast(`You unfollowed ${this.dataset.username || 'this user'}`);
                     }
                     if (followersSpan) followersSpan.textContent = data.count;
-                    showToast(data.followed ? 'You are now following this user' : 'You unfollowed this user');
+                    this.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    this.textContent = originalText;
+                    this.disabled = false;
+                    showToast('An error occurred', 'error');
                 });
             });
         });
+        
+        // Auto-dismiss alerts after 5 seconds
+        document.querySelectorAll('.alert').forEach(alert => {
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        });
+        
+        // Update unread count every 30 seconds
+        setInterval(updateGlobalUnreadCount, 30000);
+        
+        // Initial load of unread count
+        if (document.getElementById('messagesNavLink')) {
+            updateGlobalUnreadCount();
+        }
+        
+        // Handle keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Alt + S focus search
+            if (e.altKey && e.key === 's') {
+                e.preventDefault();
+                document.querySelector('.search-input')?.focus();
+            }
+            // Alt + N new post
+            if (e.altKey && e.key === 'n') {
+                e.preventDefault();
+                window.location.href = '/upload/photo/';
+            }
+            // Alt + M go to messages
+            if (e.altKey && e.key === 'm') {
+                e.preventDefault();
+                window.location.href = '/messages/inbox/';
+            }
+        });
+        
+        // Track page visibility
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                // Page became visible, update unread count
+                updateGlobalUnreadCount();
+            }
+        });
+        
+        // Request notification permission on page load (optional - can be triggered by user action)
+        // Uncomment the line below to request permission automatically
+        // if (Notification && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        //     setTimeout(requestNotificationPermission, 3000);
+        // }
     </script>
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

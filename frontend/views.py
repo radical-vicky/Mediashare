@@ -140,7 +140,7 @@ def track_video_view(request, video_id):
     
     # Update video's total unique view count
     unique_views = VideoView.objects.filter(video=video).values('session_key').distinct().count()
-    video.view_count = unique_views
+    video.views = unique_views
     video.save()
     
     return JsonResponse({

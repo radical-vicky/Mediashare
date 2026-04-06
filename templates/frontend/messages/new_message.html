@@ -1,245 +1,111 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block title %}New Message - MediaShare{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="new-message-card">
-                <div class="new-message-header">
-                    <h1 class="new-message-title">New Message</h1>
-                </div>
-                <div class="new-message-body">
-                    <form method="POST" class="message-form">
-                        {% csrf_token %}
-                        
-                        <div class="form-group">
-                            <label class="form-label">To</label>
-                            <div class="recipient-display">
-                                <div class="recipient-avatar">
-                                    {% if recipient.profile.avatar %}
-                                        <img src="{{ recipient.profile.avatar.url }}" alt="{{ recipient.username }}">
-                                    {% else %}
-                                        <div class="avatar-initial">{{ recipient.username|first|upper }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="recipient-name">{{ recipient.username }}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="subject" class="form-label">Subject</label>
-                            <input type="text" name="subject" id="subject" class="form-control" placeholder="Enter message subject" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="content" class="form-label">Message</label>
-                            <textarea name="content" id="content" class="form-control" rows="6" placeholder="Type your message here..." required></textarea>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary btn-block">Send Message</button>
-                            <a href="{% url 'frontend:inbox' %}" class="btn btn-secondary btn-block">Cancel</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+<div class="container" style="max-width: 600px; margin: 0 auto; padding: 48px 24px;">
+    <div class="card" style="padding: 32px;">
+        <div class="text-center mb-4">
+            <i class="fas fa-envelope" style="font-size: 48px; color: #2f81f7; margin-bottom: 16px; display: block;"></i>
+            <h1 style="font-size: 1.5rem; font-weight: 600;">New Message</h1>
+            <p class="text-muted" style="font-size: 0.875rem;">Start a conversation with another user</p>
         </div>
+        
+        <form method="POST" id="messageForm">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 20px;">
+                <label class="form-label">To:</label>
+                {% if username %}
+                    <input type="text" name="username" class="form-control" value="{{ username }}" readonly style="background: #0d1117; cursor: not-allowed;">
+                {% else %}
+                    <input type="text" name="username" id="username" class="form-control" placeholder="Enter username" required autocomplete="off">
+                    <div id="suggestions" style="display: none; margin-top: 8px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; max-height: 200px; overflow-y: auto;"></div>
+                {% endif %}
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label class="form-label">Subject:</label>
+                <input type="text" name="subject" class="form-control" placeholder="What's this about?" required>
+            </div>
+            
+            <div style="margin-bottom: 24px;">
+                <label class="form-label">Message:</label>
+                <textarea name="content" class="form-control" rows="6" placeholder="Type your message here..." required></textarea>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    <i class="fas fa-paper-plane"></i> Send Message
+                </button>
+                <a href="{% url 'frontend:inbox' %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 
-<style>
-.new-message-card {
-    background: rgba(20, 25, 55, 0.6);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 24px;
-    overflow: hidden;
-    margin-top: 24px;
-}
-
-.new-message-header {
-    padding: 24px 32px;
-    background: rgba(10, 14, 39, 0.6);
-    border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-}
-
-.new-message-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: white;
-    margin: 0;
-}
-
-.new-message-body {
-    padding: 32px;
-}
-
-.form-group {
-    margin-bottom: 24px;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    font-size: 14px;
-    color: #cbd5e1;
-}
-
-.recipient-display {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    border: 1px solid rgba(59, 130, 246, 0.15);
-}
-
-.recipient-avatar img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.avatar-initial {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 600;
-    color: white;
-}
-
-.recipient-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: white;
-}
-
-.form-control {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 12px;
-    padding: 12px 16px;
-    color: white;
-    font-family: inherit;
-    font-size: 14px;
-    transition: all 0.2s ease;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: #3b82f6;
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.form-control::placeholder {
-    color: #64748b;
-}
-
-textarea.form-control {
-    resize: vertical;
-    font-family: inherit;
-}
-
-.form-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 32px;
-}
-
-.btn {
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 14px;
-    text-decoration: none;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-    font-family: inherit;
-    display: inline-block;
-}
-
-.btn-block {
-    flex: 1;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: #e2e8f0;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    text-decoration: none;
-}
-
-.btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.15);
-}
-
-/* Loading state for button */
-.btn-primary.loading {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .new-message-header {
-        padding: 20px;
-    }
-    
-    .new-message-body {
-        padding: 20px;
-    }
-    
-    .form-actions {
-        flex-direction: column;
-    }
-}
-</style>
-
+{% if not username %}
 <script>
-// Form submission loading state
-const messageForm = document.querySelector('.message-form');
-if (messageForm) {
-    messageForm.addEventListener('submit', function() {
-        const submitBtn = this.querySelector('.btn-primary');
-        if (submitBtn) {
-            submitBtn.classList.add('loading');
-            submitBtn.textContent = 'Sending...';
-            submitBtn.disabled = true;
+    const usernameInput = document.getElementById('username');
+    const suggestionsDiv = document.getElementById('suggestions');
+    let searchTimeout;
+    
+    usernameInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (query.length < 2) {
+            suggestionsDiv.style.display = 'none';
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+            fetch(`/api/users/all/`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const users = data.users.filter(user => 
+                    user.username.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                if (users.length > 0) {
+                    suggestionsDiv.innerHTML = users.map(user => `
+                        <div class="suggestion-item" data-username="${user.username}" style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #21262d;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                ${user.avatar ? `<img src="${user.avatar}" style="width: 32px; height: 32px; border-radius: 50%;">` : '<div style="width: 32px; height: 32px; background: #21262d; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user"></i></div>'}
+                                <div>
+                                    <div style="font-weight: 500;">${user.username}</div>
+                                    ${user.bio ? `<div style="font-size: 0.75rem; color: #7d8590;">${user.bio.substring(0, 50)}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    suggestionsDiv.style.display = 'block';
+                    
+                    document.querySelectorAll('.suggestion-item').forEach(item => {
+                        item.onclick = function() {
+                            usernameInput.value = this.dataset.username;
+                            suggestionsDiv.style.display = 'none';
+                        };
+                    });
+                } else {
+                    suggestionsDiv.style.display = 'none';
+                }
+            });
+        }, 300);
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!usernameInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+            suggestionsDiv.style.display = 'none';
         }
     });
-}
-
-// Auto-resize textarea
-const textarea = document.getElementById('content');
-if (textarea) {
-    textarea.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-    });
-}
 </script>
+{% endif %}
 {% endblock %}

@@ -6,6 +6,9 @@ import re
 import time
 import random
 from django.utils.deconstruct import deconstructible
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 
 # ========== FILE UPLOAD PATH HELPERS ==========
 
@@ -330,11 +333,27 @@ class MessageThread(models.Model):
 
 class Message(models.Model):
     """Individual message in a thread"""
+    FILE_TYPES = [
+        ('image', 'Image'),
+        ('video', 'Video'),
+        ('audio', 'Audio'),
+        ('document', 'Document'),
+        ('voice', 'Voice Note'),
+    ]
+    
     thread = models.ForeignKey(MessageThread, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
-    content = models.TextField(max_length=5000)
+    content = models.TextField(max_length=5000, blank=True)  # Made blank=True for file-only messages
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    edited = models.BooleanField(default=False)
+    edited_at = models.DateTimeField(null=True, blank=True)
+    
+    # File attachment fields
+    file = models.FileField(upload_to='chat_files/%Y/%m/%d/', null=True, blank=True)
+    file_type = models.CharField(max_length=20, choices=FILE_TYPES, null=True, blank=True)
+    file_name = models.CharField(max_length=255, null=True, blank=True)
+    file_size = models.PositiveIntegerField(null=True, blank=True)  # Size in bytes
     
     class Meta:
         ordering = ['-created_at']
@@ -349,13 +368,19 @@ class Message(models.Model):
     
     @property
     def short_content(self):
+        if self.file:
+            return f"[{self.get_file_type_display()}] {self.file_name}"
         return self.content[:100] + '...' if len(self.content) > 100 else self.content
-
-
-# ========== SIGNALS TO AUTO-CREATE USER PROFILES ==========
-
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+    
+    @property
+    def file_size_display(self):
+        if not self.file_size:
+            return "Unknown size"
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if self.file_size < 1024.0:
+                return f"{self.file_size:.1f} {unit}"
+            self.file_size /= 1024.0
+        return f"{self.file_size:.1f} GB"
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

@@ -1,421 +1,261 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends "base.html" %}
 
 {% block title %}Messages - MediaShare{% endblock %}
 
-{% block extra_css %}
-<style>
-    .inbox-container {
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-    
-    .inbox-header {
-        margin-bottom: 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-    
-    .inbox-header h1 {
-        font-size: 28px;
-        font-weight: 700;
-        color: #f0f6fc;
-    }
-    
-    .new-message-btn {
-        background: #2f81f7;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        display: inline-block;
-        border: none;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    
-    .new-message-btn:hover {
-        background: #3b8bff;
-        transform: translateY(-1px);
-    }
-    
-    .thread-list {
-        background: #161b22;
-        border: 1px solid #30363d;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    
-    .thread-item {
-        display: flex;
-        align-items: center;
-        padding: 16px 20px;
-        border-bottom: 1px solid #21262d;
-        text-decoration: none;
-        transition: background 0.2s ease;
-        cursor: pointer;
-    }
-    
-    .thread-item:hover {
-        background: rgba(33, 38, 45, 0.5);
-    }
-    
-    .thread-item.unread {
-        background: rgba(47, 129, 247, 0.05);
-    }
-    
-    .thread-avatar {
-        margin-right: 16px;
-    }
-    
-    .thread-avatar img {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-    
-    .avatar-placeholder {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #2f81f7, #8957e5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 18px;
-        color: white;
-    }
-    
-    .thread-content {
-        flex: 1;
-        min-width: 0;
-    }
-    
-    .thread-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 6px;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    
-    .thread-user {
-        font-weight: 600;
-        color: #f0f6fc;
-        font-size: 15px;
-    }
-    
-    .thread-time {
-        font-size: 12px;
-        color: #7d8590;
-    }
-    
-    .thread-subject {
-        font-size: 13px;
-        color: #7d8590;
-        margin-bottom: 4px;
-    }
-    
-    .thread-preview {
-        font-size: 13px;
-        color: #e6edf3;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    .thread-badge {
-        background: #2f81f7;
-        color: white;
-        font-size: 11px;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 20px;
-        margin-left: 12px;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        color: #7d8590;
-    }
-    
-    .empty-icon {
-        font-size: 64px;
-        margin-bottom: 16px;
-        opacity: 0.5;
-    }
-    
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(12px);
-        z-index: 2000;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .modal.active {
-        display: flex;
-    }
-    
-    .modal-content {
-        background: #161b22;
-        border: 1px solid #30363d;
-        border-radius: 16px;
-        width: 90%;
-        max-width: 500px;
-        padding: 24px;
-    }
-    
-    .modal-content h3 {
-        margin-bottom: 20px;
-        color: #f0f6fc;
-        font-size: 20px;
-    }
-    
-    .modal-input {
-        width: 100%;
-        background: #0d1117;
-        border: 1px solid #30363d;
-        border-radius: 8px;
-        padding: 10px 12px;
-        color: #e6edf3;
-        margin-bottom: 16px;
-        font-family: inherit;
-    }
-    
-    .modal-input:focus {
-        outline: none;
-        border-color: #2f81f7;
-    }
-    
-    .modal-buttons {
-        display: flex;
-        gap: 12px;
-        justify-content: flex-end;
-        margin-top: 8px;
-    }
-    
-    .btn-secondary {
-        background: #21262d;
-        color: #e6edf3;
-        border: 1px solid #30363d;
-        padding: 8px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    
-    .btn-secondary:hover {
-        background: #30363d;
-    }
-    
-    .btn-primary {
-        background: #2f81f7;
-        color: white;
-        padding: 8px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        border: none;
-    }
-    
-    .btn-primary:hover {
-        background: #3b8bff;
-    }
-    
-    .spinner {
-        display: inline-block;
-        width: 14px;
-        height: 14px;
-        border: 2px solid rgba(255,255,255,0.3);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 0.6s linear infinite;
-        margin-right: 8px;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container inbox-container">
-    <div class="inbox-header">
-        <h1>💬 Messages</h1>
-        <button class="new-message-btn" id="newMessageBtn">✏️ New Message</button>
+<div class="container" style="max-width: 900px; margin: 0 auto; padding: 24px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 style="font-size: 1.5rem; font-weight: 600;">
+            <i class="fas fa-comments" style="margin-right: 12px; color: #2f81f7;"></i>
+            Chats
+        </h1>
+        <button class="btn btn-primary" id="newMessageBtn">
+            <i class="fas fa-edit"></i> New Chat
+        </button>
     </div>
-    
-    <div class="thread-list">
-        {% for thread_data in threads_data %}
-            <a href="{% url 'frontend:thread_detail' thread_data.thread.id %}" class="thread-item {% if thread_data.unread_count > 0 %}unread{% endif %}">
-                <div class="thread-avatar">
-                    {% if thread_data.other_user.profile.avatar %}
-                        <img src="{{ thread_data.other_user.profile.avatar.url }}" alt="{{ thread_data.other_user.username }}">
-                    {% else %}
-                        <div class="avatar-placeholder">{{ thread_data.other_user.username|first|upper }}</div>
-                    {% endif %}
-                </div>
-                <div class="thread-content">
-                    <div class="thread-header">
-                        <span class="thread-user">{{ thread_data.other_user.username }}</span>
-                        <span class="thread-time">{{ thread_data.updated_at|timesince }} ago</span>
-                    </div>
-                    <div class="thread-subject">{{ thread_data.subject }}</div>
-                    <div class="thread-preview">
-                        {% if thread_data.last_message %}
-                            {{ thread_data.last_message.sender.username }}: {{ thread_data.last_message.content|truncatechars:50 }}
+
+    {% if threads_data %}
+        <div class="inbox-container" style="background: #161b22; border-radius: 12px; border: 1px solid #30363d; overflow: hidden;">
+            {% for thread in threads_data %}
+                <a href="{% url 'frontend:thread_detail' thread.thread.id %}" class="thread-item" style="display: flex; align-items: center; padding: 16px; text-decoration: none; color: inherit; border-bottom: 1px solid #30363d; transition: background 0.15s ease; position: relative;">
+                    
+                    <!-- Avatar with Online Status -->
+                    <div class="thread-avatar" style="position: relative; margin-right: 16px;">
+                        {% if thread.other_user.profile.avatar %}
+                            <img src="{{ thread.other_user.profile.avatar.url }}" class="avatar" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;">
                         {% else %}
-                            No messages yet
+                            <div class="avatar" style="width: 56px; height: 56px; background: linear-gradient(135deg, #2f81f7, #238636); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <span style="font-size: 1.5rem; font-weight: 600;">{{ thread.other_user.username|make_list|first|upper }}</span>
+                            </div>
                         {% endif %}
+                        <!-- Online Status Indicator -->
+                        <span style="position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: #238636; border: 2px solid #161b22; border-radius: 50%;"></span>
                     </div>
-                </div>
-                {% if thread_data.unread_count > 0 %}
-                    <div class="thread-badge">{{ thread_data.unread_count }}</div>
-                {% endif %}
-            </a>
-        {% empty %}
-            <div class="empty-state">
-                <div class="empty-icon">💬</div>
-                <h3>No messages yet</h3>
-                <p>Start a conversation with another creator</p>
-                <button class="btn btn-primary" id="emptyNewMessageBtn" style="margin-top: 20px;">Send a Message</button>
-            </div>
-        {% endfor %}
-    </div>
+                    
+                    <!-- Chat Info -->
+                    <div class="thread-info" style="flex: 1; min-width: 0;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span style="font-weight: 600; font-size: 1rem;">{{ thread.other_user.username }}</span>
+                            <span class="text-muted" style="font-size: 0.7rem; white-space: nowrap;">{{ thread.updated_at|timesince }} ago</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span style="font-size: 0.8rem; color: #7d8590; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                {% if thread.unread_count > 0 %}
+                                    <span style="color: #2f81f7;">
+                                        <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 4px;"></i>
+                                        {{ thread.unread_count }} new message{{ thread.unread_count|pluralize }}
+                                    </span>
+                                {% else %}
+                                    {{ thread.subject }}
+                                {% endif %}
+                            </span>
+                            {% if thread.unread_count > 0 %}
+                                <span class="badge" style="background: #2f81f7; color: white; border-radius: 20px; padding: 4px 10px;">{{ thread.unread_count }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+        
+        <!-- Encryption Notice -->
+        <div class="text-center mt-4" style="padding: 16px;">
+            <p class="text-muted" style="font-size: 0.7rem;">
+                <i class="fas fa-lock" style="margin-right: 4px;"></i> 
+                Messages are secured with end-to-end encryption
+            </p>
+        </div>
+    {% else %}
+        <div class="empty-state" style="text-align: center; padding: 60px 20px; background: #161b22; border-radius: 12px; border: 1px solid #30363d;">
+            <i class="fas fa-comment-dots" style="font-size: 64px; color: #7d8590; margin-bottom: 20px; display: block;"></i>
+            <h3 style="font-size: 1.25rem; margin-bottom: 8px;">No messages yet</h3>
+            <p class="text-muted" style="margin-bottom: 24px;">Start a conversation with someone!</p>
+            <button class="btn btn-primary" id="emptyNewMessageBtn">
+                <i class="fas fa-plus"></i> Start New Chat
+            </button>
+        </div>
+    {% endif %}
 </div>
 
 <!-- New Message Modal -->
-<div id="newMessageModal" class="modal">
-    <div class="modal-content">
-        <h3>✏️ New Message</h3>
-        <form id="newMessageForm">
+<div id="newMessageModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;">
+    <div style="background: #161b22; border-radius: 16px; max-width: 500px; width: 90%; border: 1px solid #30363d;">
+        <div style="padding: 20px; border-bottom: 1px solid #30363d;">
+            <h3 style="margin: 0;">New Chat</h3>
+        </div>
+        <form id="newMessageForm" style="padding: 20px;">
             {% csrf_token %}
-            <input type="text" name="username" id="modalUsername" class="modal-input" placeholder="Recipient username" required>
-            <input type="text" name="subject" id="modalSubject" class="modal-input" placeholder="Subject" required>
-            <textarea name="content" id="modalContent" class="modal-input" rows="4" placeholder="Your message..." required></textarea>
-            <div class="modal-buttons">
-                <button type="button" class="btn-secondary" id="cancelModalBtn">Cancel</button>
-                <button type="submit" class="btn-primary" id="sendMessageBtn">Send Message</button>
+            <div style="margin-bottom: 20px;">
+                <label class="form-label">To:</label>
+                <input type="text" id="recipientUsername" class="form-control" placeholder="Enter username" required>
+                <div id="usernameSuggestions" style="display: none; margin-top: 8px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label class="form-label">Message:</label>
+                <textarea id="messageContent" class="form-control" rows="4" placeholder="Type your message..." required style="resize: none;"></textarea>
+            </div>
+            <div class="d-flex gap-2" style="justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary" id="closeModalBtn">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
             </div>
         </form>
     </div>
 </div>
 
-<script>
-// Get CSRF token
-function getCookie(name) {
-    let value = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                value = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
+<style>
+    .thread-item:hover {
+        background: #21262d;
     }
-    return value;
-}
-const csrf = getCookie('csrftoken');
+    
+    .modal {
+        animation: fadeIn 0.2s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .avatar {
+        transition: transform 0.2s ease;
+    }
+    
+    .thread-item:hover .avatar {
+        transform: scale(1.05);
+    }
+</style>
 
-// Modal functionality
-const modal = document.getElementById('newMessageModal');
-const newMessageBtn = document.getElementById('newMessageBtn');
-const emptyNewMessageBtn = document.getElementById('emptyNewMessageBtn');
-const cancelModalBtn = document.getElementById('cancelModalBtn');
-const newMessageForm = document.getElementById('newMessageForm');
-
-function openModal() {
-    modal.classList.add('active');
-    // Clear form
-    document.getElementById('modalUsername').value = '';
-    document.getElementById('modalSubject').value = '';
-    document.getElementById('modalContent').value = '';
-}
-
-function closeModal() {
-    modal.classList.remove('active');
-}
-
-if (newMessageBtn) newMessageBtn.addEventListener('click', openModal);
-if (emptyNewMessageBtn) emptyNewMessageBtn.addEventListener('click', openModal);
-if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
-
-// Close modal when clicking outside
-modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-});
-
-// Handle form submission via AJAX
-if (newMessageForm) {
-    newMessageForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+<script>
+    const modal = document.getElementById('newMessageModal');
+    const newMessageBtn = document.getElementById('newMessageBtn');
+    const emptyNewMessageBtn = document.getElementById('emptyNewMessageBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const newMessageForm = document.getElementById('newMessageForm');
+    const recipientInput = document.getElementById('recipientUsername');
+    const suggestionsDiv = document.getElementById('usernameSuggestions');
+    
+    let searchTimeout;
+    
+    function openModal() {
+        modal.style.display = 'flex';
+    }
+    
+    function closeModal() {
+        modal.style.display = 'none';
+        newMessageForm.reset();
+        suggestionsDiv.style.display = 'none';
+    }
+    
+    if (newMessageBtn) newMessageBtn.onclick = openModal;
+    if (emptyNewMessageBtn) emptyNewMessageBtn.onclick = openModal;
+    if (closeModalBtn) closeModalBtn.onclick = closeModal;
+    
+    modal.onclick = function(e) {
+        if (e.target === modal) closeModal();
+    };
+    
+    recipientInput.addEventListener('input', function() {
+        const query = this.value.trim();
         
-        const username = document.getElementById('modalUsername').value.trim();
-        const subject = document.getElementById('modalSubject').value.trim();
-        const content = document.getElementById('modalContent').value.trim();
+        clearTimeout(searchTimeout);
         
-        if (!username || !subject || !content) {
-            alert('Please fill in all fields');
+        if (query.length < 2) {
+            suggestionsDiv.style.display = 'none';
             return;
         }
         
-        const submitBtn = document.getElementById('sendMessageBtn');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner"></span> Sending...';
-        
-        try {
-            const formData = new FormData();
-            formData.append('username', username);
-            formData.append('subject', subject);
-            formData.append('content', content);
-            
-            const response = await fetch('/messages/send-ajax/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrf,
-                },
-                body: formData
+        searchTimeout = setTimeout(() => {
+            fetch(`/api/users/all/`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const users = data.users.filter(user => 
+                    user.username.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                if (users.length > 0) {
+                    suggestionsDiv.innerHTML = users.map(user => `
+                        <div class="suggestion-item" data-username="${user.username}" style="padding: 12px; cursor: pointer; border-bottom: 1px solid #21262d; display: flex; align-items: center; gap: 12px;">
+                            ${user.avatar ? `<img src="${user.avatar}" style="width: 40px; height: 40px; border-radius: 50%;">` : `<div style="width: 40px; height: 40px; background: #21262d; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user"></i></div>`}
+                            <div>
+                                <div style="font-weight: 600;">${user.username}</div>
+                                ${user.bio ? `<div style="font-size: 0.75rem; color: #7d8590;">${user.bio.substring(0, 40)}</div>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                    suggestionsDiv.style.display = 'block';
+                    
+                    document.querySelectorAll('.suggestion-item').forEach(item => {
+                        item.onclick = function() {
+                            recipientInput.value = this.dataset.username;
+                            suggestionsDiv.style.display = 'none';
+                        };
+                    });
+                } else {
+                    suggestionsDiv.style.display = 'none';
+                }
             });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                closeModal();
-                // Redirect to the new thread
-                window.location.href = `/messages/thread/${data.thread_id}/`;
-            } else {
-                alert(data.error || 'Error sending message');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Network error. Please try again.');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
+        }, 300);
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!recipientInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+            suggestionsDiv.style.display = 'none';
         }
     });
-}
+    
+    newMessageForm.onsubmit = function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('recipientUsername').value;
+        const content = document.getElementById('messageContent').value;
+        const subject = `Chat with ${username}`;
+        
+        if (!username || !content) {
+            showToast('Please fill in all fields', 'error');
+            return;
+        }
+        
+        fetch("{% url 'frontend:send_ajax_message' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'username': username,
+                'subject': subject,
+                'content': content
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Message sent successfully!');
+                setTimeout(() => {
+                    window.location.href = `/messages/thread/${data.thread_id}/`;
+                }, 1000);
+            } else {
+                showToast(data.error || 'Error sending message', 'error');
+            }
+        })
+        .catch(error => {
+            showToast('Error sending message', 'error');
+        });
+    };
+    
+    function showToast(message, type = 'success') {
+        const toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) return;
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+        toastContainer.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
 </script>
 {% endblock %}
