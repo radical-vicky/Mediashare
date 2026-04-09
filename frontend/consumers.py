@@ -1,16 +1,20 @@
+# frontend/consumers.py
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.db import database_sync_to_async
-from django.contrib.auth.models import User
-from .models import CallSession
+import logging
+
+logger = logging.getLogger(__name__)
 
 class CallConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = f'call_{self.room_name}'
         
+        logger.info(f"WebSocket connecting to room: {self.room_name}")
+        
         # Check if user is authenticated
         if self.scope['user'].is_anonymous:
+            logger.warning("Anonymous user tried to connect")
             await self.close()
             return
         
@@ -21,8 +25,9 @@ class CallConsumer(AsyncWebsocketConsumer):
         )
         
         await self.accept()
+        logger.info(f"User {self.scope['user'].username} connected to {self.room_group_name}")
         
-        # Notify room that user has joined
+        # Notify others that user joined
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -33,13 +38,9 @@ class CallConsumer(AsyncWebsocketConsumer):
         )
     
     async def disconnect(self, close_code):
-        # Leave room group
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        logger.info(f"User {self.scope['user'].username} disconnected from {self.room_group_name}")
         
-        # Notify room that user has left
+        # Notify others that user left
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -48,76 +49,56 @@ class CallConsumer(AsyncWebsocketConsumer):
                 'user_id': self.scope['user'].id,
             }
         )
+        
+        # Leave room group
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
     
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message_type = text_data_json.get('type')
-        
-        if message_type == 'signal':
-            # Forward WebRTC signaling data to other participants
+        try:
+            text_data_json = json.loads(text_data)
+            message_type = text_data_json.get('type')
+            
+            logger.info(f"Received {message_type} from {self.scope['user'].username}")
+            
+            # Forward to room group
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
-                    'type': 'signal_message',
-                    'signal': text_data_json['signal'],
-                    'from': text_data_json['from'],
-                    'from_id': text_data_json['from_id'],
+                    'type': message_type,
+                    'data': text_data_json,
+                    'from': self.scope['user'].username,
+                    'from_id': self.scope['user'].id,
                 }
             )
-        elif message_type == 'chat':
-            # Forward chat message to all participants
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'chat_message',
-                    'message': text_data_json['message'],
-                    'from': text_data_json['from'],
-                    'from_id': text_data_json['from_id'],
-                    'timestamp': text_data_json.get('timestamp', ''),
-                }
-            )
-        elif message_type == 'ice_candidate':
-            # Forward ICE candidate
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'ice_candidate',
-                    'candidate': text_data_json['candidate'],
-                    'from': text_data_json['from'],
-                    'from_id': text_data_json['from_id'],
-                }
-            )
+        except Exception as e:
+            logger.error(f"Error in receive: {e}")
     
-    async def signal_message(self, event):
-        # Send signaling data to WebSocket
+    async def signal(self, event):
         await self.send(text_data=json.dumps({
             'type': 'signal',
-            'signal': event['signal'],
-            'from': event['from'],
-            'from_id': event['from_id'],
-        }))
-    
-    async def chat_message(self, event):
-        # Send chat message to WebSocket
-        await self.send(text_data=json.dumps({
-            'type': 'chat',
-            'message': event['message'],
-            'from': event['from'],
-            'from_id': event['from_id'],
-            'timestamp': event.get('timestamp', ''),
+            'signal': event['data'].get('signal'),
+            'from': event.get('from'),
+            'from_id': event.get('from_id'),
         }))
     
     async def ice_candidate(self, event):
-        # Send ICE candidate to WebSocket
         await self.send(text_data=json.dumps({
             'type': 'ice_candidate',
-            'candidate': event['candidate'],
-            'from': event['from'],
-            'from_id': event['from_id'],
+            'candidate': event['data'].get('candidate'),
+            'from': event.get('from'),
+            'from_id': event.get('from_id'),
+        }))
+    
+    async def call_answered(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'call_answered',
+            'from': event.get('from'),
         }))
     
     async def user_joined(self, event):
-        # Send user joined notification
         await self.send(text_data=json.dumps({
             'type': 'user_joined',
             'user': event['user'],
@@ -125,7 +106,6 @@ class CallConsumer(AsyncWebsocketConsumer):
         }))
     
     async def user_left(self, event):
-        # Send user left notification
         await self.send(text_data=json.dumps({
             'type': 'user_left',
             'user': event['user'],

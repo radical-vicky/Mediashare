@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from .models import MessageThread, Message, UserProfile
 from django.utils import timezone
+from django.utils.timesince import timesince
 from django.db.models import Count, Q
 import json
 
@@ -59,6 +60,59 @@ def inbox(request):
         'threads_data': threads_data,
     }
     return render(request, 'frontend/messages/inbox.html', context)
+
+@login_required
+def inbox_api(request):
+    """API endpoint for chat list sidebar"""
+    threads = MessageThread.objects.filter(participants=request.user).order_by('-updated_at')
+    
+    threads_data = []
+    for thread in threads:
+        other_user = None
+        for participant in thread.participants.all():
+            if participant != request.user:
+                other_user = participant
+                break
+        
+        if other_user:
+            unread_count = Message.objects.filter(
+                thread=thread, is_read=False
+            ).exclude(sender=request.user).count()
+            
+            last_message = thread.messages.first()
+            
+            # Calculate time ago manually
+            time_ago = "Never"
+            if last_message:
+                delta = timezone.now() - last_message.created_at
+                if delta.days > 0:
+                    time_ago = f"{delta.days}d ago"
+                elif delta.seconds > 3600:
+                    time_ago = f"{delta.seconds // 3600}h ago"
+                elif delta.seconds > 60:
+                    time_ago = f"{delta.seconds // 60}m ago"
+                else:
+                    time_ago = "Just now"
+            
+            # Safely get avatar URL
+            avatar_url = None
+            if hasattr(other_user, 'profile') and other_user.profile and other_user.profile.avatar:
+                try:
+                    avatar_url = other_user.profile.avatar.url
+                except:
+                    avatar_url = None
+            
+            threads_data.append({
+                'id': thread.id,
+                'username': other_user.username,
+                'avatar': avatar_url,
+                'initial': other_user.username[0].upper(),
+                'last_message': last_message.content[:50] if last_message and last_message.content else 'No messages',
+                'time_ago': time_ago,
+                'unread_count': unread_count,
+            })
+    
+    return JsonResponse({'threads': threads_data})
 
 @login_required
 def thread_detail(request, thread_id):
@@ -229,12 +283,23 @@ def send_ajax_message(request):
             message.file_size = file.size
             message.save()
             
+            # Calculate file size display
+            size_bytes = file.size
+            if size_bytes < 1024:
+                size_display = f"{size_bytes} B"
+            elif size_bytes < 1024 * 1024:
+                size_display = f"{size_bytes / 1024:.1f} KB"
+            elif size_bytes < 1024 * 1024 * 1024:
+                size_display = f"{size_bytes / (1024 * 1024):.1f} MB"
+            else:
+                size_display = f"{size_bytes / (1024 * 1024 * 1024):.2f} GB"
+            
             file_info = {
                 'url': message.file.url,
                 'type': detected_type,
                 'name': message.file_name,
-                'size': message.file_size_display if hasattr(message, 'file_size_display') else f"{file.size} bytes",
-                'file_type_display': message.get_file_type_display() if hasattr(message, 'get_file_type_display') else detected_type
+                'size': size_display,
+                'file_type_display': dict(Message.FILE_TYPES).get(detected_type, detected_type) if hasattr(Message, 'FILE_TYPES') else detected_type
             }
         
         # Update thread timestamp
@@ -385,14 +450,25 @@ def get_thread_messages(request, thread_id):
     
     messages_data = []
     for message in messages_list:
+        # Calculate file size display
         file_info = None
         if message.file:
+            size_bytes = message.file_size or 0
+            if size_bytes < 1024:
+                size_display = f"{size_bytes} B"
+            elif size_bytes < 1024 * 1024:
+                size_display = f"{size_bytes / 1024:.1f} KB"
+            elif size_bytes < 1024 * 1024 * 1024:
+                size_display = f"{size_bytes / (1024 * 1024):.1f} MB"
+            else:
+                size_display = f"{size_bytes / (1024 * 1024 * 1024):.2f} GB"
+            
             file_info = {
                 'url': message.file.url,
                 'type': message.file_type,
                 'name': message.file_name,
-                'size': message.file_size_display,
-                'file_type_display': message.get_file_type_display()
+                'size': size_display,
+                'file_type_display': dict(Message.FILE_TYPES).get(message.file_type, message.file_type) if message.file_type and hasattr(Message, 'FILE_TYPES') else 'File'
             }
         
         messages_data.append({

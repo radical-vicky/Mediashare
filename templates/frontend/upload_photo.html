@@ -1,52 +1,798 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Upload Photo - MediaShare{% endblock %}
+{% block title %}Upload photo - MediaShare{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ============================================
+       UPLOAD PHOTO - BLUE GLASS THEME
+       ============================================ */
+    
+    .upload-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 16px;
+    }
+    
+    /* Glass Card */
+    .upload-card {
+        background: rgba(15, 25, 45, 0.65);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 16px;
+        overflow: hidden;
+        margin: 24px 0;
+    }
+    
+    .upload-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        background: rgba(10, 14, 26, 0.5);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .upload-header h2 {
+        font-size: 20px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #f1f5f9, #60a5fa);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin: 0;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .header-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+        background: rgba(59, 130, 246, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #cbd5e1;
+    }
+    
+    .header-btn:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+        transform: translateY(-2px);
+        color: #f1f5f9;
+    }
+    
+    .upload-body {
+        padding: 24px;
+    }
+    
+    /* Dropzone - Glass Style */
+    .dropzone {
+        border: 2px dashed rgba(59, 130, 246, 0.4);
+        border-radius: 16px;
+        padding: 48px 24px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: rgba(15, 25, 45, 0.4);
+        backdrop-filter: blur(8px);
+        margin-bottom: 24px;
+    }
+    
+    .dropzone:hover {
+        border-color: #3b82f6;
+        background: rgba(59, 130, 246, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .dropzone.drag-over {
+        border-color: #22c55e;
+        background: rgba(34, 197, 94, 0.1);
+    }
+    
+    .dropzone h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin-bottom: 8px;
+    }
+    
+    .dropzone p {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-bottom: 16px;
+    }
+    
+    .dropzone-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        border: none;
+        color: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+    
+    .dropzone-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+    }
+    
+    /* Preview Section */
+    .preview-section {
+        display: none;
+        margin-bottom: 24px;
+    }
+    
+    .preview-section.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .preview-card {
+        background: rgba(15, 25, 45, 0.6);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .preview-image {
+        width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+        background: #0f172a;
+    }
+    
+    .preview-info {
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        background: rgba(10, 14, 26, 0.5);
+    }
+    
+    .preview-details {
+        flex: 1;
+    }
+    
+    .file-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: #f1f5f9;
+        margin-bottom: 4px;
+        word-break: break-all;
+    }
+    
+    .file-size {
+        font-size: 11px;
+        color: #94a3b8;
+    }
+    
+    .preview-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-sm {
+        padding: 5px 14px;
+        font-size: 11px;
+        font-weight: 500;
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 6px;
+        color: #cbd5e1;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-sm:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+        transform: translateY(-1px);
+    }
+    
+    /* Requirements - Glass Style */
+    .requirements {
+        background: rgba(15, 25, 45, 0.5);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .requirements h4 {
+        font-size: 13px;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin-bottom: 12px;
+    }
+    
+    .requirements ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .requirements li {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        padding-left: 20px;
+        position: relative;
+    }
+    
+    .requirements li::before {
+        content: '○';
+        position: absolute;
+        left: 6px;
+        color: #64748b;
+    }
+    
+    .requirements li.valid {
+        color: #22c55e;
+    }
+    
+    .requirements li.valid::before {
+        content: '●';
+        color: #22c55e;
+    }
+    
+    .requirements li.invalid {
+        color: #ef4444;
+    }
+    
+    .requirements li.invalid::before {
+        content: '○';
+        color: #ef4444;
+    }
+    
+    /* Form Elements - Glass Style */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #cbd5e1;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        background: rgba(15, 25, 45, 0.6);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 10px;
+        color: #f1f5f9;
+        font-size: 13px;
+        font-family: inherit;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        background: rgba(15, 25, 45, 0.8);
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .form-hint {
+        margin-top: 6px;
+        font-size: 11px;
+        color: #94a3b8;
+    }
+    
+    /* Character Counter */
+    .char-counter {
+        text-align: right;
+        font-size: 11px;
+        color: #94a3b8;
+        margin-top: 4px;
+    }
+    
+    .char-counter.warning {
+        color: #fbbf24;
+    }
+    
+    .char-counter.danger {
+        color: #ef4444;
+    }
+    
+    /* Action Buttons - Glass Style */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        padding-top: 20px;
+        border-top: 1px solid rgba(59, 130, 246, 0.2);
+        margin-top: 8px;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .btn-secondary {
+        background: rgba(59, 130, 246, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #cbd5e1;
+    }
+    
+    .btn-secondary:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+        transform: translateY(-2px);
+        color: #f1f5f9;
+    }
+    
+    /* Toast - Glass Style */
+    .toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 3000;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .toast {
+        background: rgba(15, 25, 45, 0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-left: 3px solid #22c55e;
+        padding: 12px 20px;
+        border-radius: 10px;
+        color: #f1f5f9;
+        font-size: 12px;
+        font-weight: 500;
+        animation: slideInRight 0.3s ease;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    
+    .toast.toast-error {
+        border-left-color: #ef4444;
+    }
+    
+    .toast.toast-info {
+        border-left-color: #3b82f6;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Back Button - Glass Style */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 16px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #cbd5e1;
+        text-decoration: none;
+        background: rgba(59, 130, 246, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .back-link:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+        transform: translateX(-4px);
+        text-decoration: none;
+        color: #f1f5f9;
+    }
+    
+    /* Responsive */
+    @media (max-width: 640px) {
+        .upload-body {
+            padding: 20px;
+        }
+        
+        .dropzone {
+            padding: 32px 16px;
+        }
+        
+        .preview-info {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .upload-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .upload-header h2 {
+            font-size: 18px;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-6">
-            <div class="card p-4">
-                <h2 style="margin-bottom: 24px;">Upload Photo</h2>
-                
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="text-center" style="margin-bottom: 24px;">
-                        <div id="preview" style="margin-bottom: 16px; display: none;">
-                            <img id="preview-img" style="max-width: 100%; border-radius: 12px;">
-                        </div>
-                        <label for="image" class="btn btn-secondary" style="cursor: pointer;">Choose Image</label>
-                        <input type="file" id="image" name="image" accept="image/*" style="display: none;" required>
-                        <p class="text-muted" style="margin-top: 8px; font-size: 0.75rem;">JPG, PNG, GIF, WEBP up to 10MB</p>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Caption</label>
-                        <textarea name="caption" class="form-control" rows="4" placeholder="Write a caption..."></textarea>
-                    </div>
-                    
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Upload</button>
-                        <a href="{% url 'frontend:feed' %}" class="btn btn-secondary">Cancel</a>
-                    </div>
-                </form>
+<div class="upload-container">
+    <!-- Back Button -->
+    <a href="javascript:history.back()" class="back-link">
+        ← Back
+    </a>
+    
+    <div class="upload-card">
+        <div class="upload-header">
+            <h2>Upload photo</h2>
+            <div class="header-actions">
+                <a href="{% url 'frontend:upload_video' %}" class="header-btn">
+                    Upload video
+                </a>
             </div>
+        </div>
+        
+        <div class="upload-body">
+            <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                {% csrf_token %}
+                
+                <!-- Dropzone -->
+                <div class="dropzone" id="dropzone">
+                    <h3>Drag and drop your photo here</h3>
+                    <p>or</p>
+                    <button type="button" class="dropzone-btn" id="selectFileBtn">
+                        Choose file
+                    </button>
+                    <input type="file" id="fileInput" name="image" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" style="display: none;">
+                </div>
+                
+                <!-- Preview -->
+                <div class="preview-section" id="previewSection">
+                    <div class="preview-card">
+                        <img id="previewImage" class="preview-image" src="" alt="Preview">
+                        <div class="preview-info">
+                            <div class="preview-details">
+                                <div class="file-name" id="fileName"></div>
+                                <div class="file-size" id="fileSize"></div>
+                            </div>
+                            <div class="preview-actions">
+                                <button type="button" class="btn-sm" id="changeFileBtn">Change</button>
+                                <button type="button" class="btn-sm" id="removeFileBtn">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Requirements -->
+                <div class="requirements">
+                    <h4>Requirements</h4>
+                    <ul>
+                        <li id="reqFormat" class="invalid">JPG, PNG, GIF, WEBP, BMP formats</li>
+                        <li id="reqSize" class="invalid">Maximum file size: 10MB</li>
+                        <li id="reqDimensions" class="invalid">Square images recommended</li>
+                    </ul>
+                </div>
+                
+                <!-- Caption -->
+                <div class="form-group">
+                    <label class="form-label">Caption</label>
+                    <textarea name="caption" class="form-control" id="captionInput" rows="4" placeholder="Write a caption for your photo..."></textarea>
+                    <div class="char-counter" id="charCounter">0 / 500 characters</div>
+                    <div class="form-hint">Optional. Add a caption to describe your photo.</div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'frontend:feed' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Upload photo</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
+<!-- Toast Container -->
+<div class="toast-container"></div>
+
 <script>
-document.getElementById('image').addEventListener('change', function(e) {
+// DOM Elements
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const selectFileBtn = document.getElementById('selectFileBtn');
+const previewSection = document.getElementById('previewSection');
+const previewImage = document.getElementById('previewImage');
+const fileName = document.getElementById('fileName');
+const fileSize = document.getElementById('fileSize');
+const changeFileBtn = document.getElementById('changeFileBtn');
+const removeFileBtn = document.getElementById('removeFileBtn');
+const submitBtn = document.getElementById('submitBtn');
+const uploadForm = document.getElementById('uploadForm');
+const captionInput = document.getElementById('captionInput');
+const charCounter = document.getElementById('charCounter');
+
+// Requirement elements
+const reqFormat = document.getElementById('reqFormat');
+const reqSize = document.getElementById('reqSize');
+const reqDimensions = document.getElementById('reqDimensions');
+
+let currentFile = null;
+
+// Helper Functions
+function showToast(message, type = 'success') {
+    const container = document.querySelector('.toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function updateCharCounter() {
+    const length = captionInput.value.length;
+    const max = 500;
+    charCounter.textContent = `${length} / ${max} characters`;
+    
+    if (length > max) {
+        charCounter.classList.add('danger');
+        charCounter.classList.remove('warning');
+    } else if (length > max * 0.8) {
+        charCounter.classList.add('warning');
+        charCounter.classList.remove('danger');
+    } else {
+        charCounter.classList.remove('warning', 'danger');
+    }
+}
+
+function validateFile(file) {
+    let isValid = true;
+    
+    const validFormats = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
+    const isFormatValid = validFormats.includes(file.type);
+    
+    if (isFormatValid) {
+        reqFormat.className = 'valid';
+    } else {
+        reqFormat.className = 'invalid';
+        isValid = false;
+    }
+    
+    const maxSize = 10 * 1024 * 1024;
+    const isSizeValid = file.size <= maxSize;
+    
+    if (isSizeValid) {
+        reqSize.className = 'valid';
+    } else {
+        reqSize.className = 'invalid';
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function updateDimensions(file) {
+    const img = new Image();
+    img.onload = function() {
+        const isSquare = Math.abs(img.width - img.height) < 100;
+        
+        if (isSquare) {
+            reqDimensions.className = 'valid';
+        } else {
+            reqDimensions.className = 'invalid';
+        }
+    };
+    img.src = URL.createObjectURL(file);
+}
+
+function displayPreview(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        previewImage.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    
+    fileName.textContent = file.name;
+    fileSize.textContent = formatFileSize(file.size);
+    previewSection.classList.add('active');
+    dropzone.style.display = 'none';
+}
+
+function clearPreview() {
+    previewSection.classList.remove('active');
+    dropzone.style.display = 'block';
+    previewImage.src = '';
+    fileName.textContent = '';
+    fileSize.textContent = '';
+    currentFile = null;
+    fileInput.value = '';
+    submitBtn.disabled = true;
+    
+    reqFormat.className = 'invalid';
+    reqSize.className = 'invalid';
+    reqDimensions.className = 'invalid';
+}
+
+function handleFile(file) {
+    if (!file) return;
+    
+    const isValid = validateFile(file);
+    
+    if (isValid) {
+        currentFile = file;
+        displayPreview(file);
+        updateDimensions(file);
+        submitBtn.disabled = false;
+    } else {
+        showToast('Please fix the issues above before uploading', 'error');
+        clearPreview();
+    }
+}
+
+// Event Listeners
+selectFileBtn.addEventListener('click', () => {
+    fileInput.click();
+});
+
+changeFileBtn.addEventListener('click', () => {
+    fileInput.click();
+});
+
+removeFileBtn.addEventListener('click', () => {
+    clearPreview();
+});
+
+fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('preview-img').src = e.target.result;
-            document.getElementById('preview').style.display = 'block';
-        }
-        reader.readAsDataURL(file);
+        handleFile(file);
     }
+});
+
+// Drag and drop
+dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('drag-over');
+});
+
+dropzone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('drag-over');
+});
+
+dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('drag-over');
+    
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        handleFile(file);
+    } else {
+        showToast('Please drop an image file', 'error');
+    }
+});
+
+// Caption character counter
+captionInput.addEventListener('input', updateCharCounter);
+updateCharCounter();
+
+// Form submission
+uploadForm.addEventListener('submit', function(e) {
+    if (!currentFile) {
+        e.preventDefault();
+        showToast('Please select a photo to upload', 'error');
+        return;
+    }
+    
+    const isValid = validateFile(currentFile);
+    if (!isValid) {
+        e.preventDefault();
+        showToast('Please fix the validation issues', 'error');
+        return;
+    }
+    
+    const captionLength = captionInput.value.length;
+    if (captionLength > 500) {
+        e.preventDefault();
+        showToast('Caption exceeds 500 characters', 'error');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Uploading...';
+    showToast('Uploading your photo...', 'info');
 });
 </script>
 {% endblock %}

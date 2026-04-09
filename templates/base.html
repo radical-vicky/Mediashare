@@ -2,902 +2,749 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>{% block title %}MediaShare{% endblock %}</title>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VibeGaze{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0d1117;
-            min-height: 100vh;
-            color: #e6edf3;
+            color: #f1f5f9;
             line-height: 1.5;
+            min-height: 100vh;
+            position: relative;
         }
-        
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 32px;
+
+        /* Background overlay for better text readability */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            pointer-events: none;
+            z-index: 0;
         }
-        
-        /* GitHub-style Navigation */
+
+        /* Background media container */
+        .background-media {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .background-media img,
+        .background-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Fallback gradient if no media */
+        .background-fallback {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0e1a 0%, #0f172a 50%, #1e1b4b 100%);
+            z-index: -3;
+        }
+
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(15, 25, 45, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+        }
+
+        /* Enhanced Navbar */
         .navbar {
-            background: #010409;
-            border-bottom: 1px solid #30363d;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 16px 24px;
             position: sticky;
             top: 0;
-            z-index: 1000;
-            padding: 12px 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
-        
-        .navbar .container {
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 16px;
         }
-        
-        .navbar-brand {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #f0f6fc;
+
+        /* Blue and White Site Name */
+        .nav-logo a {
             text-decoration: none;
-            letter-spacing: -0.02em;
-        }
-        
-        .navbar-brand:hover {
-            color: #2f81f7;
-        }
-        
-        .navbar-nav {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            list-style: none;
-        }
-        
-        .nav-link {
-            color: #e6edf3;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.875rem;
-            transition: color 0.2s ease;
-            padding: 8px 0;
-            position: relative;
-        }
-        
-        .nav-link:hover {
-            color: #2f81f7;
-        }
-        
-        /* GitHub-style Search */
-        .search-form {
-            display: flex;
-            align-items: center;
-            background: #0d1117;
-            border-radius: 6px;
-            padding: 4px 12px;
-            border: 1px solid #30363d;
-        }
-        
-        .search-form:focus-within {
-            border-color: #2f81f7;
-            outline: none;
-        }
-        
-        .search-input {
-            background: transparent;
-            border: none;
-            color: #e6edf3;
-            font-size: 0.875rem;
-            padding: 8px 8px;
-            width: 240px;
-            outline: none;
-        }
-        
-        .search-input::placeholder {
-            color: #7d8590;
-        }
-        
-        .search-button {
-            background: transparent;
-            border: none;
-            color: #7d8590;
-            cursor: pointer;
-            font-size: 0.875rem;
-            padding: 4px 8px;
-        }
-        
-        .search-button:hover {
-            color: #2f81f7;
-        }
-        
-        /* GitHub-style Dropdown */
-        .dropdown {
-            position: relative;
-        }
-        
-        .dropdown-toggle {
-            background: transparent;
-            border: none;
-            color: #e6edf3;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.875rem;
-            padding: 8px 0;
-        }
-        
-        .dropdown-toggle:hover {
-            color: #2f81f7;
-        }
-        
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 8px 0;
-            min-width: 180px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-8px);
-            transition: all 0.15s ease;
-            z-index: 100;
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
-        }
-        
-        .dropdown:hover .dropdown-menu,
-        .dropdown:focus-within .dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .dropdown-item {
-            display: block;
-            padding: 8px 16px;
-            color: #e6edf3;
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: background 0.15s ease;
-        }
-        
-        .dropdown-item:hover {
-            background: #21262d;
-            color: #2f81f7;
-        }
-        
-        .dropdown-divider {
-            height: 1px;
-            background: #30363d;
-            margin: 8px 0;
-        }
-        
-        /* GitHub-style Cards */
-        .card {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            overflow: hidden;
-            transition: border-color 0.2s ease;
-        }
-        
-        .card:hover {
-            border-color: #2f81f7;
-        }
-        
-        /* GitHub-style Buttons */
-        .btn {
+            font-weight: 800;
+            font-size: 28px;
+            letter-spacing: -0.5px;
+            transition: all 0.2s ease;
             display: inline-block;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 0.875rem;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            border: none;
-            font-family: inherit;
         }
         
-        .btn-primary {
-            background: #238636;
-            color: white;
+        /* Blue part */
+        .nav-logo .blue {
+            color: #3b82f6;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
         }
         
-        .btn-primary:hover {
-            background: #2ea043;
+        /* White part */
+        .nav-logo .white {
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
         
-        .btn-secondary {
-            background: #21262d;
-            color: #e6edf3;
-            border: 1px solid #30363d;
+        /* Gradient option - Blue to White gradient */
+        .nav-logo .gradient {
+            background: linear-gradient(135deg, #3b82f6, #ffffff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
-        
-        .btn-secondary:hover {
-            background: #30363d;
-        }
-        
-        .btn-outline {
-            background: transparent;
-            border: 1px solid #30363d;
-            color: #e6edf3;
-        }
-        
-        .btn-outline:hover {
-            border-color: #2f81f7;
-            color: #2f81f7;
-        }
-        
-        .btn-danger {
-            background: #da3633;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #f85149;
-        }
-        
-        .btn-success {
-            background: #238636;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #2ea043;
-        }
-        
-        /* GitHub-style Alerts */
-        .alert {
-            padding: 12px 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            border-left: 3px solid;
-        }
-        
-        .alert-success {
-            background: #0d4429;
-            border-left-color: #238636;
-            color: #b9f3ce;
-        }
-        
-        .alert-error {
-            background: #49181b;
-            border-left-color: #da3633;
-            color: #ffb4b4;
-        }
-        
-        .alert-info {
-            background: #152f52;
-            border-left-color: #2f81f7;
-            color: #b0d4ff;
-        }
-        
-        .alert-warning {
-            background: #4a3c1a;
-            border-left-color: #d29922;
-            color: #ffdfb0;
-        }
-        
-        /* GitHub-style Avatar */
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        
-        .avatar-sm {
-            width: 28px;
-            height: 28px;
-        }
-        
-        .avatar-lg {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #30363d;
-        }
-        
-        /* GitHub-style Badge */
-        .badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        
-        .badge-primary {
-            background: #152f52;
-            color: #2f81f7;
-        }
-        
-        .badge-success {
-            background: #0d4429;
-            color: #238636;
-        }
-        
-        .badge-danger {
-            background: #49181b;
-            color: #da3633;
-        }
-        
-        /* Media Container */
-        .media-container {
-            position: relative;
-            overflow: hidden;
-            background: #010409;
-            cursor: pointer;
-        }
-        
-        .media-container img,
-        .media-container video {
-            width: 100%;
-            height: 280px;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-        
-        .media-container:hover img,
-        .media-container:hover video {
+
+        .nav-logo a:hover {
             transform: scale(1.02);
+            opacity: 0.95;
         }
-        
-        /* Stats */
-        .stats {
+
+        .nav-links {
             display: flex;
-            gap: 24px;
-            margin: 16px 0;
-            color: #7d8590;
-            font-size: 0.875rem;
-        }
-        
-        /* Comments */
-        .comment-section {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .comment {
-            padding: 12px 0;
-            border-bottom: 1px solid #21262d;
-        }
-        
-        .comment:last-child {
-            border-bottom: none;
-        }
-        
-        /* Form Controls */
-        .form-control {
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 10px 12px;
-            color: #e6edf3;
-            font-family: inherit;
-            font-size: 0.875rem;
-            width: 100%;
-            outline: none;
-            transition: all 0.15s ease;
-        }
-        
-        .form-control:focus {
-            border-color: #2f81f7;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.3);
-        }
-        
-        textarea.form-control {
-            resize: vertical;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            font-size: 0.875rem;
-            color: #e6edf3;
-        }
-        
-        /* Grid */
-        .row {
-            display: flex;
+            gap: 28px;
+            list-style: none;
             flex-wrap: wrap;
-            margin: -12px;
+            align-items: center;
         }
-        
-        .col {
-            flex: 1;
-            padding: 12px;
-        }
-        
-        .col-3 { width: 25%; padding: 12px; }
-        .col-4 { width: 33.333%; padding: 12px; }
-        .col-6 { width: 50%; padding: 12px; }
-        .col-8 { width: 66.666%; padding: 12px; }
-        .col-12 { width: 100%; padding: 12px; }
-        
-        @media (max-width: 768px) {
-            .col-3, .col-4 { width: 50%; }
-            .navbar .container { flex-direction: column; }
-            .search-form { width: 100%; }
-            .search-input { width: 100%; }
-            .container { padding: 0 16px; }
-        }
-        
-        @media (max-width: 480px) {
-            .col-3, .col-4, .col-6 { width: 100%; }
-        }
-        
-        /* GitHub-style Tabs */
-        .nav-tabs {
-            display: flex;
-            gap: 0;
-            border-bottom: 1px solid #30363d;
-            margin-bottom: 24px;
-        }
-        
-        .nav-tab {
-            background: transparent;
-            border: none;
-            padding: 8px 16px;
-            color: #7d8590;
-            font-weight: 500;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            font-family: inherit;
-        }
-        
-        .nav-tab:hover {
-            color: #e6edf3;
-        }
-        
-        .nav-tab.active {
-            color: #f0f6fc;
-            border-bottom: 2px solid #2f81f7;
-        }
-        
-        /* Footer */
-        .footer {
-            background: #010409;
-            border-top: 1px solid #30363d;
-            padding: 48px 0 32px;
-            margin-top: 60px;
-        }
-        
-        .footer a {
-            color: #7d8590;
+
+        /* Regular nav links */
+        .nav-links a:not(.btn-signin):not(.btn-register) {
+            color: #f1f5f9;
             text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            position: relative;
         }
-        
-        .footer a:hover {
-            color: #2f81f7;
+
+        .nav-links a:not(.btn-signin):not(.btn-register):hover {
+            color: #3b82f6;
         }
-        
-        /* Toast */
-        .toast-container {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 1100;
+
+        .nav-links a:not(.btn-signin):not(.btn-register)::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: width 0.2s ease;
         }
-        
-        .toast {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 10px 16px;
-            margin-top: 8px;
-            animation: slideIn 0.2s ease;
-            color: #e6edf3;
-            font-size: 0.875rem;
+
+        .nav-links a:not(.btn-signin):not(.btn-register):hover::after {
+            width: 100%;
         }
-        
-        @keyframes slideIn {
+
+        /* GitHub style sign in button */
+        .btn-signin {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-signin:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+
+        /* Glass style secondary button for Register */
+        .btn-register {
+            background: rgba(59, 130, 246, 0.15);
+            backdrop-filter: blur(8px);
+            color: #f1f5f9;
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            padding: 7px 19px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .btn-register:hover {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        /* Logged in user menu */
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-menu .username {
+            color: #f1f5f9;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .user-menu .username:hover {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+        }
+
+        .logout-link {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .logout-link:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        /* Enhanced Main Container */
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Enhanced Alert Messages */
+        .alert-success {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
+            backdrop-filter: blur(12px);
+            border: 1px solid #22c55e;
+            color: #4ade80;
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+            backdrop-filter: blur(12px);
+            border: 1px solid #ef4444;
+            color: #f87171;
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+            backdrop-filter: blur(12px);
+            border: 1px solid #3b82f6;
+            color: #60a5fa;
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.1));
+            backdrop-filter: blur(12px);
+            border: 1px solid #fbbf24;
+            color: #fcd34d;
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
             from {
                 opacity: 0;
-                transform: translateX(100%);
+                transform: translateY(-20px);
             }
             to {
                 opacity: 1;
-                transform: translateX(0);
+                transform: translateY(0);
             }
         }
-        
-        /* Notification Badge Pulse Animation */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
-        
-        .notification-pulse {
-            animation: pulse 0.5s ease-in-out;
+
+        .back-link:hover {
+            color: #3b82f6;
+            transform: translateX(-4px);
         }
-        
-        /* Scrollbar - GitHub style */
+
+        /* Glass Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(59, 130, 246, 0.15);
+            backdrop-filter: blur(8px);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            backdrop-filter: blur(8px);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: #ef4444;
+            transform: translateY(-1px);
+        }
+
+        /* Glass Cards */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .photo-card {
+            background: rgba(15, 25, 45, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.6);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .photo-card-content {
+            padding: 16px;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        /* Glass Form Elements */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #cbd5e1;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(15, 25, 45, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+            color: #f1f5f9;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: rgba(15, 25, 45, 0.95);
+        }
+
+        /* Glass Comment Styles */
+        .comment-list {
+            margin-top: 24px;
+        }
+
+        .comment-item {
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .comment-text {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .comment-meta {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .comment-actions {
+            margin-top: 8px;
+        }
+
+        .comment-actions a {
+            color: #ef4444;
+            font-size: 12px;
+            text-decoration: none;
+            margin-right: 16px;
+            transition: color 0.2s ease;
+        }
+
+        .comment-actions a:hover {
+            color: #dc2626;
+        }
+
+        /* Glass Messages Container */
+        .messages-container {
+            display: flex;
+            gap: 24px;
+            min-height: 500px;
+        }
+
+        .chat-list {
+            width: 320px;
+            background: rgba(15, 25, 45, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            padding: 16px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chat-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .chat-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-left: 3px solid #3b82f6;
+        }
+
+        .chat-username {
+            font-weight: 600;
+        }
+
+        .chat-preview {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .chat-time {
+            font-size: 11px;
+            color: #64748b;
+            float: right;
+        }
+
+        .message-area {
+            flex: 1;
+            background: rgba(15, 25, 45, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .message-history {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            background: rgba(30, 41, 59, 0.8);
+            color: #f1f5f9;
+        }
+
+        .message-bubble.sent {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            align-self: flex-end;
+            color: white;
+        }
+
+        .message-input-area {
+            padding: 20px;
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+            display: flex;
+            gap: 12px;
+        }
+
+        .message-input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(15, 25, 45, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+            color: white;
+            transition: all 0.2s ease;
+        }
+
+        .message-input-area input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Scrollbar Styling */
         ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
         }
-        
+
         ::-webkit-scrollbar-track {
-            background: #0d1117;
+            background: rgba(15, 25, 45, 0.5);
+            border-radius: 4px;
         }
-        
+
         ::-webkit-scrollbar-thumb {
-            background: #30363d;
-            border-radius: 6px;
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 4px;
         }
-        
+
         ::-webkit-scrollbar-thumb:hover {
-            background: #484f58;
+            background: rgba(59, 130, 246, 0.7);
         }
-        
-        /* Utilities */
-        .text-center { text-align: center; }
-        .text-muted { color: #7d8590; }
-        .mt-2 { margin-top: 8px; }
-        .mt-3 { margin-top: 16px; }
-        .mt-4 { margin-top: 24px; }
-        .mt-5 { margin-top: 32px; }
-        .mb-2 { margin-bottom: 8px; }
-        .mb-3 { margin-bottom: 16px; }
-        .mb-4 { margin-bottom: 24px; }
-        .mb-5 { margin-bottom: 32px; }
-        .p-3 { padding: 16px; }
-        .p-4 { padding: 24px; }
-        .rounded { border-radius: 6px; }
-        .w-100 { width: 100%; }
-        .d-flex { display: flex; }
-        .justify-content-between { justify-content: space-between; }
-        .align-items-center { align-items: center; }
-        .gap-2 { gap: 8px; }
-        .gap-3 { gap: 16px; }
-        
-        {% block extra_css %}{% endblock %}
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 16px;
+            }
+            .photo-grid {
+                grid-template-columns: 1fr;
+            }
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            .messages-container {
+                flex-direction: column;
+            }
+            .chat-list {
+                width: 100%;
+                max-height: 300px;
+            }
+            .btn-signin, .btn-register {
+                padding: 6px 14px;
+                font-size: 13px;
+            }
+            .main-container {
+                padding: 20px 16px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
+    <!-- Background Media from Database -->
+    {% if background_media %}
+    <div class="background-media">
+        {% if background_media.media_type == 'image' %}
+            <img src="{{ background_media.file.url }}" alt="Background">
+        {% elif background_media.media_type == 'video' %}
+            <video autoplay muted loop playsinline>
+                <source src="{{ background_media.file.url }}" type="video/mp4">
+            </video>
+        {% endif %}
+    </div>
+    {% endif %}
+    <div class="background-fallback"></div>
+
     <nav class="navbar">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'frontend:home' %}">
-                <i class="fas fa-camera" style="margin-right: 8px;"></i>
-                MediaShare
-            </a>
-            
-            <form class="search-form" method="GET" action="{% url 'frontend:feed' %}">
-                <input type="search" name="search" class="search-input" placeholder="Search users or content..." aria-label="Search">
-                <button type="submit" class="search-button">
-                    <i class="fas fa-search"></i>
-                </button>
-            </form>
-            
-            <ul class="navbar-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">
+                    <span class="blue">Vibe</span><span class="white">Gaze</span>
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/feed/">Explore</a></li>
                 {% if user.is_authenticated %}
-                    <li><a class="nav-link" href="{% url 'frontend:feed' %}">
-                        <i class="fas fa-rss"></i> Feed
-                    </a></li>
-                    <li class="dropdown">
-                        <button class="dropdown-toggle">
-                            <i class="fas fa-upload"></i> Upload
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="{% url 'frontend:upload_photo' %}">
-                                <i class="fas fa-image"></i> Upload Photo
-                            </a>
-                            <a class="dropdown-item" href="{% url 'frontend:upload_video' %}">
-                                <i class="fas fa-video"></i> Upload Video
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <a class="nav-link" href="{% url 'frontend:inbox' %}" id="messagesNavLink">
-                            <i class="fas fa-envelope"></i> Messages
-                            <span id="globalUnreadBadge" class="badge" style="background: #da3633; color: white; margin-left: 4px; display: none;">0</span>
-                        </a>
-                    </li>
-                    <li><a class="nav-link" href="{% url 'frontend:calls_history' %}">
-                        <i class="fas fa-phone"></i> Calls
-                    </a></li>
-                    <li class="dropdown">
-                        <button class="dropdown-toggle">
-                            {% if user.profile.avatar %}
-                                <img src="{{ user.profile.avatar.url }}" class="avatar avatar-sm" style="vertical-align: middle;">
-                            {% else %}
-                                <i class="fas fa-user-circle" style="font-size: 1.25rem; vertical-align: middle;"></i>
-                            {% endif %}
-                            <span style="margin-left: 4px;">{{ user.username }}</span>
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="{% url 'frontend:user_profile' user.username %}">
-                                <i class="fas fa-user"></i> Profile
-                            </a>
-                            <a class="dropdown-item" href="{% url 'frontend:edit_profile' %}">
-                                <i class="fas fa-cog"></i> Settings
-                            </a>
-                            <a class="dropdown-item" href="{% url 'frontend:call_settings' %}">
-                                <i class="fas fa-phone-alt"></i> Call Settings
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{% url 'account_logout' %}">
-                                <i class="fas fa-sign-out-alt"></i> Sign out
-                            </a>
-                        </div>
-                    </li>
+                    <li><a href="/upload/photo/">Share</a></li>
+                    <li><a href="/messages/inbox/">DMs</a></li>
+                    <li><a href="{% url 'frontend:user_profile' username=user.username %}">My Vibe</a></li>
+                    <li><a href="{% url 'account_logout' %}" class="logout-link">Sign-Out</a></li>
+
                 {% else %}
-                    <li><a class="nav-link" href="{% url 'account_login' %}">
-                        <i class="fas fa-sign-in-alt"></i> Sign in
-                    </a></li>
-                    <li><a class="btn btn-primary" href="{% url 'account_signup' %}">
-                        <i class="fas fa-user-plus"></i> Sign up
-                    </a></li>
+                    <li><a href="/accounts/signup/" class="btn-register">Sign up</a></li>
+                    <li><a href="/accounts/login/" class="btn-signin">Sign in</a></li>
                 {% endif %}
             </ul>
         </div>
     </nav>
-    
-    <div class="container" style="margin-top: 24px;">
+
+    <div class="main-container">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
-                    {{ message }}
-                </div>
+                {% if "Message from" not in message.message and "Chat with" not in message.message %}
+                    <div class="alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endif %}
             {% endfor %}
         {% endif %}
-    </div>
-    
-    <main>
+
+        {% block back_link %}{% endblock %}
         {% block content %}{% endblock %}
-    </main>
-    
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-4">
-                    <h4 style="margin-bottom: 16px; font-size: 1rem;">MediaShare</h4>
-                    <p class="text-muted" style="font-size: 0.875rem;">Share your moments with the world. Connect with creators and discover amazing content.</p>
-                </div>
-                <div class="col-4">
-                    <h5 style="margin-bottom: 16px; font-size: 0.875rem;">Quick Links</h5>
-                    <ul style="list-style: none;">
-                        <li><a href="{% url 'frontend:feed' %}" class="text-muted">Feed</a></li>
-                        <li class="mt-2"><a href="{% url 'frontend:home' %}" class="text-muted">Home</a></li>
-                        <li class="mt-2"><a href="#" class="text-muted">About</a></li>
-                        <li class="mt-2"><a href="#" class="text-muted">Terms</a></li>
-                        <li class="mt-2"><a href="#" class="text-muted">Privacy</a></li>
-                    </ul>
-                </div>
-                <div class="col-4">
-                    <h5 style="margin-bottom: 16px; font-size: 0.875rem;">Connect</h5>
-                    <div class="d-flex gap-3">
-                        <a href="#" class="text-muted"><i class="fab fa-twitter"></i> Twitter</a>
-                        <a href="#" class="text-muted"><i class="fab fa-instagram"></i> Instagram</a>
-                        <a href="#" class="text-muted"><i class="fab fa-github"></i> GitHub</a>
-                    </div>
-                </div>
-            </div>
-            <div class="text-center" style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #21262d;">
-                <small class="text-muted">&copy; 2026 MediaShare. All rights reserved.</small>
-            </div>
-        </div>
-    </footer>
-    
-    <div class="toast-container"></div>
-    
-    <script>
-        // CSRF Token setup
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        
-        const csrftoken = getCookie('csrftoken');
-        
-        // Show toast notification
-        function showToast(message, type = 'success') {
-            const toastContainer = document.querySelector('.toast-container');
-            if (!toastContainer) return;
-            
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="margin-right: 8px;"></i>
-                ${message}
-            `;
-            toastContainer.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-        
-        // Global unread message count updater
-        function updateGlobalUnreadCount() {
-            fetch('/messages/unread-count/', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                const badge = document.getElementById('globalUnreadBadge');
-                if (badge) {
-                    if (data.unread_count > 0) {
-                        badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
-                        badge.style.display = 'inline-block';
-                        badge.classList.add('notification-pulse');
-                        setTimeout(() => badge.classList.remove('notification-pulse'), 500);
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                }
-            })
-            .catch(error => console.error('Error fetching unread count:', error));
-        }
-        
-        // Request notification permission
-        function requestNotificationPermission() {
-            if ('Notification' in window) {
-                Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') {
-                        console.log('Notification permission granted');
-                    }
-                });
-            }
-        }
-        
-        // Like functionality
-        document.querySelectorAll('.like-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const url = this.dataset.url;
-                const countSpan = this.querySelector('.likes-count');
-                const icon = this.querySelector('i');
-                
-                fetch(url, {
-                    method: 'POST',
-                    headers: { 
-                        'X-CSRFToken': csrftoken,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.liked) {
-                        this.classList.add('liked');
-                        if (icon) icon.style.color = '#db61a2';
-                    } else {
-                        this.classList.remove('liked');
-                        if (icon) icon.style.color = '';
-                    }
-                    if (countSpan) countSpan.textContent = data.count;
-                    showToast(data.liked ? 'Liked!' : 'Unliked');
-                })
-                .catch(error => console.error('Error:', error));
-            });
-        });
-        
-        // Follow functionality
-        document.querySelectorAll('.follow-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const url = this.dataset.url;
-                const followersSpan = document.getElementById('followers-count');
-                const originalText = this.textContent;
-                
-                this.disabled = true;
-                this.textContent = 'Loading...';
-                
-                fetch(url, {
-                    method: 'POST',
-                    headers: { 
-                        'X-CSRFToken': csrftoken,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.followed) {
-                        this.textContent = 'Following';
-                        this.classList.remove('btn-primary');
-                        this.classList.add('btn-success');
-                        showToast(`You are now following ${this.dataset.username || 'this user'}`);
-                    } else {
-                        this.textContent = 'Follow';
-                        this.classList.remove('btn-success');
-                        this.classList.add('btn-primary');
-                        showToast(`You unfollowed ${this.dataset.username || 'this user'}`);
-                    }
-                    if (followersSpan) followersSpan.textContent = data.count;
-                    this.disabled = false;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    this.textContent = originalText;
-                    this.disabled = false;
-                    showToast('An error occurred', 'error');
-                });
-            });
-        });
-        
-        // Auto-dismiss alerts after 5 seconds
-        document.querySelectorAll('.alert').forEach(alert => {
-            setTimeout(() => {
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 300);
-            }, 5000);
-        });
-        
-        // Update unread count every 30 seconds
-        setInterval(updateGlobalUnreadCount, 30000);
-        
-        // Initial load of unread count
-        if (document.getElementById('messagesNavLink')) {
-            updateGlobalUnreadCount();
-        }
-        
-        // Handle keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            // Alt + S focus search
-            if (e.altKey && e.key === 's') {
-                e.preventDefault();
-                document.querySelector('.search-input')?.focus();
-            }
-            // Alt + N new post
-            if (e.altKey && e.key === 'n') {
-                e.preventDefault();
-                window.location.href = '/upload/photo/';
-            }
-            // Alt + M go to messages
-            if (e.altKey && e.key === 'm') {
-                e.preventDefault();
-                window.location.href = '/messages/inbox/';
-            }
-        });
-        
-        // Track page visibility
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                // Page became visible, update unread count
-                updateGlobalUnreadCount();
-            }
-        });
-        
-        // Request notification permission on page load (optional - can be triggered by user action)
-        // Uncomment the line below to request permission automatically
-        // if (Notification && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-        //     setTimeout(requestNotificationPermission, 3000);
-        // }
-    </script>
-    
-    {% block extra_js %}{% endblock %}
+    </div>
+
+    {% block scripts %}{% endblock %}
 </body>
 </html>

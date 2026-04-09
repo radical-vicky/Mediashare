@@ -1,4 +1,4 @@
-from .models import MessageThread, Message
+from .models import BackgroundMedia, MessageThread, Message
 
 def unread_messages_count(request):
     """Add unread message count to all templates"""
@@ -11,3 +11,8 @@ def unread_messages_count(request):
                 is_read=False
             ).exclude(sender=request.user).count()
     return {'unread_thread_count': unread_count}
+
+
+def background_media(request):
+    media = BackgroundMedia.objects.filter(is_active=True).first()
+    return {'background_media': media}

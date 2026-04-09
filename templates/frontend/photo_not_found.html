@@ -1,85 +1,255 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Photo Not Found - MediaShare{% endblock %}
+{% block title %}User not found - MediaShare{% endblock %}
 
-{% block content %}
-<div class="container" style="text-align: center; padding: 60px 20px;">
-    <div class="empty-icon" style="font-size: 80px; margin-bottom: 24px;">📷❌</div>
-    <h1 style="font-size: 32px; margin-bottom: 16px;">Photo Not Found</h1>
-    <p style="color: #7d8590; font-size: 18px; margin-bottom: 32px;">
-        {{ error_message|default:"The photo you're looking for doesn't exist or has been removed." }}
-    </p>
-    
-    {% if suggestions %}
-        <div style="margin-top: 48px;">
-            <h3 style="margin-bottom: 24px;">You might like these photos instead</h3>
-            <div class="premium-grid" style="max-width: 800px; margin: 0 auto;">
-                {% for suggestion in suggestions %}
-                    <a href="{% url 'frontend:photo_detail' suggestion.id %}" class="premium-card">
-                        <img src="{{ suggestion.image.url }}" alt="{{ suggestion.caption|default:'Photo' }}" class="premium-image" loading="lazy">
-                        <div class="premium-info">
-                            <div class="premium-user">{{ suggestion.author.username }}</div>
-                            <div class="premium-title">{{ suggestion.caption|truncatechars:50|default:"Untitled" }}</div>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
-        </div>
-    {% endif %}
-    
-    <div style="margin-top: 48px;">
-        <a href="{% url 'frontend:feed' %}" class="btn btn-primary">Browse Feed</a>
-        <a href="{% url 'frontend:upload_photo' %}" class="btn btn-secondary" style="margin-left: 12px;">Upload a Photo</a>
-    </div>
-</div>
-
+{% block extra_head %}
 <style>
-    .premium-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 24px;
+    /* ============================================
+       NOT FOUND PAGE - BLUE GLASS THEME
+       ============================================ */
+    
+    .error-container {
+        max-width: 600px;
+        margin: 80px auto;
+        padding: 0 24px;
     }
     
-    .premium-card {
-        background: #161b22;
-        border: 1px solid #30363d;
-        border-radius: 8px;
+    .error-card {
+        background: rgba(15, 25, 45, 0.65);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 16px;
         overflow: hidden;
+        text-align: center;
+        padding: 48px 32px;
+    }
+    
+    .error-code {
+        font-size: 80px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #f1f5f9, #60a5fa);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        letter-spacing: -2px;
+        margin-bottom: 16px;
+    }
+    
+    .error-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin-bottom: 12px;
+    }
+    
+    .error-message {
+        font-size: 14px;
+        color: #94a3b8;
+        margin-bottom: 32px;
+        line-height: 1.5;
+    }
+    
+    .error-details {
+        background: rgba(13, 17, 23, 0.8);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 10px;
+        padding: 16px;
+        margin: 24px 0;
+        text-align: left;
+    }
+    
+    .error-details p {
+        font-size: 13px;
+        color: #cbd5e1;
+        margin: 8px 0;
+        font-family: monospace;
+    }
+    
+    .error-details strong {
+        color: #f1f5f9;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: 24px 0;
+    }
+    
+    .github-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 8px;
         transition: all 0.2s ease;
+        cursor: pointer;
         text-decoration: none;
-        display: block;
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #cbd5e1;
     }
     
-    .premium-card:hover {
-        transform: translateY(-4px);
-        border-color: #2f81f7;
+    .github-btn:hover {
+        background: rgba(59, 130, 246, 0.25);
+        transform: translateY(-1px);
     }
     
-    .premium-image {
-        width: 100%;
-        aspect-ratio: 3/4;
-        object-fit: cover;
+    .github-btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        border-color: #3b82f6;
+        color: white;
     }
     
-    .premium-info {
-        padding: 12px;
+    .github-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
     }
     
-    .premium-user {
+    .github-btn-outline {
+        background: transparent;
+        border-color: #3b82f6;
+        color: #60a5fa;
+    }
+    
+    .github-btn-outline:hover {
+        background: rgba(59, 130, 246, 0.15);
+    }
+    
+    /* Search Box */
+    .search-box {
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .search-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: #cbd5e1;
+        margin-bottom: 12px;
+    }
+    
+    .search-form {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .search-input {
+        flex: 1;
+        background: rgba(13, 17, 23, 0.8);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        padding: 10px 14px;
         font-size: 13px;
-        color: #2f81f7;
-        margin-bottom: 4px;
+        color: #f1f5f9;
     }
     
-    .premium-title {
-        font-size: 13px;
-        color: #7d8590;
+    .search-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
     
-    @media (max-width: 768px) {
-        .premium-grid {
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    /* Toast */
+    .github-toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(15, 25, 45, 0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-left: 3px solid #22c55e;
+        padding: 12px 20px;
+        border-radius: 10px;
+        color: #f1f5f9;
+        font-size: 12px;
+        font-weight: 500;
+        z-index: 1000;
+        animation: slideInRight 0.3s ease;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    
+    .github-toast.error {
+        border-left-color: #ef4444;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Responsive */
+    @media (max-width: 640px) {
+        .error-container {
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+        
+        .error-card {
+            padding: 32px 20px;
+        }
+        
+        .error-code {
+            font-size: 60px;
+        }
+        
+        .error-title {
+            font-size: 20px;
+        }
+        
+        .search-form {
+            flex-direction: column;
         }
     }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-card">
+        <div class="error-code">404</div>
+        <h1 class="error-title">User not found</h1>
+        <p class="error-message">
+            {{ error_message|default:"The user you're looking for doesn't exist." }}
+        </p>
+        
+        {% if username %}
+        <div class="error-details">
+            <p><strong>Username:</strong> @{{ username }}</p>
+            <p><strong>Status:</strong> <span style="color: #ef4444;">Not found</span></p>
+            <p><strong>Suggestion:</strong> The user may have deleted their account or the username is incorrect.</p>
+        </div>
+        {% endif %}
+        
+        <div class="action-buttons">
+            <a href="{% url 'frontend:feed' %}" class="github-btn github-btn-primary">
+                Go to Feed
+            </a>
+            <a href="javascript:history.back()" class="github-btn github-btn-outline">
+                Go Back
+            </a>
+        </div>
+        
+        <div class="search-box">
+            <div class="search-title">Search for another user</div>
+            <form method="GET" action="{% url 'frontend:feed' %}" class="search-form">
+                <input type="text" name="q" placeholder="Search by username..." class="search-input">
+                <button type="submit" class="github-btn github-btn-primary">
+                    Search
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

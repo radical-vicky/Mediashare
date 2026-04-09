@@ -1,507 +1,854 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Upload Video - MediaShare{% endblock %}
+{% block title %}Upload video - MediaShare{% endblock %}
 
-{% block extra_css %}
+{% block extra_head %}
 <style>
+    /* ============================================
+       UPLOAD VIDEO - BLUE GLASS THEME
+       ============================================ */
+    
     .upload-container {
-        max-width: 600px;
-        margin: 50px auto;
-        padding: 30px;
-        background: #161b22;
-        border-radius: 16px;
-        border: 1px solid #30363d;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 16px;
     }
     
-    .upload-area {
-        border: 2px dashed #30363d;
-        border-radius: 12px;
-        padding: 40px;
+    /* Glass Card */
+    .upload-card {
+        background: rgba(15, 25, 45, 0.65);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 16px;
+        overflow: hidden;
+        margin: 24px 0;
+    }
+    
+    .upload-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        background: rgba(10, 14, 26, 0.5);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .upload-header h2 {
+        font-size: 20px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #f1f5f9, #60a5fa);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin: 0;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .header-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+        background: rgba(59, 130, 246, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #cbd5e1;
+    }
+    
+    .header-btn:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+        transform: translateY(-2px);
+        color: #f1f5f9;
+    }
+    
+    .upload-body {
+        padding: 24px;
+    }
+    
+    /* Dropzone - Glass Style */
+    .dropzone {
+        border: 2px dashed rgba(59, 130, 246, 0.4);
+        border-radius: 16px;
+        padding: 48px 24px;
         text-align: center;
         cursor: pointer;
         transition: all 0.3s ease;
+        background: rgba(15, 25, 45, 0.4);
+        backdrop-filter: blur(8px);
+        margin-bottom: 24px;
     }
     
-    .upload-area:hover {
-        border-color: #2f81f7;
-        background: rgba(47, 129, 247, 0.05);
+    .dropzone:hover {
+        border-color: #3b82f6;
+        background: rgba(59, 130, 246, 0.1);
+        transform: translateY(-2px);
     }
     
-    .upload-area.drag-over {
-        border-color: #2f81f7;
-        background: rgba(47, 129, 247, 0.1);
+    .dropzone.drag-over {
+        border-color: #22c55e;
+        background: rgba(34, 197, 94, 0.1);
     }
     
-    .file-info {
-        margin-top: 20px;
-        padding: 15px;
-        background: #0d1117;
-        border-radius: 8px;
-        display: none;
-    }
-    
-    .file-info.active {
-        display: block;
-    }
-    
-    .progress-bar {
-        width: 100%;
-        height: 4px;
-        background: #30363d;
-        border-radius: 2px;
-        overflow: hidden;
-        margin-top: 10px;
-        display: none;
-    }
-    
-    .progress-bar.active {
-        display: block;
-    }
-    
-    .progress-fill {
-        width: 0%;
-        height: 100%;
-        background: #2f81f7;
-        transition: width 0.3s ease;
-    }
-    
-    .button-group {
-        display: flex;
-        gap: 12px;
-        margin-top: 20px;
-    }
-    
-    .upload-btn {
-        flex: 2;
-        padding: 12px;
+    .dropzone h3 {
         font-size: 16px;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin-bottom: 8px;
     }
     
-    .back-btn {
-        flex: 1;
-        padding: 12px;
-        font-size: 16px;
-        background: #21262d;
-        border: 1px solid #30363d;
-        color: #e6edf3;
-        text-decoration: none;
-        text-align: center;
-        border-radius: 6px;
-        transition: all 0.2s ease;
+    .dropzone p {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-bottom: 16px;
+    }
+    
+    .dropzone-btn {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        gap: 8px;
+        gap: 6px;
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        border: none;
+        color: white;
         cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
     }
     
-    .back-btn:hover {
-        background: #30363d;
-        border-color: #2f81f7;
-        text-decoration: none;
-        color: #2f81f7;
+    .dropzone-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
     }
     
-    /* Confirmation Modal */
-    .confirm-modal {
+    /* Preview Section */
+    .preview-section {
         display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(12px);
-        z-index: 2000;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .confirm-modal.active {
-        display: flex;
-    }
-    
-    .confirm-modal-content {
-        background: #161b22;
-        border: 1px solid #30363d;
-        border-radius: 16px;
-        max-width: 400px;
-        width: 90%;
-        padding: 24px;
-        text-align: center;
-    }
-    
-    .confirm-modal-content h3 {
-        margin-bottom: 12px;
-        color: #f0f6fc;
-    }
-    
-    .confirm-modal-content p {
         margin-bottom: 24px;
-        color: #7d8590;
     }
     
-    .confirm-buttons {
+    .preview-section.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .preview-card {
+        background: rgba(15, 25, 45, 0.6);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .preview-video {
+        width: 100%;
+        max-height: 300px;
+        background: #0f172a;
+    }
+    
+    .preview-info {
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        background: rgba(10, 14, 26, 0.5);
+    }
+    
+    .preview-details {
+        flex: 1;
+    }
+    
+    .file-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: #f1f5f9;
+        margin-bottom: 4px;
+        word-break: break-all;
+    }
+    
+    .file-size {
+        font-size: 11px;
+        color: #94a3b8;
+    }
+    
+    .file-duration {
+        font-size: 11px;
+        color: #94a3b8;
+        margin-top: 4px;
+    }
+    
+    .preview-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-sm {
+        padding: 5px 14px;
+        font-size: 11px;
+        font-weight: 500;
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 6px;
+        color: #cbd5e1;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-sm:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+        transform: translateY(-1px);
+    }
+    
+    /* Requirements - Glass Style */
+    .requirements {
+        background: rgba(15, 25, 45, 0.5);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .requirements h4 {
+        font-size: 13px;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin-bottom: 12px;
+    }
+    
+    .requirements ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .requirements li {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        padding-left: 20px;
+        position: relative;
+    }
+    
+    .requirements li::before {
+        content: '○';
+        position: absolute;
+        left: 6px;
+        color: #64748b;
+    }
+    
+    .requirements li.valid {
+        color: #22c55e;
+    }
+    
+    .requirements li.valid::before {
+        content: '●';
+        color: #22c55e;
+    }
+    
+    .requirements li.invalid {
+        color: #ef4444;
+    }
+    
+    .requirements li.invalid::before {
+        content: '○';
+        color: #ef4444;
+    }
+    
+    /* Form Elements - Glass Style */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #cbd5e1;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        background: rgba(15, 25, 45, 0.6);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 10px;
+        color: #f1f5f9;
+        font-size: 13px;
+        font-family: inherit;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        background: rgba(15, 25, 45, 0.8);
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .form-hint {
+        margin-top: 6px;
+        font-size: 11px;
+        color: #94a3b8;
+    }
+    
+    /* Character Counter */
+    .char-counter {
+        text-align: right;
+        font-size: 11px;
+        color: #94a3b8;
+        margin-top: 4px;
+    }
+    
+    .char-counter.warning {
+        color: #fbbf24;
+    }
+    
+    .char-counter.danger {
+        color: #ef4444;
+    }
+    
+    /* Action Buttons - Glass Style */
+    .form-actions {
         display: flex;
         gap: 12px;
-        justify-content: center;
+        justify-content: flex-end;
+        padding-top: 20px;
+        border-top: 1px solid rgba(59, 130, 246, 0.2);
+        margin-top: 8px;
     }
     
-    .confirm-buttons button {
-        padding: 10px 20px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        font-size: 13px;
         font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
         border: none;
     }
     
-    .confirm-leave {
-        background: #f85149;
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
         color: white;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
     }
     
-    .confirm-leave:hover {
-        background: #da3633;
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
     }
     
-    .confirm-stay {
-        background: #21262d;
-        color: #e6edf3;
-        border: 1px solid #30363d;
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
     }
     
-    .confirm-stay:hover {
-        background: #30363d;
+    .btn-secondary {
+        background: rgba(59, 130, 246, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #cbd5e1;
+    }
+    
+    .btn-secondary:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+        transform: translateY(-2px);
+        color: #f1f5f9;
+    }
+    
+    /* Toast - Glass Style */
+    .toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 3000;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .toast {
+        background: rgba(15, 25, 45, 0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-left: 3px solid #22c55e;
+        padding: 12px 20px;
+        border-radius: 10px;
+        color: #f1f5f9;
+        font-size: 12px;
+        font-weight: 500;
+        animation: slideInRight 0.3s ease;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    
+    .toast.toast-error {
+        border-left-color: #ef4444;
+    }
+    
+    .toast.toast-info {
+        border-left-color: #3b82f6;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Back Button - Glass Style */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 16px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #cbd5e1;
+        text-decoration: none;
+        background: rgba(59, 130, 246, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .back-link:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+        transform: translateX(-4px);
+        text-decoration: none;
+        color: #f1f5f9;
+    }
+    
+    /* Responsive */
+    @media (max-width: 640px) {
+        .upload-body {
+            padding: 20px;
+        }
+        
+        .dropzone {
+            padding: 32px 16px;
+        }
+        
+        .preview-info {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .upload-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .upload-header h2 {
+            font-size: 18px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="upload-container">
-        <h2 style="margin-bottom: 24px; text-align: center;">📤 Upload Video</h2>
-        <p style="text-align: center; color: #7d8590; margin-bottom: 24px;">
-            No size limits • Any format supported
-        </p>
+<div class="upload-container">
+    <!-- Back Button -->
+    <a href="javascript:history.back()" class="back-link">
+        ← Back
+    </a>
+    
+    <div class="upload-card">
+        <div class="upload-header">
+            <h2>Upload video</h2>
+            <div class="header-actions">
+                <a href="{% url 'frontend:upload_photo' %}" class="header-btn">
+                    Upload photo
+                </a>
+            </div>
+        </div>
         
-        <form id="uploadForm" method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <div class="upload-area" id="uploadArea">
-                <div style="font-size: 48px; margin-bottom: 16px;">🎥</div>
-                <p style="margin-bottom: 8px;">Click or drag video file here</p>
-                <p style="font-size: 12px; color: #7d8590;">No size limit • Any video format supported</p>
-                <input type="file" name="video_file" id="videoInput" accept="video/*" style="display: none;">
-            </div>
-            
-            <div class="file-info" id="fileInfo">
-                <strong>Selected file:</strong>
-                <span id="fileName"></span>
-                <br>
-                <strong>Size:</strong>
-                <span id="fileSize"></span>
-                <div class="progress-bar" id="progressBar">
-                    <div class="progress-fill" id="progressFill"></div>
+        <div class="upload-body">
+            <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                {% csrf_token %}
+                
+                <!-- Dropzone -->
+                <div class="dropzone" id="dropzone">
+                    <h3>Drag and drop your video here</h3>
+                    <p>or</p>
+                    <button type="button" class="dropzone-btn" id="selectFileBtn">
+                        Choose file
+                    </button>
+                    <input type="file" id="fileInput" name="video_file" accept="video/mp4,video/webm,video/quicktime,video/x-msvideo,video/x-matroska" style="display: none;">
                 </div>
-            </div>
-            
-            <div class="form-group" style="margin-top: 20px;">
-                <label class="form-label">Video Title</label>
-                <input type="text" name="title" class="form-control" required placeholder="Enter video title...">
-            </div>
-            
-            <div class="form-group" style="margin-top: 16px;">
-                <label class="form-label">Description (Optional)</label>
-                <textarea name="description" class="form-control" rows="4" placeholder="Describe your video..."></textarea>
-            </div>
-            
-            <div class="button-group">
-                <button type="submit" class="btn btn-primary upload-btn" id="uploadBtn">
-                    📤 Upload Video
-                </button>
-                <button type="button" class="back-btn" id="backBtn">
-                    ← Back
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Confirmation Modal -->
-<div id="confirmModal" class="confirm-modal">
-    <div class="confirm-modal-content">
-        <h3>⚠️ Cancel Upload?</h3>
-        <p>Are you sure you want to go back? Your uploaded file will be lost.</p>
-        <div class="confirm-buttons">
-            <button class="confirm-leave" id="confirmLeave">Yes, Go Back</button>
-            <button class="confirm-stay" id="confirmStay">No, Stay Here</button>
+                
+                <!-- Preview -->
+                <div class="preview-section" id="previewSection">
+                    <div class="preview-card">
+                        <video id="previewVideo" class="preview-video" controls>
+                            <source id="videoSource" src="">
+                        </video>
+                        <div class="preview-info">
+                            <div class="preview-details">
+                                <div class="file-name" id="fileName"></div>
+                                <div class="file-size" id="fileSize"></div>
+                                <div class="file-duration" id="fileDuration"></div>
+                            </div>
+                            <div class="preview-actions">
+                                <button type="button" class="btn-sm" id="changeFileBtn">Change</button>
+                                <button type="button" class="btn-sm" id="removeFileBtn">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Requirements -->
+                <div class="requirements">
+                    <h4>Requirements</h4>
+                    <ul>
+                        <li id="reqFormat" class="invalid">
+                            MP4, WebM, MOV, AVI, MKV formats
+                        </li>
+                        <li id="reqSize" class="valid">
+                            No size limit
+                        </li>
+                        <li id="reqDuration" class="invalid">
+                            Any duration allowed
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Title Field -->
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" name="title" class="form-control" id="titleInput" placeholder="Enter video title" maxlength="200">
+                    <div class="char-counter" id="titleCounter">0 / 200 characters</div>
+                    <div class="form-hint">Required. A descriptive title for your video.</div>
+                </div>
+                
+                <!-- Description Field -->
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control" id="descInput" rows="4" placeholder="Describe your video"></textarea>
+                    <div class="char-counter" id="descCounter">0 / 1000 characters</div>
+                    <div class="form-hint">Optional. Add a description to provide more context.</div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'frontend:feed' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Upload video</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
+<!-- Toast Container -->
+<div class="toast-container"></div>
+
 <script>
-const uploadArea = document.getElementById('uploadArea');
-const videoInput = document.getElementById('videoInput');
-const fileInfo = document.getElementById('fileInfo');
+// DOM Elements
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const selectFileBtn = document.getElementById('selectFileBtn');
+const previewSection = document.getElementById('previewSection');
+const previewVideo = document.getElementById('previewVideo');
+const videoSource = document.getElementById('videoSource');
 const fileName = document.getElementById('fileName');
 const fileSize = document.getElementById('fileSize');
+const fileDuration = document.getElementById('fileDuration');
+const changeFileBtn = document.getElementById('changeFileBtn');
+const removeFileBtn = document.getElementById('removeFileBtn');
+const submitBtn = document.getElementById('submitBtn');
 const uploadForm = document.getElementById('uploadForm');
-const uploadBtn = document.getElementById('uploadBtn');
-const progressBar = document.getElementById('progressBar');
-const progressFill = document.getElementById('progressFill');
-const backBtn = document.getElementById('backBtn');
-const confirmModal = document.getElementById('confirmModal');
-const confirmLeave = document.getElementById('confirmLeave');
-const confirmStay = document.getElementById('confirmStay');
+const titleInput = document.getElementById('titleInput');
+const descInput = document.getElementById('descInput');
+const titleCounter = document.getElementById('titleCounter');
+const descCounter = document.getElementById('descCounter');
 
-let hasSelectedFile = false;
-let isUploading = false;
+// Requirement elements
+const reqFormat = document.getElementById('reqFormat');
+const reqDuration = document.getElementById('reqDuration');
 
-// Get the previous video ID from URL parameter or session storage
-let previousVideoId = null;
+let currentFile = null;
 
-// Try to get previous video ID from URL parameter
-const urlParams = new URLSearchParams(window.location.search);
-previousVideoId = urlParams.get('from');
-
-// If not in URL, check session storage
-if (!previousVideoId) {
-    previousVideoId = sessionStorage.getItem('last_video_id');
+// Helper Functions
+function showToast(message, type = 'success') {
+    const container = document.querySelector('.toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 }
 
-// Function to go back to video detail or feed
-function goBack() {
-    if (previousVideoId) {
-        // Go back to the specific video detail page
-        window.location.href = `/video/${previousVideoId}/`;
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function formatDuration(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    
+    if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+}
+
+function updateCharCounters() {
+    const titleLength = titleInput.value.length;
+    const titleMax = 200;
+    titleCounter.textContent = `${titleLength} / ${titleMax} characters`;
+    
+    if (titleLength > titleMax) {
+        titleCounter.classList.add('danger');
+        titleCounter.classList.remove('warning');
+    } else if (titleLength > titleMax * 0.8) {
+        titleCounter.classList.add('warning');
+        titleCounter.classList.remove('danger');
     } else {
-        // Fallback to feed page
-        window.location.href = '/feed/';
+        titleCounter.classList.remove('warning', 'danger');
+    }
+    
+    const descLength = descInput.value.length;
+    const descMax = 1000;
+    descCounter.textContent = `${descLength} / ${descMax} characters`;
+    
+    if (descLength > descMax) {
+        descCounter.classList.add('danger');
+        descCounter.classList.remove('warning');
+    } else if (descLength > descMax * 0.8) {
+        descCounter.classList.add('warning');
+        descCounter.classList.remove('danger');
+    } else {
+        descCounter.classList.remove('warning', 'danger');
     }
 }
 
-// Click to upload
-uploadArea.addEventListener('click', () => {
-    videoInput.click();
+function validateFile(file) {
+    let isValid = true;
+    
+    const validFormats = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
+    const isFormatValid = validFormats.includes(file.type);
+    
+    if (isFormatValid) {
+        reqFormat.className = 'valid';
+    } else {
+        reqFormat.className = 'invalid';
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function getVideoDuration(file) {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.onloadedmetadata = function() {
+        URL.revokeObjectURL(video.src);
+        const duration = video.duration;
+        fileDuration.textContent = `Duration: ${formatDuration(duration)}`;
+        reqDuration.className = 'valid';
+    };
+    video.onerror = function() {
+        fileDuration.textContent = 'Duration: unable to read';
+        reqDuration.className = 'valid';
+    };
+    video.src = URL.createObjectURL(file);
+}
+
+function displayPreview(file) {
+    const videoUrl = URL.createObjectURL(file);
+    videoSource.src = videoUrl;
+    previewVideo.load();
+    
+    fileName.textContent = file.name;
+    fileSize.textContent = formatFileSize(file.size);
+    previewSection.classList.add('active');
+    dropzone.style.display = 'none';
+    
+    getVideoDuration(file);
+}
+
+function clearPreview() {
+    previewSection.classList.remove('active');
+    dropzone.style.display = 'block';
+    videoSource.src = '';
+    previewVideo.load();
+    fileName.textContent = '';
+    fileSize.textContent = '';
+    fileDuration.textContent = '';
+    currentFile = null;
+    fileInput.value = '';
+    submitBtn.disabled = true;
+    
+    reqFormat.className = 'invalid';
+    reqDuration.className = 'invalid';
+}
+
+function handleFile(file) {
+    if (!file) return;
+    
+    const isValid = validateFile(file);
+    
+    if (isValid) {
+        currentFile = file;
+        displayPreview(file);
+        submitBtn.disabled = false;
+    } else {
+        showToast('Please fix the issues above before uploading', 'error');
+        clearPreview();
+    }
+}
+
+// Event Listeners
+selectFileBtn.addEventListener('click', () => {
+    fileInput.click();
 });
 
-// File selection
-videoInput.addEventListener('change', (e) => {
+changeFileBtn.addEventListener('click', () => {
+    fileInput.click();
+});
+
+removeFileBtn.addEventListener('click', () => {
+    clearPreview();
+});
+
+fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
-        hasSelectedFile = true;
-        displayFileInfo(file);
+        handleFile(file);
     }
 });
 
 // Drag and drop
-uploadArea.addEventListener('dragover', (e) => {
+dropzone.addEventListener('dragover', (e) => {
     e.preventDefault();
-    uploadArea.classList.add('drag-over');
+    dropzone.classList.add('drag-over');
 });
 
-uploadArea.addEventListener('dragleave', (e) => {
+dropzone.addEventListener('dragleave', (e) => {
     e.preventDefault();
-    uploadArea.classList.remove('drag-over');
+    dropzone.classList.remove('drag-over');
 });
 
-uploadArea.addEventListener('drop', (e) => {
+dropzone.addEventListener('drop', (e) => {
     e.preventDefault();
-    uploadArea.classList.remove('drag-over');
+    dropzone.classList.remove('drag-over');
+    
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('video/')) {
-        hasSelectedFile = true;
-        videoInput.files = e.dataTransfer.files;
-        displayFileInfo(file);
+        handleFile(file);
     } else {
         showToast('Please drop a video file', 'error');
     }
 });
 
-function displayFileInfo(file) {
-    fileName.textContent = file.name;
-    
-    // Format file size
-    let size = file.size;
-    let sizeText = '';
-    if (size < 1024 * 1024) {
-        sizeText = (size / 1024).toFixed(2) + ' KB';
-    } else if (size < 1024 * 1024 * 1024) {
-        sizeText = (size / (1024 * 1024)).toFixed(2) + ' MB';
-    } else {
-        sizeText = (size / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
-    }
-    fileSize.textContent = sizeText;
-    fileInfo.classList.add('active');
-}
+// Character counters
+titleInput.addEventListener('input', updateCharCounters);
+descInput.addEventListener('input', updateCharCounters);
+updateCharCounters();
 
-// Back button functionality
-backBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    
-    // Check if user has selected a file or entered any data
-    const hasTitle = document.querySelector('input[name="title"]').value.trim() !== '';
-    const hasDescription = document.querySelector('textarea[name="description"]').value.trim() !== '';
-    
-    if (hasSelectedFile || hasTitle || hasDescription) {
-        // Show confirmation modal
-        confirmModal.classList.add('active');
-    } else {
-        // No data entered, go back immediately
-        goBack();
-    }
-});
-
-// Confirm leave
-confirmLeave.addEventListener('click', () => {
-    confirmModal.classList.remove('active');
-    goBack();
-});
-
-// Stay on page
-confirmStay.addEventListener('click', () => {
-    confirmModal.classList.remove('active');
-});
-
-// Close modal when clicking outside
-confirmModal.addEventListener('click', (e) => {
-    if (e.target === confirmModal) {
-        confirmModal.classList.remove('active');
-    }
-});
-
-// Form submission with progress tracking
-uploadForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const formData = new FormData(uploadForm);
-    const file = videoInput.files[0];
-    
-    if (!file) {
-        showToast('Please select a video file', 'error');
+// Form submission
+uploadForm.addEventListener('submit', function(e) {
+    if (!currentFile) {
+        e.preventDefault();
+        showToast('Please select a video to upload', 'error');
         return;
     }
     
-    // Show progress bar
-    isUploading = true;
-    progressBar.classList.add('active');
-    uploadBtn.disabled = true;
-    uploadBtn.innerHTML = '<span class="spinner"></span> Uploading...';
-    
-    // Use XMLHttpRequest for progress tracking
-    const xhr = new XMLHttpRequest();
-    
-    xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-            const percent = (e.loaded / e.total) * 100;
-            progressFill.style.width = percent + '%';
-        }
-    });
-    
-    xhr.addEventListener('load', () => {
-        isUploading = false;
-        if (xhr.status === 200) {
-            showToast('Video uploaded successfully!');
-            setTimeout(() => {
-                window.location.href = xhr.responseURL;
-            }, 1000);
-        } else {
-            showToast('Upload failed. Please try again.', 'error');
-            uploadBtn.disabled = false;
-            uploadBtn.innerHTML = '📤 Upload Video';
-            progressBar.classList.remove('active');
-            progressFill.style.width = '0%';
-        }
-    });
-    
-    xhr.addEventListener('error', () => {
-        isUploading = false;
-        showToast('Network error. Please check your connection.', 'error');
-        uploadBtn.disabled = false;
-        uploadBtn.innerHTML = '📤 Upload Video';
-        progressBar.classList.remove('active');
-        progressFill.style.width = '0%';
-    });
-    
-    xhr.open('POST', uploadForm.action);
-    xhr.send(formData);
-});
-
-function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `toast-custom ${type}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-}
-
-// Warn before leaving page if upload is in progress
-window.addEventListener('beforeunload', (e) => {
-    if (isUploading) {
+    const isValid = validateFile(currentFile);
+    if (!isValid) {
         e.preventDefault();
-        e.returnValue = 'Upload in progress. Are you sure you want to leave?';
-        return e.returnValue;
+        showToast('Please fix the validation issues', 'error');
+        return;
     }
     
-    if (hasSelectedFile && !isUploading) {
+    const title = titleInput.value.trim();
+    if (!title) {
         e.preventDefault();
-        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-        return e.returnValue;
+        showToast('Please enter a title for your video', 'error');
+        titleInput.focus();
+        return;
     }
+    
+    if (title.length > 200) {
+        e.preventDefault();
+        showToast('Title exceeds 200 characters', 'error');
+        return;
+    }
+    
+    if (descInput.value.length > 1000) {
+        e.preventDefault();
+        showToast('Description exceeds 1000 characters', 'error');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Uploading...';
+    showToast('Uploading your video... This may take a while.', 'info');
 });
 </script>
-
-<style>
-    .toast-custom {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        background: #161b22;
-        border: 1px solid #30363d;
-        border-left: 4px solid #238636;
-        padding: 12px 20px;
-        border-radius: 8px;
-        color: #e6edf3;
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-    }
-    
-    .toast-custom.error {
-        border-left-color: #f85149;
-    }
-    
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    .spinner {
-        display: inline-block;
-        width: 14px;
-        height: 14px;
-        border: 2px solid rgba(255,255,255,0.3);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 0.6s linear infinite;
-        margin-right: 8px;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    .form-control:focus {
-        border-color: #2f81f7;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.2);
-    }
-</style>
 {% endblock %}

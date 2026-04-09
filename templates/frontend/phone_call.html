@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}Phone Call with {{ receiver.username }} - MediaShare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .phone-call-container {
+        background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+        height: 100vh;
+        margin: -20px -12px 0 -12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .phone-call-wrapper {
+        text-align: center;
+    }
+
+    .avatar-large {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2f81f7, #238636);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+    }
+
+    .avatar-large img {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .avatar-large i {
+        font-size: 80px;
+        color: white;
+    }
+
+    .call-info {
+        color: white;
+    }
+
+    .call-info h2 {
+        margin-bottom: 10px;
+    }
+
+    .call-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+        font-size: 16px;
+    }
+
+    .status-ringing {
+        color: #fbbf24;
+        animation: pulse 1s ease-in-out infinite;
+    }
+
+    .status-connected {
+        color: #22c55e;
+    }
+
+    .status-failed {
+        color: #ef4444;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .timer {
+        font-size: 32px;
+        font-family: monospace;
+        margin-top: 20px;
+        color: #3b82f6;
+        display: none;
+    }
+
+    .call-controls {
+        margin-top: 40px;
+    }
+
+    .end-call-btn {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 40px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .end-call-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="phone-call-container">
+    <div class="phone-call-wrapper">
+        <div class="avatar-large">
+            {% if receiver.profile.avatar and receiver.profile.avatar.url %}
+                <img src="{{ receiver.profile.avatar.url }}" alt="{{ receiver.username }}">
+            {% else %}
+                <i class="fas fa-phone-alt"></i>
+            {% endif %}
+        </div>
+        <div class="call-info">
+            <h2>{{ receiver.username }}</h2>
+            <div class="call-status" id="callStatus">
+                <i class="fas fa-phone-alt fa-shake"></i>
+                <span id="statusText">Calling...</span>
+            </div>
+            <div class="timer" id="timer">00:00</div>
+        </div>
+        <div class="call-controls">
+            <button class="end-call-btn" id="endCallBtn">
+                <i class="fas fa-phone-slash"></i> End Call
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let callDuration = 0;
+let callTimer = null;
+let statusCheckInterval = null;
+
+function updateStatus(status, message) {
+    const statusDiv = document.getElementById('callStatus');
+    const statusText = document.getElementById('statusText');
+    
+    statusDiv.innerHTML = '';
+    statusText.textContent = message;
+    
+    switch(status) {
+        case 'ringing':
+            statusDiv.innerHTML = '<i class="fas fa-phone-alt fa-shake"></i>';
+            statusText.style.color = '#fbbf24';
+            break;
+        case 'connected':
+            statusDiv.innerHTML = '<i class="fas fa-check-circle"></i>';
+            statusText.style.color = '#22c55e';
+            document.getElementById('timer').style.display = 'block';
+            startTimer();
+            break;
+        case 'failed':
+            statusDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+            statusText.style.color = '#ef4444';
+            break;
+    }
+}
+
+function startTimer() {
+    callTimer = setInterval(() => {
+        callDuration++;
+        const minutes = Math.floor(callDuration / 60);
+        const seconds = callDuration % 60;
+        document.getElementById('timer').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+function checkCallStatus() {
+    statusCheckInterval = setInterval(async () => {
+        try {
+            const response = await fetch(`/call/status/{{ call_session.id }}/`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await response.json();
+            
+            if (data.status === 'active') {
+                clearInterval(statusCheckInterval);
+                updateStatus('connected', 'Call connected');
+            } else if (data.status === 'completed') {
+                clearInterval(statusCheckInterval);
+                endCall();
+            }
+        } catch (error) {
+            console.error('Error checking status:', error);
+        }
+    }, 2000);
+}
+
+function endCall() {
+    if (callTimer) clearInterval(callTimer);
+    if (statusCheckInterval) clearInterval(statusCheckInterval);
+    
+    fetch(`/call/end/{{ call_session.id }}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken }
+    }).catch(err => console.error('Error ending call:', err));
+    
+    setTimeout(() => {
+        window.location.href = '/messages/inbox/';
+    }, 500);
+}
+
+document.getElementById('endCallBtn').addEventListener('click', endCall);
+
+updateStatus('ringing', 'Calling {{ receiver.username }}...');
+checkCallStatus();
+</script>
+{% endblock %}

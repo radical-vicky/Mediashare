@@ -1,16 +1,17 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.utils import timezone
 from django.conf import settings
+from django.db.models import Q
 from twilio.twiml.voice_response import VoiceResponse, Dial
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 from .models import CallSession, UserProfile
 from django.contrib.auth.models import User
-from django.db import models
 import json
 import logging
 
@@ -33,29 +34,23 @@ except Exception as e:
 
 @login_required
 def initiate_call(request, username):
-    """Initiate a call (browser-to-browser or browser-to-phone)"""
+    """Initiate a call (video, audio, or phone)"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid request method'}, status=400)
     
     try:
         receiver = get_object_or_404(User, username=username)
         receiver_profile = receiver.profile
-        call_type = request.POST.get('call_type', 'browser')
-        
-        # Validate call type
-        if call_type not in ['browser', 'phone']:
-            return JsonResponse({'error': 'Invalid call type'}, status=400)
+        call_type = request.POST.get('call_type', 'video')
         
         # Check if receiver is available for calls
-        if call_type == 'browser' and not receiver_profile.is_available_for_calls:
-            return JsonResponse({'error': 'User is not available for browser calls'}, status=400)
+        if not receiver_profile.is_available_for_calls:
+            return JsonResponse({'error': f'{receiver.username} is not available for calls'}, status=400)
         
         # For phone calls, check if receiver has a phone number
         if call_type == 'phone':
             if not receiver_profile.phone_number:
                 return JsonResponse({'error': 'User has not set a phone number'}, status=400)
-            if not receiver_profile.is_available_for_calls:
-                return JsonResponse({'error': 'User is not available for phone calls'}, status=400)
         
         # Create call session
         call_session = CallSession.objects.create(
@@ -67,36 +62,30 @@ def initiate_call(request, username):
             status='pending'
         )
         
-        if call_type == 'browser':
-            # Browser-to-browser WebRTC call
+        # For video/audio calls, return room info
+        if call_type in ['video', 'audio']:
             return JsonResponse({
                 'success': True,
                 'room_name': call_session.room_name,
                 'call_id': call_session.id,
-                'call_type': 'browser'
+                'call_type': call_type
             })
         
+        # For phone calls, initiate via Twilio
         elif call_type == 'phone':
-            # Check if Twilio client is available
             if twilio_client is None:
                 call_session.status = 'failed'
                 call_session.save()
-                return JsonResponse({
-                    'error': 'Twilio service is not configured. Please check your credentials.'
-                }, status=500)
+                return JsonResponse({'error': 'Phone call service not configured'}, status=500)
             
-            # Browser-to-phone call via Twilio
             try:
-                # Build the full URL for the webhook
                 webhook_url = request.build_absolute_uri(f'/twilio/voice/{call_session.id}/')
-                status_callback_url = request.build_absolute_uri('/twilio/status/')
                 
-                # Make the call via Twilio
                 call = twilio_client.calls.create(
                     url=webhook_url,
                     to=receiver_profile.phone_number,
                     from_=settings.TWILIO_PHONE_NUMBER,
-                    status_callback=status_callback_url,
+                    status_callback=request.build_absolute_uri('/twilio/status/'),
                     status_callback_event=['initiated', 'ringing', 'answered', 'completed'],
                     status_callback_method='POST'
                 )
@@ -106,45 +95,26 @@ def initiate_call(request, username):
                 call_session.started_at = timezone.now()
                 call_session.save()
                 
-                logger.info(f"Phone call initiated: {call.sid} to {receiver_profile.phone_number}")
-                
                 return JsonResponse({
                     'success': True,
                     'call_id': call_session.id,
                     'call_type': 'phone',
-                    'call_sid': call.sid
+                    'message': 'Calling...'
                 })
                 
             except TwilioRestException as e:
-                logger.error(f"Twilio error: {e}")
                 call_session.status = 'failed'
                 call_session.save()
-                
-                # Provide user-friendly error messages
-                if e.code == 21211:
-                    error_msg = "Invalid phone number format. Please use international format (e.g., +1234567890)"
-                elif e.code == 21408:
-                    error_msg = "Cannot call this number. Trial accounts can only call verified numbers."
-                elif e.code == 21614:
-                    error_msg = "Not enough credit to make the call. Please add funds to your Twilio account."
-                elif e.code == 13223:
-                    error_msg = "This phone number is not voice-capable. Please use a different number."
-                else:
-                    error_msg = f"Twilio error: {str(e)}"
-                
-                return JsonResponse({'error': error_msg}, status=500)
-                
-            except Exception as e:
-                logger.error(f"Unexpected error during call initiation: {e}")
-                call_session.status = 'failed'
-                call_session.save()
-                return JsonResponse({'error': f'Failed to initiate call: {str(e)}'}, status=500)
+                return JsonResponse({'error': f'Phone call failed: {str(e)}'}, status=500)
+        
+        # Default fallback (should not reach here)
+        return JsonResponse({'error': 'Invalid call type'}, status=400)
         
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
     except Exception as e:
-        logger.error(f"Unexpected error in initiate_call: {e}")
-        return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
+        logger.error(f"Error initiating call: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @csrf_exempt
@@ -296,7 +266,7 @@ def call_history(request):
     try:
         # Get calls where user is either caller or receiver
         calls = CallSession.objects.filter(
-            models.Q(caller=request.user) | models.Q(receiver=request.user)
+            Q(caller=request.user) | Q(receiver=request.user)
         ).order_by('-created_at')[:50]
         
         call_list = []
@@ -317,6 +287,34 @@ def call_history(request):
     except Exception as e:
         logger.error(f"Error fetching call history: {e}")
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def call_history_api(request):
+    """API endpoint for call history (for the settings page)"""
+    calls = CallSession.objects.filter(
+        Q(caller=request.user) | Q(receiver=request.user)
+    ).order_by('-created_at')[:20]
+    
+    calls_data = []
+    for call in calls:
+        other_user = call.receiver if call.caller == request.user else call.caller
+        
+        # Format duration
+        minutes = call.duration // 60
+        seconds = call.duration % 60
+        duration_str = f"{minutes}:{seconds:02d}" if call.duration > 0 else "--:--"
+        
+        calls_data.append({
+            'id': call.id,
+            'status': call.status,
+            'other_user': other_user.username,
+            'date': call.created_at.strftime('%b %d, %Y %I:%M %p'),
+            'duration': duration_str,
+            'cost': f"{call.total_cost:.2f}" if call.total_cost else "0.00"
+        })
+    
+    return JsonResponse({'calls': calls_data})
 
 
 @login_required
@@ -363,45 +361,85 @@ def end_call(request, call_id):
 
 @login_required
 def call_settings(request):
-    """Get or update user's call settings"""
+    """Call settings page - renders HTML template for GET, saves settings for POST"""
+    from .models import UserProfile
+    
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
     if request.method == 'GET':
-        try:
-            profile = request.user.profile
-            return JsonResponse({
-                'success': True,
-                'settings': {
-                    'is_available_for_calls': profile.is_available_for_calls,
-                    'call_price_per_minute': float(profile.call_price_per_minute),
-                    'phone_number': profile.phone_number or '',
-                    'has_phone_number': bool(profile.phone_number),
-                }
-            })
-        except Exception as e:
-            logger.error(f"Error fetching call settings: {e}")
-            return JsonResponse({'error': str(e)}, status=500)
+        # Return HTML page for GET requests
+        return render(request, 'frontend/call_settings.html', {'profile': profile})
     
     elif request.method == 'POST':
+        # Handle POST request for saving settings
         try:
-            data = json.loads(request.body)
-            profile = request.user.profile
-            
-            if 'is_available_for_calls' in data:
-                profile.is_available_for_calls = data['is_available_for_calls']
-            if 'call_price_per_minute' in data:
-                profile.call_price_per_minute = float(data['call_price_per_minute'])
-            if 'phone_number' in data:
-                profile.phone_number = data['phone_number']
-            
+            profile.is_available_for_calls = request.POST.get('is_available_for_calls') == 'on'
+            profile.call_price_per_minute = float(request.POST.get('call_price_per_minute', 0))
+            profile.phone_number = request.POST.get('phone_number', '')
             profile.save()
             
-            return JsonResponse({
-                'success': True,
-                'message': 'Call settings updated successfully'
-            })
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+            # Check if AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': 'Settings saved successfully'})
+            
+            messages.success(request, 'Call settings updated successfully!')
+            return redirect('frontend:call_settings')
+            
         except Exception as e:
-            logger.error(f"Error updating call settings: {e}")
-            return JsonResponse({'error': str(e)}, status=500)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'error': str(e)}, status=400)
+            messages.error(request, f'Error: {str(e)}')
+            return redirect('frontend:call_settings')
     
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+@login_required
+def call_info(request, call_id):
+    """Get call session information"""
+    try:
+        call_session = get_object_or_404(CallSession, id=call_id)
+        
+        return JsonResponse({
+            'success': True,
+            'caller': call_session.caller.username,
+            'receiver': call_session.receiver.username,
+            'status': call_session.status,
+            'call_type': call_session.call_type,
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+@login_required
+def call_status(request, call_id):
+    """Get current call status"""
+    try:
+        call_session = get_object_or_404(CallSession, id=call_id)
+        
+        return JsonResponse({
+            'success': True,
+            'status': call_session.status,
+            'duration': call_session.duration,
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+@login_required
+def call_accept(request, call_id):
+    """Accept an incoming call"""
+    try:
+        call_session = get_object_or_404(CallSession, id=call_id)
+        
+        # Only receiver can accept
+        if request.user != call_session.receiver:
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+        call_session.status = 'active'
+        call_session.started_at = timezone.now()
+        call_session.save()
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)

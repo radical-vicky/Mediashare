@@ -1,28 +1,27 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Home - MediaShare{% endblock %}
+{% block title %}VibeGaze - Connect with Beautiful People{% endblock %}
 
 {% block content %}
 <div class="homepage">
-    <!-- Hero Section with Banner -->
     <section class="hero">
         <div class="hero-banner">
             <div class="banner-wrapper">
-                <img src="{% static 'images/banner1.png' %}" alt="MediaShare Banner" class="hero-banner-image">
+                <div class="banner-gradient"></div>
                 <div class="banner-overlay">
                     <div class="banner-content">
-                        <h1 class="banner-title">Share Your Stories</h1>
-                        <p class="banner-description">Connect with creators, share photos and videos, and build your community.</p>
+                        <h1 class="banner-title">Connect, Chat & Vibe</h1>
+                        <p class="banner-description">Meet beautiful people, make meaningful connections through interactive chats and video calls.</p>
                         {% if user.is_authenticated %}
                             <div class="banner-buttons">
-                                <a href="{% url 'frontend:feed' %}" class="btn btn-primary">Go to Feed</a>
-                                <a href="{% url 'frontend:upload_photo' %}" class="btn btn-outline">Upload Photo</a>
+                                <a href="{% url 'frontend:feed' %}" class="btn btn-primary">Explore People</a>
+                                <a href="{% url 'frontend:upload_photo' %}" class="btn btn-outline">Share Your Vibe</a>
                                 <a href="{% url 'frontend:upload_video' %}" class="btn btn-outline">Upload Video</a>
                             </div>
                         {% else %}
                             <div class="banner-buttons">
-                                <a href="{% url 'account_signup' %}" class="btn btn-primary">Get Started</a>
+                                <a href="{% url 'account_signup' %}" class="btn btn-primary">Join Now</a>
                                 <a href="{% url 'account_login' %}" class="btn btn-outline">Sign In</a>
                             </div>
                         {% endif %}
@@ -32,145 +31,168 @@
         </div>
     </section>
 
-    <!-- Features Grid with Circular Images -->
     <section class="features">
         <div class="container">
             <div class="section-header text-center">
-                <h2 class="section-title">Why Choose MediaShare</h2>
-                <p class="section-subtitle">Everything you need to share and connect</p>
+                <h2 class="section-title">Why Choose VibeGaze</h2>
+                <p class="section-subtitle">Everything you need to connect and vibe</p>
             </div>
             <div class="features-grid">
-                <div class="feature-card">
+                <div class="feature-card glass">
                     <div class="feature-image-wrapper">
                         <div class="feature-image-circle">
-                            <img src="{% static 'images/choose.png' %}" alt="Photo Sharing" class="feature-img-circle">
+                            <img src="{% static 'images/choose.png' %}" alt="Chat" class="feature-img-circle">
                         </div>
                     </div>
-                    <h3 class="feature-title">Photo Sharing</h3>
-                    <p class="feature-description">Upload high-quality photos and showcase your creativity to the world.</p>
+                    <h3 class="feature-title">Instant Chat</h3>
+                    <p class="feature-description">Connect instantly with beautiful people through real-time messaging.</p>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card glass">
                     <div class="feature-image-wrapper">
                         <div class="feature-image-circle">
-                            <img src="{% static 'images/choose1.png' %}" alt="Video Sharing" class="feature-img-circle">
+                            <img src="{% static 'images/choose1.png' %}" alt="Video Calls" class="feature-img-circle">
                         </div>
                     </div>
-                    <h3 class="feature-title">Video Sharing</h3>
-                    <p class="feature-description">Share your video content, from short clips to full-length productions.</p>
+                    <h3 class="feature-title">Video Calls</h3>
+                    <p class="feature-description">Face-to-face connections through high-quality video calls.</p>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card glass">
                     <div class="feature-image-wrapper">
                         <div class="feature-image-circle">
                             <img src="{% static 'images/choose4.png' %}" alt="Community" class="feature-img-circle">
                         </div>
                     </div>
-                    <h3 class="feature-title">Community Engagement</h3>
-                    <p class="feature-description">Like, comment, and message other creators to build meaningful connections.</p>
+                    <h3 class="feature-title">Vibrant Community</h3>
+                    <p class="feature-description">Join a community of amazing people looking to connect and vibe.</p>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card glass">
                     <div class="feature-image-wrapper">
                         <div class="feature-image-circle">
-                            <img src="{% static 'images/choose3.png' %}" alt="Video Calls" class="feature-img-circle">
+                            <img src="{% static 'images/choose3.png' %}" alt="Safe & Secure" class="feature-img-circle">
                         </div>
                     </div>
-                    <h3 class="feature-title">Video Calls</h3>
-                    <p class="feature-description">Connect face-to-face with other creators through integrated video calls.</p>
+                    <h3 class="feature-title">Safe & Secure</h3>
+                    <p class="feature-description">Your privacy and safety are our top priority.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Recent Photos - JustWatch Style -->
     <section class="recent-content">
         <div class="container">
             <div class="section-header">
                 <div>
-                    <h2 class="section-title">Recent Photos</h2>
-                    <p class="section-subtitle">Latest uploads from the community</p>
+                    <h2 class="section-title">Featured Profiles</h2>
+                    <p class="section-subtitle">Meet amazing people ready to connect</p>
                 </div>
-                <a href="{% url 'frontend:feed' %}?filter=photos" class="link-arrow">View all photos →</a>
+                <a href="{% url 'frontend:feed' %}?filter=photos" class="link-arrow">View all →</a>
             </div>
-            
             {% if recent_photos %}
                 <div class="media-grid">
                     {% for photo in recent_photos %}
-                        <div class="media-card">
-                            <a href="{% url 'frontend:photo_detail' photo.id %}" class="media-link">
-                                <div class="media-poster">
-                                    <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" class="media-image">
+                        <div class="media-card glass">
+                            <div class="media-poster">
+                                <a href="{% url 'frontend:user_profile' username=photo.author.username %}" class="media-link">
+                                    <img src="{{ photo.image.url }}" alt="{{ photo.author.username }}" class="media-image">
                                     <div class="media-overlay">
                                         <div class="media-stats">
-                                            <span class="stat-item">❤️ {{ photo.likes.count }}</span>
-                                            <span class="stat-item">👁️ {{ photo.views }}</span>
+                                            <span class="stat-item">{{ photo.views }} views</span>
                                         </div>
                                     </div>
+                                </a>
+                                <div class="media-like-btn-wrapper">
+                                    <button class="like-btn {% if user in photo.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_photo' photo.id %}" onclick="likeMedia(this)">
+                                        <span class="heart-icon">❤️</span>
+                                        <span class="like-count">{{ photo.likes.count }}</span>
+                                    </button>
                                 </div>
-                                <div class="media-info">
-                                    <div class="media-title">{{ photo.caption|default:"Untitled"|truncatechars:60 }}</div>
-                                    <div class="media-meta">
-                                        <span class="meta-user">{{ photo.author.username }}</span>
-                                        <span class="meta-time">{{ photo.created_at|timesince }} ago</span>
+                            </div>
+                            <div class="media-info">
+                                <div class="media-author">
+                                    <a href="{% url 'frontend:user_profile' username=photo.author.username %}" class="author-avatar">
+                                        {% if photo.author.profile.avatar %}
+                                            <img src="{{ photo.author.profile.avatar.url }}" alt="{{ photo.author.username }}" class="avatar-img">
+                                        {% else %}
+                                            <div class="avatar-placeholder">{{ photo.author.username|first|upper }}</div>
+                                        {% endif %}
+                                    </a>
+                                    <div class="author-details">
+                                        <a href="{% url 'frontend:user_profile' username=photo.author.username %}" class="author-name">{{ photo.author.username }}</a>
+                                        <span class="post-time">Active {{ photo.created_at|timesince }} ago</span>
                                     </div>
                                 </div>
-                            </a>
+                                <div class="media-title">@{{ photo.author.username }}</div>
+                            </div>
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="empty-state">
-                    <p class="empty-message">No photos uploaded yet.</p>
+                <div class="empty-state glass">
+                    <p class="empty-message">No profiles to show yet.</p>
                     {% if user.is_authenticated %}
-                        <a href="{% url 'frontend:upload_photo' %}" class="btn btn-primary">Upload your first photo</a>
+                        <a href="{% url 'frontend:upload_photo' %}" class="btn btn-primary">Share your vibe</a>
                     {% endif %}
                 </div>
             {% endif %}
         </div>
     </section>
 
-    <!-- Recent Videos - JustWatch Style -->
     <section class="recent-content">
         <div class="container">
             <div class="section-header">
                 <div>
-                    <h2 class="section-title">Recent Videos</h2>
-                    <p class="section-subtitle">Fresh video content from creators</p>
+                    <h2 class="section-title">Video Vibes</h2>
+                    <p class="section-subtitle">Watch and connect through videos</p>
                 </div>
-                <a href="{% url 'frontend:feed' %}?filter=videos" class="link-arrow">View all videos →</a>
+                <a href="{% url 'frontend:feed' %}?filter=videos" class="link-arrow">View all →</a>
             </div>
-            
             {% if recent_videos %}
                 <div class="media-grid">
                     {% for video in recent_videos %}
-                        <div class="media-card">
-                            <a href="{% url 'frontend:video_detail' video.id %}" class="media-link">
-                                <div class="media-poster">
+                        <div class="media-card glass">
+                            <div class="media-poster">
+                                <a href="{% url 'frontend:user_profile' username=video.author.username %}" class="media-link">
                                     <video class="media-video">
                                         <source src="{{ video.video_file.url }}">
                                     </video>
                                     <div class="media-overlay">
-                                        <div class="play-icon"></div>
                                         <div class="media-stats">
-                                            <span class="stat-item">❤️ {{ video.likes.count }}</span>
-                                            <span class="stat-item">👁️ {{ video.views }}</span>
+                                            <span class="stat-item">{{ video.views }} views</span>
                                         </div>
                                     </div>
+                                    <div class="play-icon"></div>
+                                </a>
+                                <div class="media-like-btn-wrapper">
+                                    <button class="like-btn {% if user in video.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_video' video.id %}" onclick="likeMedia(this)">
+                                        <span class="heart-icon">❤️</span>
+                                        <span class="like-count">{{ video.likes.count }}</span>
+                                    </button>
                                 </div>
-                                <div class="media-info">
-                                    <div class="media-title">{{ video.title|truncatechars:60 }}</div>
-                                    <div class="media-meta">
-                                        <span class="meta-user">{{ video.author.username }}</span>
-                                        <span class="meta-time">{{ video.created_at|timesince }} ago</span>
+                            </div>
+                            <div class="media-info">
+                                <div class="media-author">
+                                    <a href="{% url 'frontend:user_profile' username=video.author.username %}" class="author-avatar">
+                                        {% if video.author.profile.avatar %}
+                                            <img src="{{ video.author.profile.avatar.url }}" alt="{{ video.author.username }}" class="avatar-img">
+                                        {% else %}
+                                            <div class="avatar-placeholder">{{ video.author.username|first|upper }}</div>
+                                        {% endif %}
+                                    </a>
+                                    <div class="author-details">
+                                        <a href="{% url 'frontend:user_profile' username=video.author.username %}" class="author-name">{{ video.author.username }}</a>
+                                        <span class="post-time">Active {{ video.created_at|timesince }} ago</span>
                                     </div>
                                 </div>
-                            </a>
+                                <div class="media-title">{{ video.title|truncatechars:50 }}</div>
+                            </div>
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="empty-state">
-                    <p class="empty-message">No videos uploaded yet.</p>
+                <div class="empty-state glass">
+                    <p class="empty-message">No videos yet.</p>
                     {% if user.is_authenticated %}
-                        <a href="{% url 'frontend:upload_video' %}" class="btn btn-primary">Upload your first video</a>
+                        <a href="{% url 'frontend:upload_video' %}" class="btn btn-primary">Share your video</a>
                     {% endif %}
                 </div>
             {% endif %}
@@ -179,10 +201,10 @@
 </div>
 
 <style>
-/* Reset and Base */
 .homepage {
     width: 100%;
-    background: #0d1117;
+    background: linear-gradient(135deg, #0a0e1a 0%, #0f172a 50%, #1e1b4b 100%);
+    min-height: 100vh;
 }
 
 .container {
@@ -191,7 +213,13 @@
     padding: 0 24px;
 }
 
-/* Hero Banner Section */
+.glass {
+    background: rgba(15, 25, 45, 0.65);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+}
+
 .hero {
     width: 100%;
     margin-bottom: 48px;
@@ -199,22 +227,25 @@
 
 .hero-banner {
     width: 100%;
-    background: #0d1117;
+    background: transparent;
 }
 
 .banner-wrapper {
     position: relative;
     width: 100%;
-    max-height: 550px;
+    min-height: 500px;
+    border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.hero-banner-image {
+.banner-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 550px;
-    object-fit: cover;
-    object-position: center;
-    display: block;
+    height: 100%;
+    background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #0a0e1a 100%);
 }
 
 .banner-overlay {
@@ -223,7 +254,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.5) 100%);
+    background: linear-gradient(135deg, rgba(10, 14, 26, 0.6) 0%, rgba(59, 130, 246, 0.15) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -232,38 +263,42 @@
 .banner-content {
     text-align: center;
     max-width: 800px;
-    padding: 32px 24px;
+    padding: 60px 24px;
+    z-index: 2;
 }
 
 .banner-title {
-    font-size: 52px;
+    font-size: 56px;
     font-weight: 800;
     letter-spacing: -0.02em;
-    color: white;
-    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff, #60a5fa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 20px;
     line-height: 1.2;
 }
 
 .banner-description {
     font-size: 18px;
     color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 32px;
+    margin-bottom: 36px;
     line-height: 1.5;
 }
 
 .banner-buttons {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     justify-content: center;
     flex-wrap: wrap;
 }
 
 .btn {
     display: inline-block;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-weight: 500;
-    font-size: 14px;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
     text-decoration: none;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -273,30 +308,35 @@
 }
 
 .btn-primary {
-    background: #238636;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: white;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary:hover {
-    background: #2ea043;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
 }
 
 .btn-outline {
-    background: transparent;
-    border: 1px solid white;
-    color: white;
+    background: rgba(59, 130, 246, 0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(59, 130, 246, 0.5);
+    color: #f1f5f9;
 }
 
 .btn-outline:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(59, 130, 246, 0.25);
+    border-color: #3b82f6;
+    transform: translateY(-2px);
 }
 
-/* Features Section */
 .features {
     padding: 60px 0;
-    background: #0d1117;
-    border-top: 1px solid #21262d;
-    border-bottom: 1px solid #21262d;
+    background: rgba(10, 14, 26, 0.5);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(59, 130, 246, 0.2);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .text-center {
@@ -310,13 +350,16 @@
 .section-title {
     font-size: 32px;
     font-weight: 700;
-    color: #e6edf3;
+    background: linear-gradient(135deg, #f1f5f9, #94a3b8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     margin-bottom: 12px;
 }
 
 .section-subtitle {
     font-size: 16px;
-    color: #7d8590;
+    color: #94a3b8;
 }
 
 .features-grid {
@@ -328,15 +371,13 @@
 .feature-card {
     text-align: center;
     padding: 32px 24px;
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 16px;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .feature-card:hover {
-    border-color: #2f81f7;
-    transform: translateY(-4px);
+    border-color: #3b82f6;
+    transform: translateY(-8px);
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
 }
 
 .feature-image-wrapper {
@@ -350,14 +391,15 @@
     height: 120px;
     border-radius: 50%;
     overflow: hidden;
-    background: #21262d;
-    border: 2px solid #30363d;
-    transition: all 0.2s ease;
+    background: rgba(20, 30, 55, 0.8);
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    transition: all 0.3s ease;
 }
 
 .feature-card:hover .feature-image-circle {
-    border-color: #2f81f7;
+    border-color: #3b82f6;
     transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
 }
 
 .feature-img-circle {
@@ -367,22 +409,21 @@
 }
 
 .feature-title {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
-    color: #e6edf3;
+    color: #f1f5f9;
     margin-bottom: 12px;
 }
 
 .feature-description {
     font-size: 14px;
-    color: #7d8590;
+    color: #94a3b8;
     line-height: 1.5;
 }
 
-/* Recent Content Sections */
 .recent-content {
     padding: 60px 0;
-    border-bottom: 1px solid #21262d;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.15);
 }
 
 .recent-content:last-child {
@@ -399,67 +440,85 @@
 .section-header .section-title {
     margin-bottom: 4px;
     text-align: left;
+    background: linear-gradient(135deg, #f1f5f9, #60a5fa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    font-size: 28px;
 }
 
 .section-header .section-subtitle {
     text-align: left;
+    font-size: 14px;
 }
 
 .link-arrow {
     font-size: 14px;
-    color: #2f81f7;
+    color: #60a5fa;
     text-decoration: none;
     font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 .link-arrow:hover {
-    text-decoration: underline;
+    color: #3b82f6;
+    transform: translateX(4px);
+    display: inline-block;
 }
 
-/* Media Grid - JustWatch Style */
 .media-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 24px;
 }
 
 .media-card {
-    background: #161b22;
-    border-radius: 8px;
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s ease;
+    border-radius: 12px;
 }
 
 .media-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    transform: translateY(-6px);
+    border-color: #3b82f6;
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.25);
+}
+
+.media-poster {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #0f172a;
 }
 
 .media-link {
     text-decoration: none;
-}
-
-/* Media Poster */
-.media-poster {
-    position: relative;
-    aspect-ratio: 2 / 3;
-    overflow: hidden;
-    background: #0d1117;
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 .media-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.media-card:hover .media-image {
+    transform: scale(1.08);
 }
 
 .media-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.4s ease;
 }
 
-/* Media Overlay */
+.media-card:hover .media-video {
+    transform: scale(1.08);
+}
+
 .media-overlay {
     position: absolute;
     top: 0;
@@ -469,25 +528,93 @@
     background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 100%);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    padding: 12px;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
 .media-card:hover .media-overlay {
     opacity: 1;
 }
 
-/* Play Icon for Videos */
+.media-stats {
+    display: flex;
+    justify-content: flex-start;
+    gap: 8px;
+}
+
+.stat-item {
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #e6edf3;
+}
+
+.media-like-btn-wrapper {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    z-index: 10;
+}
+
+.like-btn {
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #e6edf3;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.like-btn .heart-icon {
+    font-size: 13px;
+    color: #64748b;
+    transition: color 0.2s ease;
+}
+
+.like-btn.liked .heart-icon {
+    color: #ef4444;
+}
+
+.like-btn:hover {
+    background: rgba(59, 130, 246, 0.8);
+    transform: scale(1.05);
+}
+
+.like-count {
+    font-size: 11px;
+    font-weight: 600;
+}
+
 .play-icon {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 48px;
-    height: 48px;
-    background: rgba(255, 255, 255, 0.9);
+    width: 56px;
+    height: 56px;
+    background: rgba(59, 130, 246, 0.9);
     border-radius: 50%;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+}
+
+.media-card:hover .play-icon {
+    transform: translate(-50%, -50%) scale(1.15);
+    background: rgba(59, 130, 246, 1);
 }
 
 .play-icon::after {
@@ -500,81 +627,99 @@
     height: 0;
     border-style: solid;
     border-width: 10px 0 10px 16px;
-    border-color: transparent transparent transparent #000;
+    border-color: transparent transparent transparent white;
 }
 
-/* Media Stats */
-.media-stats {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    right: 12px;
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.stat-item {
-    background: rgba(0, 0, 0, 0.75);
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 500;
-    color: #e6edf3;
-}
-
-/* Media Info */
 .media-info {
     padding: 12px;
 }
 
-.media-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: #e6edf3;
-    margin-bottom: 8px;
-    line-height: 1.4;
-}
-
-.media-meta {
+.media-author {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.author-avatar {
+    flex-shrink: 0;
+}
+
+.avatar-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+}
+
+.author-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.author-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f1f5f9;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.author-name:hover {
+    color: #60a5fa;
+}
+
+.post-time {
+    font-size: 10px;
+    color: #64748b;
+}
+
+.media-title {
     font-size: 12px;
+    font-weight: 400;
+    color: #cbd5e1;
+    text-decoration: none;
+    line-height: 1.4;
+    display: block;
+    transition: color 0.2s ease;
 }
 
-.meta-user {
-    color: #2f81f7;
+.media-title:hover {
+    color: #60a5fa;
 }
 
-.meta-time {
-    color: #7d8590;
-}
-
-/* Empty State */
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 12px;
 }
 
 .empty-message {
     font-size: 16px;
-    color: #7d8590;
-    margin-bottom: 16px;
+    color: #94a3b8;
+    margin-bottom: 20px;
 }
 
-/* Mobile Responsive Fixes */
+/* Responsive Design */
 @media (max-width: 1024px) {
     .features-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 20px;
     }
-    
     .media-grid {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         gap: 20px;
     }
 }
@@ -583,135 +728,147 @@
     .container {
         padding: 0 16px;
     }
-    
-    /* Hero Section Mobile */
-    .hero-banner-image {
-        height: 400px;
+    .banner-wrapper {
+        min-height: 450px;
     }
-    
     .banner-title {
-        font-size: 32px;
+        font-size: 36px;
     }
-    
     .banner-description {
-        font-size: 14px;
-        margin-bottom: 24px;
+        font-size: 15px;
+        margin-bottom: 28px;
     }
-    
     .banner-buttons {
         flex-direction: column;
         align-items: stretch;
-        gap: 10px;
+        gap: 12px;
     }
-    
     .banner-buttons .btn {
         width: 100%;
         text-align: center;
-        padding: 12px 16px;
+        padding: 12px 20px;
     }
-    
     .banner-content {
-        padding: 20px 16px;
-        width: 100%;
+        padding: 40px 20px;
     }
-    
-    /* Features Grid Mobile */
     .features {
-        padding: 40px 0;
+        padding: 50px 0;
     }
-    
     .features-grid {
         grid-template-columns: 1fr;
         gap: 16px;
     }
-    
     .feature-card {
-        padding: 24px 20px;
+        padding: 28px 20px;
     }
-    
     .feature-image-circle {
         width: 100px;
         height: 100px;
     }
-    
     .section-title {
-        font-size: 24px;
+        font-size: 28px;
     }
-    
     .section-subtitle {
         font-size: 14px;
     }
-    
-    /* Section Header Mobile */
     .section-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
         margin-bottom: 24px;
     }
-    
-    /* Media Grid Mobile */
+    .section-header .section-title {
+        font-size: 26px;
+    }
     .recent-content {
         padding: 40px 0;
     }
-    
     .media-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
         gap: 16px;
     }
-    
     .media-info {
         padding: 10px;
     }
-    
     .media-title {
-        font-size: 13px;
-    }
-    
-    .media-meta {
         font-size: 11px;
     }
-    
-    /* Empty State Mobile */
     .empty-state {
         padding: 40px 16px;
     }
 }
 
 @media (max-width: 480px) {
-    .hero-banner-image {
-        height: 350px;
+    .banner-wrapper {
+        min-height: 400px;
     }
-    
     .banner-title {
-        font-size: 26px;
+        font-size: 28px;
     }
-    
     .media-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: 12px;
     }
-    
     .feature-image-circle {
         width: 80px;
         height: 80px;
     }
-    
     .feature-title {
         font-size: 16px;
     }
-    
     .feature-description {
-        font-size: 13px;
+        font-size: 12px;
     }
-    
-    .media-info {
-        padding: 8px;
+    .avatar-img, .avatar-placeholder {
+        width: 28px;
+        height: 28px;
     }
-    
-    .media-title {
+    .author-name {
         font-size: 12px;
     }
 }
 </style>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function likeMedia(button) {
+    event.stopPropagation();
+    const url = button.dataset.url;
+    const likeCountSpan = button.querySelector('.like-count');
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.liked !== undefined) {
+            likeCountSpan.textContent = data.count;
+            if (data.liked) {
+                button.classList.add('liked');
+            } else {
+                button.classList.remove('liked');
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
 {% endblock %}

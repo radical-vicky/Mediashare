@@ -1,260 +1,865 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Edit Profile - MediaShare{% endblock %}
+{% block title %}Edit profile - MediaShare{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ============================================
+       EDIT PROFILE - BLUE GLASS THEME
+       ============================================ */
+    
+    .edit-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+    }
+    
+    /* Two Column Layout */
+    .edit-layout {
+        display: flex;
+        gap: 32px;
+        margin: 24px 0;
+    }
+    
+    /* Sidebar - Glass Style */
+    .edit-sidebar {
+        width: 260px;
+        flex-shrink: 0;
+    }
+    
+    .side-menu {
+        position: sticky;
+        top: 80px;
+        background: rgba(15, 25, 45, 0.65);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .side-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        color: #cbd5e1;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border-left: 2px solid transparent;
+    }
+    
+    .side-menu-item:hover {
+        background: rgba(59, 130, 246, 0.1);
+        color: #f1f5f9;
+    }
+    
+    .side-menu-item.active {
+        background: rgba(59, 130, 246, 0.15);
+        border-left-color: #3b82f6;
+        color: #60a5fa;
+    }
+    
+    /* Main Content */
+    .edit-main {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    /* Card Styles - Glass */
+    .edit-card {
+        background: rgba(15, 25, 45, 0.65);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+    
+    .edit-card-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        background: rgba(10, 14, 26, 0.5);
+    }
+    
+    .edit-card-header h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin: 0;
+    }
+    
+    .edit-card-header p {
+        font-size: 12px;
+        color: #94a3b8;
+        margin: 4px 0 0 0;
+    }
+    
+    .edit-card-body {
+        padding: 20px;
+    }
+    
+    /* Avatar Section */
+    .avatar-section {
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+    
+    .avatar-container {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+    
+    .avatar-img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(59, 130, 246, 0.3);
+        transition: all 0.2s ease;
+    }
+    
+    .avatar-placeholder {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        font-weight: 600;
+        color: white;
+        border: 2px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .avatar-overlay {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: rgba(33, 38, 45, 0.9);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .avatar-container:hover .avatar-overlay {
+        background: #3b82f6;
+        border-color: #3b82f6;
+    }
+    
+    .avatar-info {
+        flex: 1;
+        padding-top: 8px;
+    }
+    
+    .avatar-info h4 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin: 0 0 4px 0;
+    }
+    
+    .avatar-info p {
+        font-size: 12px;
+        color: #94a3b8;
+        margin: 0 0 12px 0;
+    }
+    
+    .avatar-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-sm {
+        padding: 4px 12px;
+        font-size: 12px;
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 6px;
+        color: #cbd5e1;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-sm:hover {
+        background: rgba(59, 130, 246, 0.25);
+    }
+    
+    /* Form Elements - Glass */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #cbd5e1;
+    }
+    
+    .form-label .optional {
+        font-weight: 400;
+        color: #94a3b8;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        background: rgba(13, 17, 23, 0.8);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        color: #f1f5f9;
+        font-size: 14px;
+        font-family: inherit;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-control:disabled {
+        background: rgba(22, 27, 34, 0.6);
+        color: #94a3b8;
+        cursor: not-allowed;
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .form-hint {
+        margin-top: 6px;
+        font-size: 11px;
+        color: #94a3b8;
+    }
+    
+    /* Row Layout */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    
+    /* Alert Box */
+    .alert-info {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+    }
+    
+    .alert-info p {
+        margin: 0;
+        font-size: 12px;
+        color: #cbd5e1;
+    }
+    
+    /* Toggle Switch - Glass Style */
+    .toggle-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(13, 17, 23, 0.8);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        padding: 10px 14px;
+    }
+    
+    .toggle-label span {
+        font-size: 13px;
+        font-weight: 500;
+        color: #f1f5f9;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 40px;
+        height: 20px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #30363d;
+        transition: 0.2s;
+        border-radius: 20px;
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        transition: 0.2s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider {
+        background-color: #238636;
+    }
+    
+    input:checked + .toggle-slider:before {
+        transform: translateX(20px);
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+    
+    .stat-card {
+        background: rgba(13, 17, 23, 0.8);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+    }
+    
+    .stat-card:hover {
+        border-color: #3b82f6;
+    }
+    
+    .stat-number {
+        font-size: 22px;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin-bottom: 2px;
+    }
+    
+    .stat-label {
+        font-size: 11px;
+        color: #94a3b8;
+    }
+    
+    /* Action Buttons */
+    .form-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        padding-top: 20px;
+        margin-top: 16px;
+        border-top: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-secondary {
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #cbd5e1;
+    }
+    
+    .btn-secondary:hover {
+        background: rgba(59, 130, 246, 0.25);
+        transform: translateY(-1px);
+    }
+    
+    /* Error Message */
+    .error-message {
+        color: #ef4444;
+        font-size: 11px;
+        margin-top: 6px;
+    }
+    
+    /* Divider */
+    .divider {
+        height: 1px;
+        background: rgba(59, 130, 246, 0.2);
+        margin: 20px 0;
+    }
+    
+    /* Toast */
+    .github-toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(15, 25, 45, 0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-left: 3px solid #22c55e;
+        padding: 12px 20px;
+        border-radius: 10px;
+        color: #f1f5f9;
+        font-size: 12px;
+        font-weight: 500;
+        z-index: 1000;
+        animation: slideInRight 0.3s ease;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    
+    .github-toast.error {
+        border-left-color: #ef4444;
+    }
+    
+    .github-toast.info {
+        border-left-color: #3b82f6;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .edit-layout {
+            flex-direction: column;
+        }
+        
+        .edit-sidebar {
+            width: 100%;
+        }
+        
+        .side-menu {
+            display: flex;
+            overflow-x: auto;
+            position: static;
+        }
+        
+        .side-menu-item {
+            white-space: nowrap;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        
+        .stats-grid {
+            gap: 8px;
+        }
+        
+        .stat-number {
+            font-size: 18px;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .avatar-section {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .avatar-info {
+            text-align: center;
+        }
+        
+        .avatar-actions {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card p-4">
-                <h2 style="margin-bottom: 24px;">Edit Profile</h2>
+<div class="edit-container">
+    <div class="edit-layout">
+        <!-- Sidebar - Glass Style -->
+        <div class="edit-sidebar">
+            <div class="side-menu">
+                <a href="#profile" class="side-menu-item active" onclick="scrollToSection('profile'); return false;">Profile</a>
+                <a href="#calls" class="side-menu-item" onclick="scrollToSection('calls'); return false;">Call settings</a>
+                <a href="#account" class="side-menu-item" onclick="scrollToSection('account'); return false;">Account</a>
+                <a href="#stats" class="side-menu-item" onclick="scrollToSection('stats'); return false;">Statistics</a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="edit-main">
+            <form method="POST" enctype="multipart/form-data" id="profileForm">
+                {% csrf_token %}
                 
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <!-- Avatar Section -->
-                    <div class="text-center mb-4">
-                        {% if profile.avatar %}
-                            <img src="{{ profile.avatar.url }}" class="avatar-lg" id="avatar-preview" style="margin: 0 auto 16px;">
-                        {% else %}
-                            <div class="avatar-lg" id="avatar-preview" style="margin: 0 auto 16px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; width: 120px; height: 120px;"></div>
-                        {% endif %}
-                        <div>
-                            <label for="avatar" class="btn btn-secondary" style="cursor: pointer;">Change Avatar</label>
-                            <input type="file" id="avatar" name="avatar" accept="image/*" style="display: none;">
-                        </div>
-                        <p class="text-muted" style="margin-top: 8px; font-size: 0.75rem;">Square image recommended, max 5MB</p>
+                <!-- Profile Section -->
+                <div id="profile" class="edit-card">
+                    <div class="edit-card-header">
+                        <h3>Profile</h3>
+                        <p>Your profile information visible to others</p>
                     </div>
-                    
-                    <!-- Basic Information -->
-                    <div class="mb-3">
-                        <label class="form-label">Bio</label>
-                        <textarea name="bio" class="form-control" rows="4" placeholder="Tell us about yourself...">{{ profile.bio }}</textarea>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label class="form-label">Location</label>
-                                <input type="text" name="location" class="form-control" placeholder="City, Country" value="{{ profile.location }}">
+                    <div class="edit-card-body">
+                        <!-- Avatar Section -->
+                        <div class="avatar-section">
+                            <div class="avatar-container">
+                                {% if profile.avatar and profile.avatar.url %}
+                                    <img src="{{ profile.avatar.url }}" class="avatar-img" id="avatarPreview" alt="Avatar">
+                                {% else %}
+                                    <div class="avatar-placeholder" id="avatarPreview">
+                                        {{ user.username|make_list|first|upper }}
+                                    </div>
+                                {% endif %}
+                                <div class="avatar-overlay" onclick="document.getElementById('avatarInput').click()"></div>
+                            </div>
+                            <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display: none;">
+                            <div class="avatar-info">
+                                <h4>Profile picture</h4>
+                                <p>Square image recommended. Max 5MB.</p>
+                                <div class="avatar-actions">
+                                    <button type="button" class="btn-sm" onclick="document.getElementById('avatarInput').click()">Upload</button>
+                                    {% if profile.avatar %}
+                                    <button type="button" class="btn-sm" id="removeAvatarBtn">Remove</button>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label class="form-label">Website</label>
-                                <input type="url" name="website" class="form-control" placeholder="https://yourwebsite.com" value="{{ profile.website }}">
+                        
+                        <div class="divider"></div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Bio</label>
+                            <textarea name="bio" class="form-control" rows="4" placeholder="Tell us about yourself...">{{ profile.bio|default:'' }}</textarea>
+                            <div class="form-hint">You can mention other users and organizations.</div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Location <span class="optional">(optional)</span></label>
+                                <input type="text" name="location" class="form-control" placeholder="City, Country" value="{{ profile.location|default:'' }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Website <span class="optional">(optional)</span></label>
+                                <input type="url" name="website" class="form-control" placeholder="https://yourwebsite.com" value="{{ profile.website|default:'' }}">
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Phone Number</label>
-                        <input type="tel" name="phone_number" class="form-control" placeholder="+1234567890" value="{{ profile.phone_number }}">
-                        <p class="text-muted" style="margin-top: 4px; font-size: 0.75rem;">International format: + [country code] [number]</p>
-                    </div>
-                    
-                    <hr style="margin: 24px 0; border-color: rgba(255, 255, 255, 0.1);">
-                    
-                    <!-- Call Settings -->
-                    <h3 style="margin-bottom: 16px; font-size: 1.25rem;">Call Settings</h3>
-                    
-                    <div class="alert alert-info" style="margin-bottom: 20px;">
-                        Enable call settings to allow other users to call you. You can set your own price per minute for phone calls.
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label class="form-label">Price per Minute ($)</label>
-                                <input type="number" step="0.01" name="call_price_per_minute" class="form-control" value="{{ profile.call_price_per_minute }}" min="0">
-                                <p class="text-muted" style="margin-top: 4px; font-size: 0.75rem;">Recommended: $1.00 - $5.00</p>
-                            </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Phone number <span class="optional">(optional)</span></label>
+                            <input type="tel" name="phone_number" class="form-control" id="phoneInput" placeholder="+1234567890" value="{{ profile.phone_number|default:'' }}">
+                            <div class="form-hint">International format: + [country code] [number] (e.g., +1234567890)</div>
                         </div>
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label class="form-label">Available for Calls</label>
-                                <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
-                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="checkbox" name="is_available_for_calls" id="callToggle" {% if profile.is_available_for_calls %}checked{% endif %} style="width: 18px; height: 18px;">
-                                        <span id="callStatus" class="{% if profile.is_available_for_calls %}badge badge-success{% else %}badge badge-secondary{% endif %}">
-                                            {% if profile.is_available_for_calls %}Available{% else %}Not Available{% endif %}
-                                        </span>
+                    </div>
+                </div>
+                
+                <!-- Call Settings Section -->
+                <div id="calls" class="edit-card">
+                    <div class="edit-card-header">
+                        <h3>Call settings</h3>
+                        <p>Configure how others can call you</p>
+                    </div>
+                    <div class="edit-card-body">
+                        <div class="alert-info">
+                            <p>Enable call settings to allow other users to call you. You can set your own price per minute for calls.</p>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Price per minute (USD)</label>
+                                <input type="number" step="0.01" name="call_price_per_minute" class="form-control" id="priceInput" value="{{ profile.call_price_per_minute|default:'0' }}" min="0" max="100">
+                                <div class="form-hint">Recommended: $1.00 - $5.00 per minute</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Availability</label>
+                                <div class="toggle-wrapper">
+                                    <div class="toggle-label">
+                                        <span>Available for calls</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" name="is_available_for_calls" id="callToggle" {% if profile.is_available_for_calls %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
                                     </label>
                                 </div>
-                                <p class="text-muted" style="margin-top: 4px; font-size: 0.75rem;">Enable to receive calls from other users</p>
+                                <div class="form-hint" id="statusHint">
+                                    {% if profile.is_available_for_calls %}
+                                        You are currently available for calls
+                                    {% else %}
+                                        Enable to receive calls from other users
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <hr style="margin: 24px 0; border-color: rgba(255, 255, 255, 0.1);">
-                    
-                    <!-- Account Settings -->
-                    <h3 style="margin-bottom: 16px; font-size: 1.25rem;">Account Settings</h3>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Username</label>
-                        <input type="text" class="form-control" value="{{ user.username }}" disabled>
+                </div>
+                
+                <!-- Account Section -->
+                <div id="account" class="edit-card">
+                    <div class="edit-card-header">
+                        <h3>Account information</h3>
+                        <p>Your account details and settings</p>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" value="{{ user.email }}" disabled>
-                        <p class="text-muted" style="margin-top: 4px; font-size: 0.75rem;">Contact support to change email</p>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Member Since</label>
-                        <input type="text" class="form-control" value="{{ user.date_joined|date:"F j, Y" }}" disabled>
-                    </div>
-                    
-                    <hr style="margin: 24px 0; border-color: rgba(255, 255, 255, 0.1);">
-                    
-                    <!-- Statistics -->
-                    <h3 style="margin-bottom: 16px; font-size: 1.25rem;">Your Statistics</h3>
-                    <div class="row text-center" style="margin-bottom: 24px;">
-                        <div class="col-4">
-                            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 12px;">
-                                <h4 style="color: #3b82f6; margin-bottom: 4px;">{{ profile.total_photos }}</h4>
-                                <small class="text-muted">Photos</small>
-                            </div>
+                    <div class="edit-card-body">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" value="{{ user.username }}" disabled>
                         </div>
-                        <div class="col-4">
-                            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 12px;">
-                                <h4 style="color: #ef4444; margin-bottom: 4px;">{{ profile.total_videos }}</h4>
-                                <small class="text-muted">Videos</small>
-                            </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                            <div class="form-hint">Contact support to change your email address.</div>
                         </div>
-                        <div class="col-4">
-                            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 12px;">
-                                <h4 style="color: #10b981; margin-bottom: 4px;">{{ profile.followers_count }}</h4>
-                                <small class="text-muted">Followers</small>
-                            </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Member since</label>
+                            <input type="text" class="form-control" value="{{ user.date_joined|date:'F j, Y' }}" disabled>
                         </div>
                     </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                        <a href="{% url 'frontend:user_profile' user.username %}" class="btn btn-secondary">Cancel</a>
+                </div>
+                
+                <!-- Statistics Section -->
+                <div id="stats" class="edit-card">
+                    <div class="edit-card-header">
+                        <h3>Statistics</h3>
+                        <p>Your content and engagement metrics</p>
                     </div>
-                </form>
-            </div>
+                    <div class="edit-card-body">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">{{ profile.total_photos|default:"0" }}</div>
+                                <div class="stat-label">Photos</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">{{ profile.total_videos|default:"0" }}</div>
+                                <div class="stat-label">Videos</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">{{ profile.followers.count }}</div>
+                                <div class="stat-label">Followers</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="form-actions">
+                    <a href="{% url 'frontend:user_profile' user.username %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save changes</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<style>
-.avatar-lg {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #3b82f6;
-}
-
-.badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 0.7rem;
-    font-weight: 600;
-}
-
-.badge-success {
-    background: rgba(16, 185, 129, 0.2);
-    color: #10b981;
-}
-
-.badge-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: #94a3b8;
-}
-
-.form-check {
-    display: flex;
-    align-items: center;
-}
-
-input[type="checkbox"] {
-    cursor: pointer;
-}
-</style>
-
 <script>
-// Avatar preview
-document.getElementById('avatar').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const preview = document.getElementById('avatar-preview');
-            if (preview.tagName === 'IMG') {
-                preview.src = e.target.result;
-            } else {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.className = 'avatar-lg';
-                img.id = 'avatar-preview';
-                img.style.margin = '0 auto 16px';
-                preview.parentNode.replaceChild(img, preview);
+function showToast(message, type = 'success') {
+    const existingToast = document.querySelector('.github-toast');
+    if (existingToast) existingToast.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = `github-toast ${type === 'error' ? 'error' : type === 'info' ? 'info' : ''}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// Avatar Preview
+const avatarInput = document.getElementById('avatarInput');
+const avatarPreview = document.getElementById('avatarPreview');
+
+if (avatarInput) {
+    avatarInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('File size too large. Maximum size is 5MB.', 'error');
+                this.value = '';
+                return;
             }
-        }
-        reader.readAsDataURL(file);
-    }
-});
-
-// Trigger file input when button clicked
-document.querySelector('label[for="avatar"]')?.addEventListener('click', function() {
-    document.getElementById('avatar').click();
-});
-
-// Update availability status when checkbox changes
-const callToggle = document.getElementById('callToggle');
-const callStatus = document.getElementById('callStatus');
-
-if (callToggle) {
-    callToggle.addEventListener('change', function() {
-        if (this.checked) {
-            callStatus.textContent = 'Available';
-            callStatus.className = 'badge badge-success';
-        } else {
-            callStatus.textContent = 'Not Available';
-            callStatus.className = 'badge badge-secondary';
+            
+            if (!file.type.startsWith('image/')) {
+                showToast('Please select an image file.', 'error');
+                this.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (avatarPreview.tagName === 'IMG') {
+                    avatarPreview.src = e.target.result;
+                } else {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'avatar-img';
+                    img.id = 'avatarPreview';
+                    img.alt = 'Avatar';
+                    avatarPreview.parentNode.replaceChild(img, avatarPreview);
+                }
+                showToast('Avatar selected. Save to apply changes.', 'info');
+            }
+            reader.readAsDataURL(file);
         }
     });
 }
 
-// Phone number validation
-const phoneInput = document.querySelector('input[name="phone_number"]');
+// Remove Avatar
+const removeAvatarBtn = document.getElementById('removeAvatarBtn');
+if (removeAvatarBtn) {
+    removeAvatarBtn.addEventListener('click', function() {
+        if (confirm('Remove your profile picture?')) {
+            const removeInput = document.createElement('input');
+            removeInput.type = 'hidden';
+            removeInput.name = 'remove_avatar';
+            removeInput.value = 'true';
+            document.getElementById('profileForm').appendChild(removeInput);
+            
+            const placeholder = document.createElement('div');
+            placeholder.className = 'avatar-placeholder';
+            placeholder.id = 'avatarPreview';
+            placeholder.textContent = '{{ user.username|make_list|first|upper }}';
+            avatarPreview.parentNode.replaceChild(placeholder, avatarPreview);
+            
+            showToast('Avatar will be removed when you save.', 'info');
+        }
+    });
+}
+
+// Scroll to section
+function scrollToSection(sectionId) {
+    const element = document.getElementById(sectionId);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        document.querySelectorAll('.side-menu-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelector(`.side-menu-item[href="#${sectionId}"]`).classList.add('active');
+    }
+}
+
+// Update active menu on scroll
+window.addEventListener('scroll', function() {
+    const sections = ['profile', 'calls', 'account', 'stats'];
+    let current = '';
+    
+    for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+            const rect = element.getBoundingClientRect();
+            if (rect.top <= 100 && rect.bottom >= 100) {
+                current = section;
+                break;
+            }
+        }
+    }
+    
+    if (current) {
+        document.querySelectorAll('.side-menu-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('href') === `#${current}`) {
+                item.classList.add('active');
+            }
+        });
+    }
+});
+
+// Call Toggle Status
+const callToggle = document.getElementById('callToggle');
+const statusHint = document.getElementById('statusHint');
+
+if (callToggle && statusHint) {
+    callToggle.addEventListener('change', function() {
+        if (this.checked) {
+            statusHint.textContent = 'You are currently available for calls';
+            showToast('You are now available for calls');
+        } else {
+            statusHint.textContent = 'Enable to receive calls from other users';
+            showToast('You are now unavailable for calls', 'info');
+        }
+    });
+}
+
+// Phone Number Validation
+const phoneInput = document.getElementById('phoneInput');
+
 if (phoneInput) {
     phoneInput.addEventListener('blur', function() {
         const phone = this.value.trim();
         const phoneRegex = /^\+\d{1,15}$/;
+        
+        let existingError = this.parentElement.querySelector('.error-message');
+        if (existingError) existingError.remove();
+        
         if (phone && !phoneRegex.test(phone)) {
             this.style.borderColor = '#ef4444';
-            this.style.borderWidth = '2px';
-            
-            // Create error message if not exists
-            let errorDiv = this.nextElementSibling;
-            if (!errorDiv || !errorDiv.classList?.contains('error-message')) {
-                errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.style.cssText = 'color: #ef4444; font-size: 0.75rem; margin-top: 4px;';
-                this.parentNode.appendChild(errorDiv);
-            }
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
             errorDiv.textContent = 'Please use international format: +1234567890';
+            this.parentElement.appendChild(errorDiv);
         } else {
             this.style.borderColor = '';
-            const errorDiv = this.nextElementSibling;
-            if (errorDiv && errorDiv.classList?.contains('error-message')) {
-                errorDiv.remove();
-            }
         }
+    });
+    
+    phoneInput.addEventListener('focus', function() {
+        this.style.borderColor = '';
+        const existingError = this.parentElement.querySelector('.error-message');
+        if (existingError) existingError.remove();
     });
 }
 
-// Price validation
-const priceInput = document.querySelector('input[name="call_price_per_minute"]');
+// Price Validation
+const priceInput = document.getElementById('priceInput');
+
 if (priceInput) {
     priceInput.addEventListener('change', function() {
         let value = parseFloat(this.value);
@@ -264,16 +869,33 @@ if (priceInput) {
     });
 }
 
-// Form submission loading state
-const profileForm = document.querySelector('form');
+// Form Submission
+const profileForm = document.getElementById('profileForm');
+const submitBtn = document.getElementById('submitBtn');
+
 if (profileForm) {
-    profileForm.addEventListener('submit', function() {
-        const submitBtn = this.querySelector('button[type="submit"]');
+    profileForm.addEventListener('submit', function(e) {
+        const phone = phoneInput?.value.trim();
+        if (phone && !/^\+\d{1,15}$/.test(phone)) {
+            e.preventDefault();
+            showToast('Please enter a valid phone number in international format', 'error');
+            phoneInput?.focus();
+            return;
+        }
+        
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Saving...';
         }
     });
 }
+
+// Reset button state on page load
+window.addEventListener('load', function() {
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save changes';
+    }
+});
 </script>
 {% endblock %}

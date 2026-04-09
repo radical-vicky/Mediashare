@@ -33,45 +33,23 @@ video_upload_path = VideoUploadPath()
 
 
 # ========== USER PROFILE MODEL ==========
-
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    bio = models.TextField(max_length=500, blank=True)
+    bio = models.TextField(blank=True, null=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
-    location = models.CharField(max_length=100, blank=True)
-    website = models.URLField(blank=True)
-    phone_number = models.CharField(max_length=20, blank=True, help_text="International format: +1234567890")
+    location = models.CharField(max_length=100, blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
     is_verified = models.BooleanField(default=False)
+    is_available_for_calls = models.BooleanField(default=False)
+    call_price_per_minute = models.DecimalField(max_digits=10, decimal_places=2, default=50.00)
+    paid_message_price = models.DecimalField(max_digits=10, decimal_places=2, default=20.00)  # ADD THIS LINE
     followers = models.ManyToManyField(User, related_name='following', blank=True)
-    following = models.ManyToManyField(User, related_name='followers_list', blank=True)
-    
-    # Call settings
-    call_price_per_minute = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    is_available_for_calls = models.BooleanField(default=False, help_text="Allow other users to call you")
-    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f"{self.user.username}'s profile"
-    
-    @property
-    def followers_count(self):
-        return self.followers.count()
-    
-    @property
-    def following_count(self):
-        return self.following.count()
-    
-    @property
-    def total_photos(self):
-        return self.user.photos.count()
-    
-    @property
-    def total_videos(self):
-        return self.user.videos.count()
-
-
+        return self.user.username
 # ========== PHOTO MODEL ==========
 
 class Photo(models.Model):
@@ -391,3 +369,74 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):
         instance.profile.save()
+
+
+
+class BackgroundMedia(models.Model):
+    MEDIA_TYPES = (
+        ('image', 'Image'),
+        ('video', 'Video'),
+    )
+    media_type = models.CharField(max_length=10, choices=MEDIA_TYPES, default='image')
+    file = models.FileField(upload_to='backgrounds/')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.media_type} - {self.is_active}"
+    
+
+class MpesaTransaction(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+    )
+    
+    TRANSACTION_TYPES = (
+        ('call', 'Call Payment'),
+        ('subscription', 'Subscription'),
+        ('content', 'Premium Content'),
+        ('tip', 'Tip/Gift'),
+    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mpesa_transactions')
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    phone_number = models.CharField(max_length=15)
+    reference_id = models.CharField(max_length=100, unique=True)  # CheckoutRequestID
+    merchant_request_id = models.CharField(max_length=100, blank=True, null=True)
+    mpesa_receipt_number = models.CharField(max_length=50, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    result_code = models.IntegerField(blank=True, null=True)
+    result_desc = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # For specific content
+    content_id = models.IntegerField(blank=True, null=True)  # Photo/Video ID
+    content_type = models.CharField(max_length=20, blank=True, null=True)  # 'photo', 'video', 'call'
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.amount} KES - {self.status}"
+
+
+class PaidMessage(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_paid_messages')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_paid_messages')
+    message = models.TextField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction = models.ForeignKey('MpesaTransaction', on_delete=models.SET_NULL, null=True, blank=True)
+    is_paid = models.BooleanField(default=False)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.sender.username} -> {self.receiver.username}: {self.amount} KES"

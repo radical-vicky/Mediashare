@@ -4,45 +4,43 @@
 
 {% block content %}
 <div class="container" style="max-width: 900px; margin: 0 auto; padding: 24px;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 style="font-size: 1.5rem; font-weight: 600;">
-            <i class="fas fa-comments" style="margin-right: 12px; color: #2f81f7;"></i>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h1 style="font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, #f1f5f9, #60a5fa); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0;">
             Chats
         </h1>
         <button class="btn btn-primary" id="newMessageBtn">
-            <i class="fas fa-edit"></i> New Chat
+            New Chat
         </button>
     </div>
 
     {% if threads_data %}
-        <div class="inbox-container" style="background: #161b22; border-radius: 12px; border: 1px solid #30363d; overflow: hidden;">
+        <div class="inbox-container" style="background: rgba(15, 25, 45, 0.65); backdrop-filter: blur(12px); border-radius: 16px; border: 1px solid rgba(59, 130, 246, 0.3); overflow: hidden;">
             {% for thread in threads_data %}
-                <a href="{% url 'frontend:thread_detail' thread.thread.id %}" class="thread-item" style="display: flex; align-items: center; padding: 16px; text-decoration: none; color: inherit; border-bottom: 1px solid #30363d; transition: background 0.15s ease; position: relative;">
+                <a href="{% url 'frontend:thread_detail' thread.thread.id %}" class="thread-item" style="display: flex; align-items: center; padding: 16px 20px; text-decoration: none; color: inherit; border-bottom: 1px solid rgba(59, 130, 246, 0.2); transition: all 0.2s ease; position: relative;">
                     
                     <!-- Avatar with Online Status -->
                     <div class="thread-avatar" style="position: relative; margin-right: 16px;">
                         {% if thread.other_user.profile.avatar %}
                             <img src="{{ thread.other_user.profile.avatar.url }}" class="avatar" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;">
                         {% else %}
-                            <div class="avatar" style="width: 56px; height: 56px; background: linear-gradient(135deg, #2f81f7, #238636); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                <span style="font-size: 1.5rem; font-weight: 600;">{{ thread.other_user.username|make_list|first|upper }}</span>
+                            <div class="avatar" style="width: 56px; height: 56px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <span style="font-size: 1.5rem; font-weight: 600; color: white;">{{ thread.other_user.username|make_list|first|upper }}</span>
                             </div>
                         {% endif %}
                         <!-- Online Status Indicator -->
-                        <span style="position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: #238636; border: 2px solid #161b22; border-radius: 50%;"></span>
+                        <span style="position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: #22c55e; border: 2px solid rgba(15, 25, 45, 0.65); border-radius: 50%;"></span>
                     </div>
                     
                     <!-- Chat Info -->
                     <div class="thread-info" style="flex: 1; min-width: 0;">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span style="font-weight: 600; font-size: 1rem;">{{ thread.other_user.username }}</span>
-                            <span class="text-muted" style="font-size: 0.7rem; white-space: nowrap;">{{ thread.updated_at|timesince }} ago</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-weight: 600; font-size: 1rem; color: #f1f5f9;">{{ thread.other_user.username }}</span>
+                            <span style="font-size: 0.7rem; color: #94a3b8; white-space: nowrap;">{{ thread.updated_at|timesince }} ago</span>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span style="font-size: 0.8rem; color: #7d8590; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.8rem; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                 {% if thread.unread_count > 0 %}
-                                    <span style="color: #2f81f7;">
-                                        <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 4px;"></i>
+                                    <span style="color: #60a5fa;">
                                         {{ thread.unread_count }} new message{{ thread.unread_count|pluralize }}
                                     </span>
                                 {% else %}
@@ -50,7 +48,7 @@
                                 {% endif %}
                             </span>
                             {% if thread.unread_count > 0 %}
-                                <span class="badge" style="background: #2f81f7; color: white; border-radius: 20px; padding: 4px 10px;">{{ thread.unread_count }}</span>
+                                <span class="badge" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 600;">{{ thread.unread_count }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -60,45 +58,41 @@
         
         <!-- Encryption Notice -->
         <div class="text-center mt-4" style="padding: 16px;">
-            <p class="text-muted" style="font-size: 0.7rem;">
-                <i class="fas fa-lock" style="margin-right: 4px;"></i> 
+            <p style="font-size: 0.7rem; color: #64748b;">
                 Messages are secured with end-to-end encryption
             </p>
         </div>
     {% else %}
-        <div class="empty-state" style="text-align: center; padding: 60px 20px; background: #161b22; border-radius: 12px; border: 1px solid #30363d;">
-            <i class="fas fa-comment-dots" style="font-size: 64px; color: #7d8590; margin-bottom: 20px; display: block;"></i>
-            <h3 style="font-size: 1.25rem; margin-bottom: 8px;">No messages yet</h3>
-            <p class="text-muted" style="margin-bottom: 24px;">Start a conversation with someone!</p>
+        <div class="empty-state" style="text-align: center; padding: 60px 20px; background: rgba(15, 25, 45, 0.65); backdrop-filter: blur(12px); border-radius: 16px; border: 1px solid rgba(59, 130, 246, 0.3);">
+            <h3 style="font-size: 1.25rem; margin-bottom: 8px; color: #f1f5f9;">No messages yet</h3>
+            <p style="color: #94a3b8; margin-bottom: 24px;">Start a conversation with someone</p>
             <button class="btn btn-primary" id="emptyNewMessageBtn">
-                <i class="fas fa-plus"></i> Start New Chat
+                Start New Chat
             </button>
         </div>
     {% endif %}
 </div>
 
 <!-- New Message Modal -->
-<div id="newMessageModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;">
-    <div style="background: #161b22; border-radius: 16px; max-width: 500px; width: 90%; border: 1px solid #30363d;">
-        <div style="padding: 20px; border-bottom: 1px solid #30363d;">
-            <h3 style="margin: 0;">New Chat</h3>
+<div id="newMessageModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center;">
+    <div style="background: rgba(15, 25, 45, 0.95); backdrop-filter: blur(12px); border-radius: 16px; max-width: 500px; width: 90%; border: 1px solid rgba(59, 130, 246, 0.3);">
+        <div style="padding: 20px; border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
+            <h3 style="margin: 0; color: #f1f5f9;">New Chat</h3>
         </div>
         <form id="newMessageForm" style="padding: 20px;">
             {% csrf_token %}
             <div style="margin-bottom: 20px;">
-                <label class="form-label">To:</label>
-                <input type="text" id="recipientUsername" class="form-control" placeholder="Enter username" required>
-                <div id="usernameSuggestions" style="display: none; margin-top: 8px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; max-height: 200px; overflow-y: auto;"></div>
+                <label class="form-label" style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; color: #cbd5e1;">To:</label>
+                <input type="text" id="recipientUsername" class="form-control" placeholder="Enter username" required style="width: 100%; padding: 10px 14px; background: rgba(15, 25, 45, 0.6); backdrop-filter: blur(8px); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #f1f5f9; font-size: 13px;">
+                <div id="usernameSuggestions" style="display: none; margin-top: 8px; background: rgba(15, 25, 45, 0.8); backdrop-filter: blur(8px); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; max-height: 200px; overflow-y: auto;"></div>
             </div>
             <div style="margin-bottom: 20px;">
-                <label class="form-label">Message:</label>
-                <textarea id="messageContent" class="form-control" rows="4" placeholder="Type your message..." required style="resize: none;"></textarea>
+                <label class="form-label" style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; color: #cbd5e1;">Message:</label>
+                <textarea id="messageContent" class="form-control" rows="4" placeholder="Type your message..." required style="width: 100%; padding: 10px 14px; background: rgba(15, 25, 45, 0.6); backdrop-filter: blur(8px); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #f1f5f9; font-size: 13px; resize: none;"></textarea>
             </div>
-            <div class="d-flex gap-2" style="justify-content: flex-end;">
-                <button type="button" class="btn btn-secondary" id="closeModalBtn">Cancel</button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-paper-plane"></i> Send
-                </button>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary" id="closeModalBtn" style="padding: 8px 20px; background: rgba(59, 130, 246, 0.15); backdrop-filter: blur(8px); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #cbd5e1; cursor: pointer; transition: all 0.2s ease;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="padding: 8px 20px; background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; border-radius: 8px; color: white; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);">Send</button>
             </div>
         </form>
     </div>
@@ -106,7 +100,13 @@
 
 <style>
     .thread-item:hover {
-        background: #21262d;
+        background: rgba(59, 130, 246, 0.1);
+        border-left: 3px solid #3b82f6;
+        padding-left: 17px;
+    }
+    
+    .thread-item:hover .avatar {
+        transform: scale(1.05);
     }
     
     .modal {
@@ -122,12 +122,50 @@
         transition: transform 0.2s ease;
     }
     
-    .thread-item:hover .avatar {
-        transform: scale(1.05);
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-secondary:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+        color: #f1f5f9;
+        transform: translateY(-1px);
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    
+    .suggestion-item:hover {
+        background: rgba(59, 130, 246, 0.15);
+    }
+    
+    .badge {
+        transition: all 0.2s ease;
     }
 </style>
 
 <script>
+    // Function to get CSRF token from cookies
+    function getCSRFToken() {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, 10) === ('csrftoken' + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(10));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     const modal = document.getElementById('newMessageModal');
     const newMessageBtn = document.getElementById('newMessageBtn');
     const emptyNewMessageBtn = document.getElementById('emptyNewMessageBtn');
@@ -178,11 +216,11 @@
                 
                 if (users.length > 0) {
                     suggestionsDiv.innerHTML = users.map(user => `
-                        <div class="suggestion-item" data-username="${user.username}" style="padding: 12px; cursor: pointer; border-bottom: 1px solid #21262d; display: flex; align-items: center; gap: 12px;">
-                            ${user.avatar ? `<img src="${user.avatar}" style="width: 40px; height: 40px; border-radius: 50%;">` : `<div style="width: 40px; height: 40px; background: #21262d; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user"></i></div>`}
+                        <div class="suggestion-item" data-username="${user.username}" style="padding: 12px; cursor: pointer; border-bottom: 1px solid rgba(59, 130, 246, 0.2); display: flex; align-items: center; gap: 12px;">
+                            ${user.avatar ? `<img src="${user.avatar}" style="width: 40px; height: 40px; border-radius: 50%;">` : `<div style="width: 40px; height: 40px; background: rgba(59, 130, 246, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #f1f5f9;">${user.username.charAt(0).toUpperCase()}</div>`}
                             <div>
-                                <div style="font-weight: 600;">${user.username}</div>
-                                ${user.bio ? `<div style="font-size: 0.75rem; color: #7d8590;">${user.bio.substring(0, 40)}</div>` : ''}
+                                <div style="font-weight: 600; color: #f1f5f9;">${user.username}</div>
+                                ${user.bio ? `<div style="font-size: 0.75rem; color: #94a3b8;">${user.bio.substring(0, 40)}</div>` : ''}
                             </div>
                         </div>
                     `).join('');
@@ -197,6 +235,10 @@
                 } else {
                     suggestionsDiv.style.display = 'none';
                 }
+            })
+            .catch(error => {
+                console.error('Error fetching users:', error);
+                suggestionsDiv.style.display = 'none';
             });
         }, 300);
     });
@@ -219,6 +261,9 @@
             return;
         }
         
+        // Get CSRF token
+        const csrftoken = getCSRFToken();
+        
         fetch("{% url 'frontend:send_ajax_message' %}", {
             method: 'POST',
             headers: {
@@ -234,7 +279,7 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showToast('Message sent successfully!');
+                showToast('Message sent successfully');
                 setTimeout(() => {
                     window.location.href = `/messages/thread/${data.thread_id}/`;
                 }, 1000);
@@ -243,19 +288,37 @@
             }
         })
         .catch(error => {
+            console.error('Error:', error);
             showToast('Error sending message', 'error');
         });
     };
     
     function showToast(message, type = 'success') {
-        const toastContainer = document.querySelector('.toast-container');
-        if (!toastContainer) return;
+        // Remove existing toast
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
         
         const toast = document.createElement('div');
         toast.className = 'toast';
-        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
-        toastContainer.appendChild(toast);
+        toast.style.cssText = `background: rgba(15, 25, 45, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(59, 130, 246, 0.3); border-left: 3px solid ${type === 'success' ? '#22c55e' : '#ef4444'}; padding: 12px 20px; border-radius: 10px; color: #f1f5f9; font-size: 12px; font-weight: 500; animation: slideIn 0.3s ease; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); position: fixed; bottom: 20px; right: 20px; z-index: 3000;`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
     }
 </script>
+
+<style>
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
 {% endblock %}

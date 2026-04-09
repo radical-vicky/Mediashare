@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Feed - MediaShare{% endblock %}
 
@@ -31,14 +32,14 @@
                 <div class="section-header">
                     <h2 class="section-title">Photos</h2>
                     {% if current_filter == 'all' %}
-                        <a href="?filter=photos" class="section-link">View all photos</a>
+                        <a href="?filter=photos" class="section-link">View all photos →</a>
                     {% endif %}
                 </div>
 
                 {% if photos %}
                     <div class="media-grid">
                         {% for photo in photos %}
-                            <div class="media-card">
+                            <div class="media-card glass">
                                 <a href="{% url 'frontend:photo_detail' photo.id %}" class="media-link">
                                     <div class="media-poster">
                                         <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" class="media-image">
@@ -50,13 +51,28 @@
                                         </div>
                                     </div>
                                     <div class="media-info">
-                                        <div class="media-title">{{ photo.caption|default:"Untitled"|truncatechars:60 }}</div>
-                                        <div class="media-meta">
-                                            <span class="meta-user">{{ photo.author.username }}</span>
-                                            <span class="meta-time">{{ photo.created_at|timesince }} ago</span>
+                                        <div class="media-author">
+                                            <div class="author-avatar">
+                                                {% if photo.author.profile.avatar %}
+                                                    <img src="{{ photo.author.profile.avatar.url }}" alt="{{ photo.author.username }}" class="avatar-img">
+                                                {% else %}
+                                                    <div class="avatar-placeholder">{{ photo.author.username|first|upper }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="author-details">
+                                                <span class="author-name">{{ photo.author.username }}</span>
+                                                <span class="post-time">{{ photo.created_at|timesince }} ago</span>
+                                            </div>
                                         </div>
+                                        <div class="media-title">{{ photo.caption|default:"Untitled"|truncatechars:50 }}</div>
                                     </div>
                                 </a>
+                                <div class="media-like-btn-wrapper">
+                                    <button class="like-btn {% if user in photo.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_photo' photo.id %}" onclick="likeMedia(this)">
+                                        <span class="heart-icon">❤️</span>
+                                        <span class="like-count">{{ photo.likes.count }}</span>
+                                    </button>
+                                </div>
                             </div>
                         {% endfor %}
                     </div>
@@ -74,7 +90,7 @@
                         </div>
                     {% endif %}
                 {% else %}
-                    <div class="empty-state">
+                    <div class="empty-state glass">
                         <p class="empty-message">No photos yet.</p>
                         {% if user.is_authenticated %}
                             <a href="{% url 'frontend:upload_photo' %}" class="btn btn-primary">Upload your first photo</a>
@@ -92,14 +108,14 @@
                 <div class="section-header">
                     <h2 class="section-title">Videos</h2>
                     {% if current_filter == 'all' %}
-                        <a href="?filter=videos" class="section-link">View all videos</a>
+                        <a href="?filter=videos" class="section-link">View all videos →</a>
                     {% endif %}
                 </div>
 
                 {% if videos %}
                     <div class="media-grid">
                         {% for video in videos %}
-                            <div class="media-card">
+                            <div class="media-card glass">
                                 <a href="{% url 'frontend:video_detail' video.id %}" class="media-link">
                                     <div class="media-poster">
                                         <video class="media-video">
@@ -114,13 +130,28 @@
                                         </div>
                                     </div>
                                     <div class="media-info">
-                                        <div class="media-title">{{ video.title|truncatechars:60 }}</div>
-                                        <div class="media-meta">
-                                            <span class="meta-user">{{ video.author.username }}</span>
-                                            <span class="meta-time">{{ video.created_at|timesince }} ago</span>
+                                        <div class="media-author">
+                                            <div class="author-avatar">
+                                                {% if video.author.profile.avatar %}
+                                                    <img src="{{ video.author.profile.avatar.url }}" alt="{{ video.author.username }}" class="avatar-img">
+                                                {% else %}
+                                                    <div class="avatar-placeholder">{{ video.author.username|first|upper }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="author-details">
+                                                <span class="author-name">{{ video.author.username }}</span>
+                                                <span class="post-time">{{ video.created_at|timesince }} ago</span>
+                                            </div>
                                         </div>
+                                        <div class="media-title">{{ video.title|truncatechars:50 }}</div>
                                     </div>
                                 </a>
+                                <div class="media-like-btn-wrapper">
+                                    <button class="like-btn {% if user in video.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_video' video.id %}" onclick="likeMedia(this)">
+                                        <span class="heart-icon">❤️</span>
+                                        <span class="like-count">{{ video.likes.count }}</span>
+                                    </button>
+                                </div>
                             </div>
                         {% endfor %}
                     </div>
@@ -138,7 +169,7 @@
                         </div>
                     {% endif %}
                 {% else %}
-                    <div class="empty-state">
+                    <div class="empty-state glass">
                         <p class="empty-message">No videos yet.</p>
                         {% if user.is_authenticated %}
                             <a href="{% url 'frontend:upload_video' %}" class="btn btn-primary">Upload your first video</a>
@@ -156,7 +187,7 @@
 /* Feed Container */
 .feed-container {
     padding: 32px 0;
-    background: #0d1117;
+    background: linear-gradient(135deg, #0a0e1a 0%, #0f172a 50%, #1e1b4b 100%);
     min-height: calc(100vh - 200px);
 }
 
@@ -166,14 +197,25 @@
     padding: 0 24px;
 }
 
+/* Glass Effect */
+.glass {
+    background: rgba(15, 25, 45, 0.65);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+}
+
 /* Filter Section */
 .filter-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 32px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #30363d;
+    padding: 16px 20px;
+    background: rgba(15, 25, 45, 0.5);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
 }
 
 .filter-tabs {
@@ -182,27 +224,28 @@
 }
 
 .filter-tab {
-    padding: 8px 16px;
-    color: #7d8590;
+    padding: 8px 20px;
+    color: #94a3b8;
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    border-radius: 6px;
+    border-radius: 8px;
     transition: all 0.2s ease;
 }
 
 .filter-tab:hover {
-    color: #e6edf3;
-    background: #21262d;
+    color: #f1f5f9;
+    background: rgba(59, 130, 246, 0.15);
 }
 
 .filter-tab.active {
-    color: #f0f6fc;
-    background: #238636;
+    color: white;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 .filter-info {
-    color: #7d8590;
+    color: #94a3b8;
     font-size: 13px;
 }
 
@@ -227,39 +270,45 @@
 }
 
 .section-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #e6edf3;
+    font-size: 24px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f1f5f9, #60a5fa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     margin: 0;
 }
 
 .section-link {
     font-size: 14px;
-    color: #2f81f7;
+    color: #60a5fa;
     text-decoration: none;
+    transition: all 0.2s ease;
 }
 
 .section-link:hover {
-    text-decoration: underline;
+    color: #3b82f6;
+    transform: translateX(4px);
+    display: inline-block;
 }
 
-/* Media Grid - JustWatch Style */
+/* Media Grid - Compact Cards */
 .media-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 24px;
+    gap: 20px;
 }
 
 .media-card {
-    background: #161b22;
-    border-radius: 8px;
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
 .media-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    border-color: #3b82f6;
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
 }
 
 .media-link {
@@ -269,21 +318,31 @@
 /* Media Poster */
 .media-poster {
     position: relative;
-    aspect-ratio: 2 / 3;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
-    background: #0d1117;
+    background: #0f172a;
 }
 
 .media-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.media-card:hover .media-image {
+    transform: scale(1.05);
 }
 
 .media-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.media-card:hover .media-video {
+    transform: scale(1.05);
 }
 
 /* Media Overlay */
@@ -298,7 +357,8 @@
     flex-direction: column;
     justify-content: space-between;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
 .media-card:hover .media-overlay {
@@ -311,10 +371,17 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 48px;
-    height: 48px;
-    background: rgba(255, 255, 255, 0.9);
+    width: 40px;
+    height: 40px;
+    background: rgba(59, 130, 246, 0.9);
     border-radius: 50%;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+}
+
+.media-card:hover .play-icon {
+    transform: translate(-50%, -50%) scale(1.1);
+    background: rgba(59, 130, 246, 1);
 }
 
 .play-icon::after {
@@ -326,8 +393,8 @@
     width: 0;
     height: 0;
     border-style: solid;
-    border-width: 10px 0 10px 16px;
-    border-color: transparent transparent transparent #000;
+    border-width: 8px 0 8px 12px;
+    border-color: transparent transparent transparent white;
 }
 
 /* Media Stats */
@@ -337,14 +404,15 @@
     left: 12px;
     right: 12px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 8px;
 }
 
 .stat-item {
     background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 11px;
     font-weight: 500;
     color: #e6edf3;
@@ -352,45 +420,128 @@
 
 /* Media Info */
 .media-info {
-    padding: 12px;
+    padding: 10px;
+}
+
+.media-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.author-avatar {
+    flex-shrink: 0;
+}
+
+.avatar-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+}
+
+.author-details {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.author-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #f1f5f9;
+}
+
+.post-time {
+    font-size: 10px;
+    color: #64748b;
 }
 
 .media-title {
-    font-size: 14px;
+    font-size: 12px;
+    font-weight: 400;
+    color: #cbd5e1;
+    line-height: 1.3;
+    display: block;
+    transition: color 0.2s ease;
+}
+
+.media-title:hover {
+    color: #60a5fa;
+}
+
+/* Like Button */
+.media-like-btn-wrapper {
+    position: absolute;
+    bottom: 70px;
+    right: 10px;
+    z-index: 10;
+}
+
+.like-btn {
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 500;
     color: #e6edf3;
-    margin-bottom: 8px;
-    line-height: 1.4;
-}
-
-.media-meta {
+    cursor: pointer;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.like-btn .heart-icon {
     font-size: 12px;
+    color: #64748b;
+    transition: color 0.2s ease;
 }
 
-.meta-user {
-    color: #2f81f7;
+.like-btn.liked .heart-icon {
+    color: #ef4444;
 }
 
-.meta-time {
-    color: #7d8590;
+.like-btn:hover {
+    background: rgba(59, 130, 246, 0.8);
+    transform: scale(1.05);
+}
+
+.like-btn:hover .heart-icon {
+    color: #ef4444;
+}
+
+.like-count {
+    font-size: 11px;
+    font-weight: 600;
 }
 
 /* Empty State */
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 8px;
 }
 
 .empty-message {
     font-size: 16px;
-    color: #7d8590;
-    margin-bottom: 16px;
+    color: #94a3b8;
+    margin-bottom: 20px;
 }
 
 /* Pagination */
@@ -400,63 +551,57 @@
     align-items: center;
     gap: 16px;
     margin-top: 32px;
-    padding-top: 16px;
+    padding: 16px;
 }
 
 .page-link {
-    padding: 8px 16px;
-    background: #21262d;
-    color: #e6edf3;
+    padding: 8px 20px;
+    background: rgba(15, 25, 45, 0.65);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #f1f5f9;
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 14px;
-    transition: background 0.2s ease;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 .page-link:hover {
-    background: #30363d;
+    background: rgba(59, 130, 246, 0.2);
+    border-color: #3b82f6;
+    transform: translateY(-2px);
 }
 
 .page-current {
-    color: #7d8590;
+    color: #94a3b8;
     font-size: 14px;
 }
 
 /* Buttons */
 .btn-primary {
     display: inline-block;
-    padding: 8px 16px;
-    background: #238636;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: white;
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary:hover {
-    background: #2ea043;
-}
-
-/* Like Button */
-.like-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 14px;
-}
-
-.like-btn.liked {
-    color: #f85149;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
 }
 
 /* Responsive Design */
 @media (max-width: 1024px) {
     .media-grid {
         grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 20px;
+        gap: 16px;
     }
 }
 
@@ -469,10 +614,16 @@
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
+        padding: 12px 16px;
     }
 
     .filter-tabs {
         justify-content: center;
+    }
+
+    .filter-tab {
+        padding: 6px 16px;
+        font-size: 13px;
     }
 
     .filter-info {
@@ -486,17 +637,25 @@
         margin-bottom: 20px;
     }
 
+    .section-title {
+        font-size: 20px;
+    }
+
     .media-grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 16px;
+        gap: 12px;
     }
 
     .media-title {
-        font-size: 13px;
+        font-size: 11px;
     }
 
-    .media-meta {
+    .author-name {
         font-size: 11px;
+    }
+
+    .post-time {
+        font-size: 9px;
     }
 
     .pagination {
@@ -504,7 +663,7 @@
     }
 
     .page-link {
-        padding: 6px 12px;
+        padding: 6px 16px;
         font-size: 13px;
     }
 }
@@ -512,50 +671,70 @@
 @media (max-width: 480px) {
     .media-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 12px;
+        gap: 10px;
     }
 
     .filter-tab {
-        padding: 6px 12px;
-        font-size: 13px;
+        padding: 5px 12px;
+        font-size: 12px;
     }
 
     .media-info {
-        padding: 10px;
+        padding: 8px;
+    }
+
+    .avatar-img, .avatar-placeholder {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
     }
 
     .media-title {
-        font-size: 12px;
+        font-size: 10px;
     }
 }
 </style>
 
 <script>
-// Like functionality
-document.querySelectorAll('.like-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        const url = this.dataset.url;
-        const countSpan = this.querySelector('.likes-count');
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken,
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
+function likeMedia(button) {
+    event.stopPropagation();
+    const url = button.dataset.url;
+    const likeCountSpan = button.querySelector('.like-count');
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.liked !== undefined) {
+            likeCountSpan.textContent = data.count;
             if (data.liked) {
-                this.classList.add('liked');
+                button.classList.add('liked');
             } else {
-                this.classList.remove('liked');
+                button.classList.remove('liked');
             }
-            countSpan.textContent = data.count;
-        })
-        .catch(error => console.error('Error:', error));
-    });
-});
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
 </script>
 {% endblock %}

@@ -45,6 +45,7 @@ urlpatterns = [
     path('call/end/<int:call_id>/', twilio_views.end_call, name='end_call'),
     path('call/settings/', twilio_views.call_settings, name='call_settings'),
     path('calls/history/', twilio_views.call_history, name='calls_history'),
+    path('calls/history/api/', twilio_views.call_history_api, name='call_history_api'),  # This line is correct now
     
     # Twilio webhook endpoints
     path('twilio/voice/<int:call_id>/', twilio_views.twilio_voice_webhook, name='twilio_voice_webhook'),
@@ -59,7 +60,8 @@ urlpatterns = [
     path('messages/unread-count/', message_views.get_unread_count, name='get_unread_count'),
     path('messages/delete/<int:thread_id>/', message_views.delete_thread, name='delete_thread'),
     path('messages/delete-message/<int:message_id>/', message_views.delete_message, name='delete_message'),
-    path('messages/edit-message/<int:message_id>/', message_views.edit_message, name='edit_message'),  # ADD THIS LINE
+    path('messages/edit-message/<int:message_id>/', message_views.edit_message, name='edit_message'),
+    path('messages/inbox/api/', message_views.inbox_api, name='inbox_api'),
     
     # Comment delete endpoint
     path('comment/<int:comment_id>/delete/', views.delete_comment, name='delete_comment'),
@@ -73,4 +75,17 @@ urlpatterns = [
     path('messages/thread/<int:thread_id>/read/', message_views.mark_thread_read, name='mark_thread_read'),
     path('messages/thread/<int:thread_id>/typing/', message_views.typing_indicator, name='typing_indicator'),
     path('api/users/all/', views.get_all_users_api, name='api_all_users'),
+    # In frontend/urls.py
+    path('call/room/<str:room_name>/', views.call_room, name='call_room'),
+    # Add phone call URL
+    path('phone/call/<int:call_id>/', views.phone_call, name='phone_call'),
+    path('edit/photo/<int:photo_id>/', views.edit_photo, name='edit_photo'),
+    path('edit/video/<int:video_id>/', views.edit_video, name='edit_video'),
+    path('mpesa/pay/', views.mpesa_payment, name='mpesa_payment'),
+    path('mpesa/callback/', views.mpesa_callback, name='mpesa_callback'),
+    path('mpesa/status/<int:transaction_id>/', views.check_payment_status, name='mpesa_status'),
+    path('mpesa/pay/', views.mpesa_payment, name='mpesa_payment'),
+    path('mpesa/callback/', views.mpesa_callback, name='mpesa_callback'),
+    path('mpesa/status/<int:transaction_id>/', views.check_payment_status, name='mpesa_status'),
+
 ]

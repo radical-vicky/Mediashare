@@ -1,0 +1,713 @@
+{% extends "base.html" %}
+
+{% block title %}Call Settings - MediaShare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+    
+    .settings-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    
+    .settings-header {
+        padding: 24px;
+        border-bottom: 1px solid #30363d;
+        background: #010409;
+    }
+    
+    .settings-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #e6edf3;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .settings-header p {
+        font-size: 0.875rem;
+        color: #7d8590;
+        margin-top: 8px;
+    }
+    
+    .settings-form {
+        padding: 24px;
+    }
+    
+    /* Form Groups */
+    .form-group {
+        margin-bottom: 24px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        color: #e6edf3;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 10px 12px;
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        color: #e6edf3;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .form-group input:focus {
+        outline: none;
+        border-color: #2f81f7;
+        box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.1);
+    }
+    
+    /* Toggle Switch */
+    .toggle-group {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 0;
+        border-bottom: 1px solid #30363d;
+    }
+    
+    .toggle-info h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e6edf3;
+        margin-bottom: 4px;
+    }
+    
+    .toggle-info p {
+        font-size: 0.75rem;
+        color: #7d8590;
+    }
+    
+    /* Switch */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 52px;
+        height: 28px;
+    }
+    
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #30363d;
+        transition: 0.3s;
+        border-radius: 34px;
+    }
+    
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+        background-color: #2f81f7;
+    }
+    
+    input:checked + .slider:before {
+        transform: translateX(24px);
+    }
+    
+    /* Price Input */
+    .price-input-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .price-input-group span {
+        color: #7d8590;
+        font-size: 1rem;
+    }
+    
+    .price-input-group input {
+        width: 120px;
+        text-align: center;
+    }
+    
+    /* Test Section */
+    .test-section {
+        margin-top: 24px;
+        padding: 20px;
+        background: #0d1117;
+        border-radius: 12px;
+        border: 1px solid #30363d;
+    }
+    
+    .test-section h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e6edf3;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .test-buttons {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .test-btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .test-mic {
+        background: #21262d;
+        color: #e6edf3;
+        border: 1px solid #30363d;
+    }
+    
+    .test-mic:hover {
+        background: #30363d;
+    }
+    
+    .test-mic.active {
+        background: #238636;
+        border-color: #238636;
+        color: white;
+    }
+    
+    .test-speaker {
+        background: #21262d;
+        color: #e6edf3;
+        border: 1px solid #30363d;
+    }
+    
+    .test-speaker:hover {
+        background: #30363d;
+    }
+    
+    .test-call {
+        background: #2f81f7;
+        color: white;
+    }
+    
+    .test-call:hover {
+        background: #3a8cff;
+    }
+    
+    /* Call History */
+    .history-section {
+        margin-top: 24px;
+    }
+    
+    .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    
+    .history-header h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e6edf3;
+        margin: 0;
+    }
+    
+    .history-list {
+        background: #0d1117;
+        border-radius: 12px;
+        border: 1px solid #30363d;
+        overflow: hidden;
+    }
+    
+    .history-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        border-bottom: 1px solid #21262d;
+        transition: background 0.2s;
+    }
+    
+    .history-item:last-child {
+        border-bottom: none;
+    }
+    
+    .history-item:hover {
+        background: #21262d;
+    }
+    
+    .history-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    .history-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+    
+    .history-icon.missed {
+        background: rgba(218, 54, 51, 0.2);
+        color: #da3633;
+    }
+    
+    .history-icon.completed {
+        background: rgba(35, 134, 54, 0.2);
+        color: #238636;
+    }
+    
+    .history-icon.cancelled {
+        background: rgba(108, 142, 160, 0.2);
+        color: #7d8590;
+    }
+    
+    .history-details h4 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #e6edf3;
+        margin-bottom: 4px;
+    }
+    
+    .history-details p {
+        font-size: 0.7rem;
+        color: #7d8590;
+        margin: 0;
+    }
+    
+    .history-duration {
+        font-size: 0.8rem;
+        color: #7d8590;
+    }
+    
+    .history-cost {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #2f81f7;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #7d8590;
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+    
+    .empty-state p {
+        font-size: 0.875rem;
+    }
+    
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid #30363d;
+    }
+    
+    /* Message */
+    .message {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .message.success {
+        background: #0d4429;
+        border-left: 3px solid #238636;
+        color: #b9f3ce;
+    }
+    
+    .message.error {
+        background: #49181b;
+        border-left: 3px solid #da3633;
+        color: #ffb4b4;
+    }
+    
+    .message.info {
+        background: #152f52;
+        border-left: 3px solid #2f81f7;
+        color: #b0d4ff;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .settings-container {
+            padding: 20px;
+        }
+        
+        .test-buttons {
+            flex-direction: column;
+        }
+        
+        .test-btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .history-item {
+            flex-direction: column;
+            gap: 12px;
+            text-align: center;
+        }
+        
+        .history-info {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="settings-card">
+        <div class="settings-header">
+            <h2>
+                <i class="fas fa-phone-alt"></i>
+                Call Settings
+            </h2>
+            <p>Configure your call preferences and pricing</p>
+        </div>
+        
+        <div class="settings-form">
+            <div id="messageContainer"></div>
+            
+            <form id="callSettingsForm">
+                {% csrf_token %}
+                
+                <!-- Call Availability Toggle -->
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4><i class="fas fa-phone-volume"></i> Available for calls</h4>
+                        <p>Allow other users to call you on MediaShare</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="isAvailable" name="is_available_for_calls" {% if profile.is_available_for_calls %}checked{% endif %}>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Price per Minute -->
+                <div class="form-group">
+                    <label><i class="fas fa-dollar-sign"></i> Price per minute (USD)</label>
+                    <div class="price-input-group">
+                        <span>$</span>
+                        <input type="number" name="call_price_per_minute" id="callPrice" step="0.01" min="0" max="100" value="{{ profile.call_price_per_minute|default:'0.00' }}">
+                        <span>per minute</span>
+                    </div>
+                    <small style="color: #7d8590; font-size: 0.7rem; margin-top: 4px; display: block;">
+                        Set your rate for calls. Minimum $0.00 (free calls)
+                    </small>
+                </div>
+                
+                <!-- Phone Number (for receiving calls) -->
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> Phone Number (for call forwarding)</label>
+                    <input type="tel" name="phone_number" id="phoneNumber" value="{{ profile.phone_number|default:'' }}" placeholder="+1234567890">
+                    <small style="color: #7d8590; font-size: 0.7rem; margin-top: 4px; display: block;">
+                        International format recommended (e.g., +1234567890)
+                    </small>
+                </div>
+                
+                <!-- Test Section -->
+                <div class="test-section">
+                    <h3><i class="fas fa-vial"></i> Test Your Devices</h3>
+                    <div class="test-buttons">
+                        <button type="button" class="test-btn test-mic" id="testMicBtn">
+                            <i class="fas fa-microphone"></i> Test Microphone
+                        </button>
+                        <button type="button" class="test-btn test-speaker" id="testSpeakerBtn">
+                            <i class="fas fa-volume-up"></i> Test Speaker
+                        </button>
+                        <button type="button" class="test-btn test-call" id="testCallBtn">
+                            <i class="fas fa-phone"></i> Test Call (Echo)
+                        </button>
+                    </div>
+                    <div id="testStatus" style="margin-top: 12px; font-size: 0.75rem; color: #7d8590;"></div>
+                </div>
+                
+                <!-- Call History -->
+                <div class="history-section">
+                    <div class="history-header">
+                        <h3><i class="fas fa-history"></i> Recent Calls</h3>
+                        <button type="button" class="btn btn-secondary" id="refreshHistoryBtn" style="padding: 4px 12px; font-size: 0.75rem;">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div id="callHistoryList" class="history-list">
+                        <div class="empty-state">
+                            <i class="fas fa-phone-slash"></i>
+                            <p>No call history yet</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
+                    <button type="submit" class="btn btn-primary" id="saveBtn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let mediaStream = null;
+    
+    // Load call history
+    function loadCallHistory() {
+        fetch('/calls/history/api/', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const historyList = document.getElementById('callHistoryList');
+            if (data.calls && data.calls.length > 0) {
+                historyList.innerHTML = data.calls.map(call => `
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-icon ${call.status}">
+                                <i class="fas fa-${call.status === 'missed' ? 'phone-slash' : call.status === 'completed' ? 'phone-alt' : 'ban'}"></i>
+                            </div>
+                            <div class="history-details">
+                                <h4>${call.status === 'missed' ? 'Missed Call' : call.status === 'completed' ? 'Call Completed' : 'Cancelled Call'}</h4>
+                                <p>${call.other_user} • ${call.date}</p>
+                            </div>
+                        </div>
+                        <div class="history-duration">
+                            ${call.duration}
+                        </div>
+                        <div class="history-cost">
+                            $${call.cost}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                historyList.innerHTML = '<div class="empty-state"><i class="fas fa-phone-slash"></i><p>No call history yet</p></div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading call history:', error);
+        });
+    }
+    
+    // Test microphone
+    async function testMicrophone() {
+        const testBtn = document.getElementById('testMicBtn');
+        const testStatus = document.getElementById('testStatus');
+        
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+            mediaStream = null;
+            testBtn.innerHTML = '<i class="fas fa-microphone"></i> Test Microphone';
+            testBtn.classList.remove('active');
+            testStatus.innerHTML = '';
+            return;
+        }
+        
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaStream = stream;
+            
+            testBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Testing';
+            testBtn.classList.add('active');
+            testStatus.innerHTML = '<i class="fas fa-check-circle"></i> Microphone is working. Speaking now...';
+            
+            // Visualizer
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioContext.createMediaStreamSource(stream);
+            const analyser = audioContext.createAnalyser();
+            source.connect(analyser);
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            function updateLevel() {
+                if (!mediaStream) return;
+                analyser.getByteFrequencyData(dataArray);
+                let level = 0;
+                for (let i = 0; i < bufferLength; i++) {
+                    level += dataArray[i];
+                }
+                level = level / bufferLength;
+                const percent = Math.min(100, (level / 255) * 100);
+                if (percent > 10) {
+                    testStatus.innerHTML = `<i class="fas fa-microphone-alt"></i> Voice detected! Level: ${Math.floor(percent)}%`;
+                }
+                requestAnimationFrame(updateLevel);
+            }
+            updateLevel();
+            
+        } catch (error) {
+            testStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Could not access microphone. Please check permissions.';
+            console.error('Microphone error:', error);
+        }
+    }
+    
+    // Test speaker
+    function testSpeaker() {
+        const testStatus = document.getElementById('testStatus');
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 880;
+        gainNode.gain.value = 0.3;
+        
+        oscillator.start();
+        gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 1);
+        oscillator.stop(audioContext.currentTime + 1);
+        
+        testStatus.innerHTML = '<i class="fas fa-volume-up"></i> Playing test sound... Can you hear it?';
+        setTimeout(() => {
+            testStatus.innerHTML = '';
+        }, 2000);
+    }
+    
+    // Test call
+    function testCall() {
+        const testStatus = document.getElementById('testStatus');
+        testStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing your audio devices...';
+        
+        setTimeout(() => {
+            testStatus.innerHTML = '<i class="fas fa-check-circle"></i> Test completed. Your audio devices are working!';
+            setTimeout(() => {
+                if (testStatus.innerHTML === '<i class="fas fa-check-circle"></i> Test completed. Your audio devices are working!') {
+                    testStatus.innerHTML = '';
+                }
+            }, 3000);
+        }, 2000);
+    }
+    
+    // Save settings
+    document.getElementById('callSettingsForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const saveBtn = document.getElementById('saveBtn');
+        const messageContainer = document.getElementById('messageContainer');
+        
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        
+        const formData = new FormData();
+        formData.append('is_available_for_calls', document.getElementById('isAvailable').checked ? 'on' : 'off');
+        formData.append('call_price_per_minute', document.getElementById('callPrice').value);
+        formData.append('phone_number', document.getElementById('phoneNumber').value);
+        
+        try {
+            const response = await fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                messageContainer.innerHTML = '<div class="message success"><i class="fas fa-check-circle"></i> Settings saved successfully!</div>';
+                setTimeout(() => {
+                    messageContainer.innerHTML = '';
+                }, 3000);
+            } else {
+                messageContainer.innerHTML = `<div class="message error"><i class="fas fa-exclamation-circle"></i> ${data.error || 'Error saving settings'}</div>`;
+            }
+        } catch (error) {
+            messageContainer.innerHTML = '<div class="message error"><i class="fas fa-exclamation-circle"></i> Error saving settings</div>';
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+        }
+    });
+    
+    // Reset button
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        document.getElementById('isAvailable').checked = false;
+        document.getElementById('callPrice').value = '0.00';
+        document.getElementById('phoneNumber').value = '';
+        
+        const messageContainer = document.getElementById('messageContainer');
+        messageContainer.innerHTML = '<div class="message info"><i class="fas fa-info-circle"></i> Settings reset to default</div>';
+        setTimeout(() => {
+            messageContainer.innerHTML = '';
+        }, 3000);
+    });
+    
+    // Test buttons
+    document.getElementById('testMicBtn').addEventListener('click', testMicrophone);
+    document.getElementById('testSpeakerBtn').addEventListener('click', testSpeaker);
+    document.getElementById('testCallBtn').addEventListener('click', testCall);
+    document.getElementById('refreshHistoryBtn').addEventListener('click', loadCallHistory);
+    
+    // Initialize
+    loadCallHistory();
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+        }
+    });
+</script>
+{% endblock %}

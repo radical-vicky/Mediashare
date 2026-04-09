@@ -3,14 +3,15 @@ from django.utils.html import format_html
 from django.contrib.auth.models import User
 from .models import (
     UserProfile, Photo, Video, Comment, Share, 
-    CallSession, MessageThread, Message, VideoView
+    CallSession, MessageThread, Message, VideoView, BackgroundMedia,
+    MpesaTransaction, PaidMessage
 )
 
 # ========== USER PROFILE ADMIN ==========
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'phone_number', 'is_available_for_calls', 'call_price_per_minute', 'followers_count', 'is_verified']
+    list_display = ['user', 'phone_number', 'is_available_for_calls', 'call_price_per_minute', 'paid_message_price', 'followers_count', 'is_verified']
     list_filter = ['is_available_for_calls', 'is_verified', 'created_at']
     search_fields = ['user__username', 'user__email', 'phone_number', 'location']
     readonly_fields = ['followers_count', 'following_count', 'created_at', 'updated_at']
@@ -22,8 +23,12 @@ class UserProfileAdmin(admin.ModelAdmin):
         ('Contact Information', {
             'fields': ('phone_number', 'is_verified')
         }),
+        ('Pricing Settings', {
+            'fields': ('call_price_per_minute', 'paid_message_price'),
+            'classes': ('collapse',)
+        }),
         ('Call Settings', {
-            'fields': ('call_price_per_minute', 'is_available_for_calls'),
+            'fields': ('is_available_for_calls',),
             'classes': ('collapse',)
         }),
         ('Social', {
@@ -43,6 +48,162 @@ class UserProfileAdmin(admin.ModelAdmin):
     def following_count(self, obj):
         return obj.following.count()
     following_count.short_description = 'Following'
+
+
+# ========== BACKGROUND MEDIA ADMIN ==========
+
+@admin.register(BackgroundMedia)
+class BackgroundMediaAdmin(admin.ModelAdmin):
+    list_display = ['id', 'media_type', 'file_preview', 'is_active', 'created_at']
+    list_filter = ['media_type', 'is_active', 'created_at']
+    search_fields = ['file']
+    list_editable = ['is_active']
+    
+    fieldsets = (
+        ('Media Information', {
+            'fields': ('media_type', 'file', 'is_active')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ['created_at']
+    
+    def file_preview(self, obj):
+        if obj.file:
+            if obj.media_type == 'image':
+                return format_html('<img src="{}" width="60" height="60" style="object-fit: cover; border-radius: 8px;" />', obj.file.url)
+            else:
+                return format_html(
+                    '<video width="60" height="60" style="object-fit: cover; border-radius: 8px;" muted>'
+                    '<source src="{}" type="video/mp4">'
+                    '</video>', obj.file.url
+                )
+        return format_html('<span style="color: gray;">No file</span>')
+    file_preview.short_description = 'Preview'
+    
+    def save_model(self, request, obj, form, change):
+        if obj.is_active:
+            BackgroundMedia.objects.exclude(id=obj.id).update(is_active=False)
+        super().save_model(request, obj, form, change)
+    
+    actions = ['activate_selected', 'deactivate_selected']
+    
+    def activate_selected(self, request, queryset):
+        BackgroundMedia.objects.all().update(is_active=False)
+        queryset.update(is_active=True)
+        self.message_user(request, f'{queryset.count()} background media activated.')
+    activate_selected.short_description = 'Activate selected (deactivates others)'
+    
+    def deactivate_selected(self, request, queryset):
+        queryset.update(is_active=False)
+        self.message_user(request, f'{queryset.count()} background media deactivated.')
+    deactivate_selected.short_description = 'Deactivate selected'
+
+
+# ========== M-PESA TRANSACTION ADMIN ==========
+
+@admin.register(MpesaTransaction)
+class MpesaTransactionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'transaction_type', 'amount', 'phone_number', 'status', 'mpesa_receipt_number', 'created_at']
+    list_filter = ['status', 'transaction_type', 'created_at']
+    search_fields = ['user__username', 'phone_number', 'mpesa_receipt_number', 'reference_id']
+    readonly_fields = ['reference_id', 'merchant_request_id', 'created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Transaction Details', {
+            'fields': ('user', 'transaction_type', 'amount', 'phone_number', 'status')
+        }),
+        ('M-PESA Response', {
+            'fields': ('reference_id', 'merchant_request_id', 'mpesa_receipt_number', 'result_code', 'result_desc')
+        }),
+        ('Content Reference', {
+            'fields': ('content_id', 'content_type'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user')
+    
+    actions = ['mark_as_completed', 'mark_as_failed', 'mark_as_pending']
+    
+    def mark_as_completed(self, request, queryset):
+        queryset.update(status='completed')
+        self.message_user(request, f'{queryset.count()} transactions marked as completed.')
+    mark_as_completed.short_description = 'Mark as completed'
+    
+    def mark_as_failed(self, request, queryset):
+        queryset.update(status='failed')
+        self.message_user(request, f'{queryset.count()} transactions marked as failed.')
+    mark_as_failed.short_description = 'Mark as failed'
+    
+    def mark_as_pending(self, request, queryset):
+        queryset.update(status='pending')
+        self.message_user(request, f'{queryset.count()} transactions marked as pending.')
+    mark_as_pending.short_description = 'Mark as pending'
+
+
+# ========== PAID MESSAGE ADMIN ==========
+
+@admin.register(PaidMessage)
+class PaidMessageAdmin(admin.ModelAdmin):
+    list_display = ['id', 'sender', 'receiver', 'amount', 'is_paid', 'is_read', 'message_preview', 'created_at']
+    list_filter = ['is_paid', 'is_read', 'created_at']
+    search_fields = ['sender__username', 'receiver__username', 'message']
+    readonly_fields = ['created_at']
+    
+    fieldsets = (
+        ('Participants', {
+            'fields': ('sender', 'receiver')
+        }),
+        ('Message Details', {
+            'fields': ('message', 'amount', 'is_paid', 'is_read')
+        }),
+        ('Transaction', {
+            'fields': ('transaction',),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def message_preview(self, obj):
+        return obj.message[:50] + '...' if len(obj.message) > 50 else obj.message
+    message_preview.short_description = 'Message'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('sender', 'receiver', 'transaction')
+    
+    actions = ['mark_as_paid', 'mark_as_unpaid', 'mark_as_read', 'mark_as_unread']
+    
+    def mark_as_paid(self, request, queryset):
+        queryset.update(is_paid=True)
+        self.message_user(request, f'{queryset.count()} messages marked as paid.')
+    mark_as_paid.short_description = 'Mark as paid'
+    
+    def mark_as_unpaid(self, request, queryset):
+        queryset.update(is_paid=False)
+        self.message_user(request, f'{queryset.count()} messages marked as unpaid.')
+    mark_as_unpaid.short_description = 'Mark as unpaid'
+    
+    def mark_as_read(self, request, queryset):
+        queryset.update(is_read=True)
+        self.message_user(request, f'{queryset.count()} messages marked as read.')
+    mark_as_read.short_description = 'Mark as read'
+    
+    def mark_as_unread(self, request, queryset):
+        queryset.update(is_read=False)
+        self.message_user(request, f'{queryset.count()} messages marked as unread.')
+    mark_as_unread.short_description = 'Mark as unread'
 
 
 # ========== PHOTO ADMIN ==========
@@ -228,25 +389,7 @@ class MessageAdmin(admin.ModelAdmin):
     mark_as_unread.short_description = 'Mark selected messages as unread'
 
 
-# ========== CUSTOM ADMIN SITE CONFIGURATION ==========
-
-admin.site.site_header = 'MediaShare Administration'
-admin.site.site_title = 'MediaShare Admin Portal'
-admin.site.index_title = 'Welcome to MediaShare Admin Portal'
-
-# Register User model with custom display (optional)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ['username', 'email', 'first_name', 'last_name', 'is_staff', 'date_joined']
-    list_filter = ['is_staff', 'is_active', 'date_joined']
-    search_fields = ['username', 'email']
-
-
-    
-# Unregister default User admin and register custom one
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
-
-
+# ========== VIDEO VIEW ADMIN ==========
 
 @admin.register(VideoView)
 class VideoViewAdmin(admin.ModelAdmin):
@@ -257,3 +400,20 @@ class VideoViewAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('video', 'user')
+
+
+# ========== CUSTOM ADMIN SITE CONFIGURATION ==========
+
+admin.site.site_header = 'VibeGaze Administration'
+admin.site.site_title = 'VibeGaze Admin Portal'
+admin.site.index_title = 'Welcome to VibeGaze Admin Portal'
+
+# Register User model with custom display
+class UserAdmin(admin.ModelAdmin):
+    list_display = ['username', 'email', 'first_name', 'last_name', 'is_staff', 'date_joined']
+    list_filter = ['is_staff', 'is_active', 'date_joined']
+    search_fields = ['username', 'email']
+
+# Unregister default User admin and register custom one
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)

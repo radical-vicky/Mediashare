@@ -11,6 +11,14 @@ from django.contrib.auth.models import User
 import os
 import re
 import json
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .mpesa_utils import initiate_stk_push
+from .models import MpesaTransaction
+
+
+
 
 def home(request):
     """Home page - landing page"""
@@ -223,6 +231,35 @@ def user_profile(request, username):
     photos = Photo.objects.filter(author=profile_user)
     videos = Video.objects.filter(author=profile_user)
     
+    # Create all_media list combining photos and videos with proper fields
+    all_media = []
+    for photo in photos:
+        all_media.append({
+            'id': photo.id,
+            'type': 'photo',
+            'caption': photo.caption,
+            'title': '',  # Add empty title for photos to avoid template errors
+            'description': '',
+            'thumbnail_url': photo.image.url,
+            'file_url': photo.image.url,
+            'likes_count': photo.likes_count,
+            'comments_count': photo.comments_count,
+            'views': photo.views,
+        })
+    for video in videos:
+        all_media.append({
+            'id': video.id,
+            'type': 'video',
+            'caption': '',
+            'title': video.title,
+            'description': video.description,
+            'thumbnail_url': video.thumbnail.url if video.thumbnail else None,
+            'file_url': video.video_file.url,
+            'likes_count': video.likes_count,
+            'comments_count': video.comments_count,
+            'views': video.views,
+        })
+    
     is_following = False
     if request.user.is_authenticated:
         is_following = profile.followers.filter(id=request.user.id).exists()
@@ -230,8 +267,9 @@ def user_profile(request, username):
     context = {
         'profile_user': profile_user,
         'profile': profile,
-        'photos': photos[:6],
-        'videos': videos[:6],
+        'photos': photos[:20],
+        'videos': videos[:20],
+        'all_media': all_media[:40],
         'total_photos': photos.count(),
         'total_videos': videos.count(),
         'is_following': is_following,
@@ -240,25 +278,58 @@ def user_profile(request, username):
 
 @login_required
 def edit_profile(request):
-    """Edit user profile"""
+    """Edit user profile with avatar upload"""
     profile, created = UserProfile.objects.get_or_create(user=request.user)
     
     if request.method == 'POST':
-        profile.bio = request.POST.get('bio', '')
-        profile.location = request.POST.get('location', '')
-        profile.website = request.POST.get('website', '')
-        profile.phone_number = request.POST.get('phone_number', '')
-        profile.call_price_per_minute = request.POST.get('call_price_per_minute', 0)
-        profile.is_available_for_calls = request.POST.get('is_available_for_calls') == 'on'
+        # Check if it's an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
-        if request.FILES.get('avatar'):
-            profile.avatar = request.FILES['avatar']
-        
-        profile.save()
-        messages.success(request, 'Profile updated successfully!')
-        return redirect('frontend:user_profile', username=request.user.username)
+        try:
+            # Update text fields
+            profile.bio = request.POST.get('bio', '')
+            profile.location = request.POST.get('location', '')
+            profile.website = request.POST.get('website', '')
+            profile.phone_number = request.POST.get('phone_number', '')
+            profile.call_price_per_minute = request.POST.get('call_price_per_minute', 0)
+            profile.is_available_for_calls = request.POST.get('is_available_for_calls') == 'on'
+            
+            # Handle avatar upload
+            if request.FILES.get('avatar'):
+                # Delete old avatar if exists
+                if profile.avatar:
+                    try:
+                        profile.avatar.delete(save=False)
+                    except:
+                        pass
+                profile.avatar = request.FILES['avatar']
+            
+            # Handle avatar removal
+            if request.POST.get('remove_avatar') == 'true':
+                if profile.avatar:
+                    try:
+                        profile.avatar.delete(save=False)
+                    except:
+                        pass
+                    profile.avatar = None
+            
+            profile.save()
+            
+            if is_ajax:
+                return JsonResponse({'success': True, 'message': 'Profile updated successfully'})
+            
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('frontend:user_profile', username=request.user.username)
+            
+        except Exception as e:
+            if is_ajax:
+                return JsonResponse({'error': str(e)}, status=400)
+            messages.error(request, f'Error updating profile: {str(e)}')
+            return redirect('frontend:edit_profile')
     
     return render(request, 'frontend/edit_profile.html', {'profile': profile})
+
+
 
 @login_required
 def follow_user(request, username):
@@ -423,11 +494,13 @@ def call_room(request, room_name):
         messages.error(request, 'You are not authorized to join this call')
         return redirect('frontend:feed')
     
+    # Get the other participant
+    other_user = call_session.receiver if call_session.caller == request.user else call_session.caller
+    
     context = {
         'room_name': room_name,
         'call_session': call_session,
-        'caller': call_session.caller,
-        'receiver': call_session.receiver,
+        'receiver': other_user,
     }
     return render(request, 'frontend/call_room.html', context)
 
@@ -778,3 +851,333 @@ def get_all_users_api(request):
         })
     
     return JsonResponse({'users': users_data})
+
+
+@login_required
+def edit_photo(request, photo_id):
+    """Edit photo caption"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        photo = get_object_or_404(Photo, id=photo_id, author=request.user)
+        data = json.loads(request.body)
+        photo.caption = data.get('caption', '')
+        photo.save()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+    
+@login_required
+def edit_video(request, video_id):
+    """Edit video title and description"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        video = get_object_or_404(Video, id=video_id, author=request.user)
+        data = json.loads(request.body)
+        video.title = data.get('title', '')
+        video.description = data.get('description', '')
+        video.save()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+@login_required
+def delete_all_content(request, type):
+    """Delete all photos or videos"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        if type == 'photo':
+            Photo.objects.filter(author=request.user).delete()
+        elif type == 'video':
+            Video.objects.filter(author=request.user).delete()
+        elif type == 'all':
+            Photo.objects.filter(author=request.user).delete()
+            Video.objects.filter(author=request.user).delete()
+        else:
+            return JsonResponse({'error': 'Invalid type'}, status=400)
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+@login_required
+def delete_selected_content(request, type):
+    """Delete selected photos or videos"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        ids = data.get('ids', [])
+        
+        if type == 'photos':
+            Photo.objects.filter(id__in=ids, author=request.user).delete()
+        elif type == 'videos':
+            Video.objects.filter(id__in=ids, author=request.user).delete()
+        else:
+            return JsonResponse({'error': 'Invalid type'}, status=400)
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+    
+
+
+@login_required
+def phone_call(request, call_id):
+    """Phone call page"""
+    call_session = get_object_or_404(CallSession, id=call_id)
+    
+    if request.user not in [call_session.caller, call_session.receiver]:
+        messages.error(request, 'Unauthorized')
+        return redirect('frontend:feed')
+    
+    other_user = call_session.receiver if call_session.caller == request.user else call_session.caller
+    
+    context = {
+        'call_session': call_session,
+        'receiver': other_user,
+    }
+    return render(request, 'frontend/phone_call.html', context)
+
+
+@login_required
+def mpesa_payment(request):
+    """Initiate M-PESA payment"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            phone_number = data.get('phone_number')
+            amount = data.get('amount')
+            transaction_type = data.get('transaction_type', 'call')
+            content_id = data.get('content_id', None)
+            content_type = data.get('content_type', None)
+            
+            if not phone_number or not amount:
+                return JsonResponse({'error': 'Phone number and amount required'}, status=400)
+            
+            # Generate unique reference
+            import uuid
+            reference = f"VIBE{str(uuid.uuid4())[:8].upper()}"
+            description = f"VibeGaze {transaction_type} payment"
+            
+            result = initiate_stk_push(
+                phone_number=phone_number,
+                amount=amount,
+                account_reference=reference,
+                transaction_desc=description,
+                user=request.user,
+                transaction_type=transaction_type,
+                content_id=content_id,
+                content_type=content_type
+            )
+            
+            if result['success']:
+                return JsonResponse({
+                    'success': True,
+                    'checkout_request_id': result['checkout_request_id'],
+                    'message': 'STK Push sent. Check your phone to complete payment.'
+                })
+            else:
+                return JsonResponse({'error': result.get('error', 'Payment failed')}, status=400)
+                
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+@csrf_exempt
+def mpesa_callback(request):
+    """M-PESA callback URL for payment confirmation"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            # Extract callback data
+            body = data.get('Body', {})
+            stk_callback = body.get('stkCallback', {})
+            
+            result_code = stk_callback.get('ResultCode')
+            result_desc = stk_callback.get('ResultDesc')
+            checkout_request_id = stk_callback.get('CheckoutRequestID')
+            merchant_request_id = stk_callback.get('MerchantRequestID')
+            
+            # Find transaction
+            try:
+                transaction = MpesaTransaction.objects.get(reference_id=checkout_request_id)
+            except MpesaTransaction.DoesNotExist:
+                return JsonResponse({'error': 'Transaction not found'}, status=404)
+            
+            if result_code == 0:  # Success
+                # Get callback metadata
+                callback_metadata = stk_callback.get('CallbackMetadata', {})
+                items = callback_metadata.get('Item', [])
+                
+                mpesa_receipt = None
+                amount = None
+                
+                for item in items:
+                    if item.get('Name') == 'MpesaReceiptNumber':
+                        mpesa_receipt = item.get('Value')
+                    elif item.get('Name') == 'Amount':
+                        amount = item.get('Value')
+                
+                transaction.status = 'completed'
+                transaction.mpesa_receipt_number = mpesa_receipt
+                transaction.result_code = result_code
+                transaction.result_desc = result_desc
+                transaction.save()
+                
+                # Here you can add logic to grant access to premium content
+                # For example: unlock video call, give credits, etc.
+                
+                return JsonResponse({'success': True})
+            else:
+                transaction.status = 'failed'
+                transaction.result_code = result_code
+                transaction.result_desc = result_desc
+                transaction.save()
+                return JsonResponse({'success': False, 'error': result_desc})
+                
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+@login_required
+def check_payment_status(request, transaction_id):
+    """Check payment status"""
+    try:
+        transaction = MpesaTransaction.objects.get(id=transaction_id, user=request.user)
+        return JsonResponse({
+            'status': transaction.status,
+            'amount': str(transaction.amount),
+            'receipt_number': transaction.mpesa_receipt_number,
+            'created_at': transaction.created_at.isoformat()
+        })
+    except MpesaTransaction.DoesNotExist:
+        return JsonResponse({'error': 'Transaction not found'}, status=404)
+
+
+
+@login_required
+def mpesa_payment(request):
+    """Initiate M-PESA payment"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            phone_number = data.get('phone_number')
+            amount = data.get('amount')
+            transaction_type = data.get('transaction_type', 'call')
+            content_id = data.get('content_id', None)
+            content_type = data.get('content_type', None)
+            
+            if not phone_number or not amount:
+                return JsonResponse({'error': 'Phone number and amount required'}, status=400)
+            
+            # Generate unique reference
+            import uuid
+            reference = f"VIBE{str(uuid.uuid4())[:8].upper()}"
+            description = f"VibeGaze {transaction_type} payment"
+            
+            result = initiate_stk_push(
+                phone_number=phone_number,
+                amount=amount,
+                account_reference=reference,
+                transaction_desc=description,
+                user=request.user,
+                transaction_type=transaction_type,
+                content_id=content_id,
+                content_type=content_type
+            )
+            
+            if result['success']:
+                return JsonResponse({
+                    'success': True,
+                    'checkout_request_id': result['checkout_request_id'],
+                    'message': 'STK Push sent. Check your phone to complete payment.'
+                })
+            else:
+                return JsonResponse({'error': result.get('error', 'Payment failed')}, status=400)
+                
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+@csrf_exempt
+def mpesa_callback(request):
+    """M-PESA callback URL for payment confirmation"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            # Extract callback data
+            body = data.get('Body', {})
+            stk_callback = body.get('stkCallback', {})
+            
+            result_code = stk_callback.get('ResultCode')
+            result_desc = stk_callback.get('ResultDesc')
+            checkout_request_id = stk_callback.get('CheckoutRequestID')
+            merchant_request_id = stk_callback.get('MerchantRequestID')
+            
+            # Find transaction
+            try:
+                transaction = MpesaTransaction.objects.get(reference_id=checkout_request_id)
+            except MpesaTransaction.DoesNotExist:
+                return JsonResponse({'error': 'Transaction not found'}, status=404)
+            
+            if result_code == 0:  # Success
+                # Get callback metadata
+                callback_metadata = stk_callback.get('CallbackMetadata', {})
+                items = callback_metadata.get('Item', [])
+                
+                mpesa_receipt = None
+                amount = None
+                
+                for item in items:
+                    if item.get('Name') == 'MpesaReceiptNumber':
+                        mpesa_receipt = item.get('Value')
+                    elif item.get('Name') == 'Amount':
+                        amount = item.get('Value')
+                
+                transaction.status = 'completed'
+                transaction.mpesa_receipt_number = mpesa_receipt
+                transaction.result_code = result_code
+                transaction.result_desc = result_desc
+                transaction.save()
+                
+                # Here you can add logic to grant access to premium content
+                # For example: unlock video call, give credits, etc.
+                
+                return JsonResponse({'success': True})
+            else:
+                transaction.status = 'failed'
+                transaction.result_code = result_code
+                transaction.result_desc = result_desc
+                transaction.save()
+                return JsonResponse({'success': False, 'error': result_desc})
+                
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+@login_required
+def check_payment_status(request, transaction_id):
+    """Check payment status"""
+    try:
+        transaction = MpesaTransaction.objects.get(id=transaction_id, user=request.user)
+        return JsonResponse({
+            'status': transaction.status,
+            'amount': str(transaction.amount),
+            'receipt_number': transaction.mpesa_receipt_number,
+            'created_at': transaction.created_at.isoformat()
+        })
+    except MpesaTransaction.DoesNotExist:
+        return JsonResponse({'error': 'Transaction not found'}, status=404)
