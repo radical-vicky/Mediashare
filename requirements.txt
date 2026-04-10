@@ -82,3 +82,5 @@ psycopg2-binary
 python-dotenv
 dj-database-url
 django-extensions
+cloudinary==1.36.0
+django-cloudinary-storage==0.3.0
