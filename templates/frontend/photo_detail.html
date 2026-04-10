@@ -32,6 +32,133 @@
         margin-bottom: 24px;
     }
     
+    .back-section {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    /* Back Button Styles */
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        color: #cbd5e1;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .back-button:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+        transform: translateX(-2px);
+    }
+    
+    .back-arrow {
+        font-size: 16px;
+        font-weight: 600;
+    }
+    
+    /* Dropdown Menu */
+    .back-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .dropdown-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        color: #cbd5e1;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .dropdown-btn:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+    }
+    
+    .dropdown-arrow {
+        font-size: 10px;
+        transition: transform 0.2s ease;
+    }
+    
+    .dropdown-btn.active .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+    
+    .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: 8px;
+        background: rgba(22, 27, 34, 0.98);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        min-width: 180px;
+        z-index: 1000;
+        display: none;
+        overflow: hidden;
+    }
+    
+    .dropdown-menu.show {
+        display: block;
+        animation: fadeIn 0.2s ease;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        color: #cbd5e1;
+        text-decoration: none;
+        font-size: 13px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+    }
+    
+    .dropdown-item:hover {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+    
+    .dropdown-item-divider {
+        height: 1px;
+        background: rgba(59, 130, 246, 0.2);
+        margin: 4px 0;
+    }
+    
     .user-info {
         display: flex;
         align-items: center;
@@ -136,6 +263,45 @@
     
     .btn-danger:hover {
         background: rgba(239, 68, 68, 0.1);
+    }
+    
+    /* Like Button Specific Styles */
+    .like-btn {
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #94a3b8;
+        transition: all 0.2s ease;
+    }
+    
+    .like-btn .heart-icon {
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    
+    .like-btn.liked {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        border-color: #3b82f6;
+        color: white;
+    }
+    
+    .like-btn.liked .heart-icon {
+        color: white;
+    }
+    
+    .like-btn:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+        transform: translateY(-1px);
+    }
+    
+    .like-btn.liked:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-1px);
+    }
+    
+    .like-count {
+        font-weight: 600;
+        font-size: 13px;
     }
     
     /* Photo Viewer - Full Screen Carousel */
@@ -368,7 +534,7 @@
         gap: 8px;
         overflow-x: auto;
         padding: 16px 24px;
-        margin: 0 24px;
+        margin: 0 24px 24px 24px;
         background: rgba(13, 17, 23, 0.5);
         border-radius: 12px;
         scrollbar-width: thin;
@@ -578,6 +744,7 @@
         border: 1px solid rgba(59, 130, 246, 0.3);
         border-radius: 16px;
         margin-top: 48px;
+        margin-bottom: 48px;
         overflow: hidden;
     }
     
@@ -906,33 +1073,10 @@
         }
     }
     
-    /* Load More Button */
-    .load-more-container {
-        text-align: center;
-        margin-top: 24px;
-    }
-    
-    .load-more-btn {
-        background: rgba(33, 38, 45, 0.9);
-        border: 1px solid rgba(59, 130, 246, 0.3);
-        color: #cbd5e1;
-        padding: 8px 24px;
-        border-radius: 8px;
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    
-    .load-more-btn:hover {
-        background: rgba(59, 130, 246, 0.15);
-        border-color: #3b82f6;
-    }
-    
     .container {
         max-width: 1200px;
-        margin-left: auto;
-        margin-right: auto;
-        padding: 0 20px;
+        margin: 0 auto;
+        padding: 0 24px;
     }
     
     /* Responsive */
@@ -941,13 +1085,22 @@
             padding: 10px 16px;
         }
         
+        .back-button, .dropdown-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .back-arrow {
+            font-size: 14px;
+        }
+        
         .photo-container {
             margin: 0 12px 16px 12px;
         }
         
         .carousel-thumbnails {
             padding: 12px 16px;
-            margin: 0 12px;
+            margin: 0 12px 16px 12px;
         }
         
         .thumbnail {
@@ -957,6 +1110,7 @@
         
         .stats {
             gap: 8px;
+            margin-bottom: 24px;
         }
         
         .stat {
@@ -969,11 +1123,21 @@
         
         .title {
             font-size: 18px;
+            margin-bottom: 12px;
+        }
+        
+        .details {
+            margin: 24px 0;
+            padding: 16px 0;
         }
         
         .related-grid {
             grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
             gap: 12px;
+        }
+        
+        .related-section {
+            margin: 32px 0;
         }
         
         .comment {
@@ -983,6 +1147,11 @@
         .comment-replies {
             margin-left: 32px;
             padding-left: 12px;
+        }
+        
+        .comments-section {
+            margin-top: 32px;
+            margin-bottom: 32px;
         }
         
         .viewer-nav {
@@ -995,50 +1164,67 @@
             font-size: 14px;
         }
         
-        .btn span {
+        .btn span:not(.like-count) {
             display: none;
         }
         
         .btn {
             padding: 6px 10px;
         }
+        
+        .container {
+            padding: 0 16px;
+        }
     }
 
-
-    /* Make close button visible */
-.viewer-close {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    background: #ef4444;
-    backdrop-filter: blur(8px);
-    border: 2px solid white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 1001;
-    transition: all 0.2s ease;
-    color: white;
-    font-size: 28px;
-    font-weight: bold;
-    margin-top: 70px;
-    margin-right: 30px;
-}
-
-.viewer-close:hover {
-    background: #dc2626;
-    transform: scale(1.1) rotate(90deg);
-}
+    @media (max-width: 480px) {
+        .stat-value {
+            font-size: 16px;
+        }
+        
+        .stat-label {
+            font-size: 9px;
+        }
+        
+        .stat {
+            padding: 8px 12px;
+        }
+        
+        .related-grid {
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 8px;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Sticky Header -->
 <div class="sticky-header">
+    <div class="back-section">
+        <!-- Simple Back Button -->
+        <button class="back-button" onclick="goBack()">
+            <span class="back-arrow">←</span>
+            <span>Back</span>
+        </button>
+        
+        <!-- Dropdown Menu for more options -->
+        <div class="back-dropdown">
+            <button class="dropdown-btn" id="dropdownBtn">
+                <span>Navigate to</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <a href="/" class="dropdown-item">🏠 Home</a>
+                <a href="/feed/" class="dropdown-item">📱 Feed</a>
+                <div class="dropdown-item-divider"></div>
+                <button class="dropdown-item" onclick="goBack()">← Previous Page</button>
+                <div class="dropdown-item-divider"></div>
+                <a href="javascript:history.go(-2)" class="dropdown-item">↺ Go back 2 pages</a>
+            </div>
+        </div>
+    </div>
+    
     <a href="{% url 'frontend:user_profile' photo.author.username %}" class="user-info">
         {% if photo.author.profile.avatar %}
             <img src="{{ photo.author.profile.avatar.url }}" class="avatar">
@@ -1053,7 +1239,8 @@
         </div>
     </a>
     <div class="btn-group">
-        <button class="btn like-btn" data-url="{% url 'frontend:like_photo' photo.id %}">
+        <button class="btn like-btn {% if user in photo.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_photo' photo.id %}">
+            <span class="heart-icon">❤️</span>
             <span class="like-count">{{ photo.likes.count }}</span>
         </button>
         <button class="btn" id="shareBtn">Share</button>
@@ -1262,7 +1449,6 @@
 </div>
 
 <!-- Full Screen Photo Viewer -->
-<!-- Full Screen Photo Viewer -->
 <div id="photoViewer" class="photo-viewer">
     <div class="viewer-container">
         <img id="viewerImage" class="viewer-image" src="" alt="">
@@ -1280,7 +1466,7 @@
         <button class="control-btn" id="downloadViewerBtn" title="Download">↓</button>
     </div>
     
-    <button class="viewer-close" id="viewerClose">×</button>  <!-- THIS IS YOUR CLOSE BUTTON -->
+    <button class="viewer-close" id="viewerClose">×</button>
     
     <div class="viewer-counter" id="viewerCounter"></div>
     
@@ -1289,6 +1475,7 @@
         <p id="captionText"></p>
     </div>
 </div>
+
 <!-- Share Modal -->
 <div id="shareModal" class="modal">
     <div class="modal-content">
@@ -1308,6 +1495,39 @@
 </div>
 
 <script>
+// ============================================
+// BACK NAVIGATION FUNCTIONS
+// ============================================
+function goBack() {
+    if (document.referrer && document.referrer !== '') {
+        window.history.back();
+    } else {
+        window.location.href = '/feed/';
+    }
+}
+
+// Dropdown menu functionality
+const dropdownBtn = document.getElementById('dropdownBtn');
+const dropdownMenu = document.getElementById('dropdownMenu');
+
+if (dropdownBtn) {
+    dropdownBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('show');
+        dropdownBtn.classList.toggle('active');
+    });
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    if (dropdownBtn && dropdownMenu) {
+        if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+            dropdownMenu.classList.remove('show');
+            dropdownBtn.classList.remove('active');
+        }
+    }
+});
+
 // ============================================
 // UTILITIES
 // ============================================
@@ -1343,7 +1563,7 @@ function showToast(message, type = 'success') {
 }
 
 // ============================================
-// PHOTO VIEWER WITH CAROUSEL - FIXED
+// PHOTO VIEWER WITH CAROUSEL
 // ============================================
 const viewer = document.getElementById('photoViewer');
 const viewerImage = document.getElementById('viewerImage');
@@ -1416,7 +1636,6 @@ function prevPhoto() {
     }
 }
 
-// Zoom Functions
 function zoomIn() {
     if (currentZoom < 3) {
         currentZoom += 0.5;
@@ -1476,7 +1695,7 @@ function downloadCurrentImage() {
     }
 }
 
-// Event Listeners for Viewer - FIXED
+// Event Listeners for Viewer
 document.getElementById('mainPhoto')?.addEventListener('click', () => openViewer(0));
 
 document.querySelectorAll('.thumbnail').forEach((thumb, idx) => {
@@ -1485,7 +1704,6 @@ document.querySelectorAll('.thumbnail').forEach((thumb, idx) => {
     });
 });
 
-// FIXED: Close button event
 if (viewerClose) {
     viewerClose.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -1493,7 +1711,6 @@ if (viewerClose) {
     });
 }
 
-// FIXED: Click outside to close
 if (viewer) {
     viewer.addEventListener('click', function(e) {
         if (e.target === viewer) {
@@ -1571,22 +1788,51 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ============================================
-// LIKE BUTTON
+// LIKE BUTTON - Gray when not liked, Blue when liked
 // ============================================
 document.querySelector('.like-btn')?.addEventListener('click', function() {
     const url = this.dataset.url;
     const countSpan = this.querySelector('.like-count');
+    const isCurrentlyLiked = this.classList.contains('liked');
+    
+    // Optimistic UI update
+    if (isCurrentlyLiked) {
+        this.classList.remove('liked');
+        countSpan.textContent = parseInt(countSpan.textContent) - 1;
+    } else {
+        this.classList.add('liked');
+        countSpan.textContent = parseInt(countSpan.textContent) + 1;
+    }
     
     fetch(url, {
         method: 'POST',
-        headers: { 'X-CSRFToken': csrf }
+        headers: { 
+            'X-CSRFToken': csrf,
+            'Content-Type': 'application/json'
+        }
     })
     .then(response => response.json())
     .then(data => {
+        // Sync with server response
         countSpan.textContent = data.count;
+        if (data.liked) {
+            this.classList.add('liked');
+        } else {
+            this.classList.remove('liked');
+        }
         showToast(data.liked ? 'Liked' : 'Unliked');
     })
-    .catch(() => showToast('Error', 'error'));
+    .catch(() => {
+        // Revert on error
+        if (isCurrentlyLiked) {
+            this.classList.add('liked');
+            countSpan.textContent = parseInt(countSpan.textContent) + 1;
+        } else {
+            this.classList.remove('liked');
+            countSpan.textContent = parseInt(countSpan.textContent) - 1;
+        }
+        showToast('Error', 'error');
+    });
 });
 
 // ============================================

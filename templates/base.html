@@ -691,21 +691,8 @@
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body>
-    <!-- Background Media from Database -->
-    {% if background_media %}
-    <div class="background-media">
-        {% if background_media.media_type == 'image' %}
-            <img src="{{ background_media.file.url }}" alt="Background">
-        {% elif background_media.media_type == 'video' %}
-            <video autoplay muted loop playsinline>
-                <source src="{{ background_media.file.url }}" type="video/mp4">
-            </video>
-        {% endif %}
-    </div>
-    {% endif %}
-    <div class="background-fallback"></div>
 
+<body>
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
@@ -721,7 +708,6 @@
                     <li><a href="/messages/inbox/">DMs</a></li>
                     <li><a href="{% url 'frontend:user_profile' username=user.username %}">My Vibe</a></li>
                     <li><a href="{% url 'account_logout' %}" class="logout-link">Sign-Out</a></li>
-
                 {% else %}
                     <li><a href="/accounts/signup/" class="btn-register">Sign up</a></li>
                     <li><a href="/accounts/login/" class="btn-signin">Sign in</a></li>
@@ -747,4 +733,6 @@
 
     {% block scripts %}{% endblock %}
 </body>
+
+
 </html>

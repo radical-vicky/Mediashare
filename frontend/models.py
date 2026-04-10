@@ -32,6 +32,73 @@ photo_upload_path = PhotoUploadPath()
 video_upload_path = VideoUploadPath()
 
 
+# ========== SITE SETTINGS MODEL (ADD THIS) ==========
+class SiteSetting(models.Model):
+    """Dynamic site settings from database"""
+    key = models.CharField(max_length=100, unique=True)
+    value = models.TextField()
+    description = models.TextField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.key}: {self.value[:50]}"
+    
+    class Meta:
+        verbose_name = 'Site Setting'
+        verbose_name_plural = 'Site Settings'
+
+
+# ========== FEATURE MODEL (ADD THIS) ==========
+class Feature(models.Model):
+    """Features section content"""
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    icon_image = models.ImageField(upload_to='features/', blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ['order']
+        verbose_name = 'Feature'
+        verbose_name_plural = 'Features'
+
+
+# ========== USER SESSION MODEL (ADD THIS) ==========
+class UserSession(models.Model):
+    """Track user online status"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sessions')
+    session_key = models.CharField(max_length=100)
+    last_activity = models.DateTimeField(auto_now=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.last_activity}"
+    
+    class Meta:
+        verbose_name = 'User Session'
+        verbose_name_plural = 'User Sessions'
+
+
+# ========== MATCH MODEL (ADD THIS) ==========
+class Match(models.Model):
+    """Track matches/connections between users"""
+    user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='matches_as_user1')
+    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='matches_as_user2')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.user1.username} - {self.user2.username}"
+    
+    class Meta:
+        unique_together = ['user1', 'user2']
+        verbose_name = 'Match'
+        verbose_name_plural = 'Matches'
+
+
 # ========== USER PROFILE MODEL ==========
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
@@ -43,15 +110,16 @@ class UserProfile(models.Model):
     is_verified = models.BooleanField(default=False)
     is_available_for_calls = models.BooleanField(default=False)
     call_price_per_minute = models.DecimalField(max_digits=10, decimal_places=2, default=50.00)
-    paid_message_price = models.DecimalField(max_digits=10, decimal_places=2, default=20.00)  # ADD THIS LINE
+    paid_message_price = models.DecimalField(max_digits=10, decimal_places=2, default=20.00)
     followers = models.ManyToManyField(User, related_name='following', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return self.user.username
-# ========== PHOTO MODEL ==========
 
+
+# ========== PHOTO MODEL ==========
 class Photo(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='photos')
     image = models.ImageField(upload_to=photo_upload_path, max_length=500)
@@ -83,7 +151,6 @@ class Photo(models.Model):
 
 
 # ========== VIDEO MODEL ==========
-
 class Video(models.Model):
     VIDEO_TYPES = [
         ('short', 'Short Video (< 60s)'),
@@ -127,13 +194,9 @@ class Video(models.Model):
     @property
     def video_url(self):
         return self.video_file.url if self.video_file else None
-    
 
 
-
-
-# Add this to your models.py after the Video model
-
+# ========== VIDEO VIEW MODEL ==========
 class VideoView(models.Model):
     """Track unique video views from database"""
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name='views_objects')
@@ -146,7 +209,9 @@ class VideoView(models.Model):
     
     class Meta:
         ordering = ['-viewed_at']
-        unique_together = ['video', 'session_key']  # Prevent duplicate views from same session
+        unique_together = ['video', 'session_key']
+        verbose_name = 'Video View'
+        verbose_name_plural = 'Video Views'
     
     def __str__(self):
         user_str = self.user.username if self.user else 'Anonymous'
@@ -154,8 +219,6 @@ class VideoView(models.Model):
 
 
 # ========== COMMENT MODEL ==========
-# Add to your models.py - Add 'parent' field to Comment model
-
 class Comment(models.Model):
     CONTENT_TYPES = [
         ('photo', 'Photo'),
@@ -171,7 +234,7 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        ordering = ['created_at']  # Change to created_at for chronological order
+        ordering = ['created_at']
     
     def __str__(self):
         target = self.photo if self.photo else self.video
@@ -184,8 +247,9 @@ class Comment(models.Model):
     @property
     def reply_count(self):
         return self.replies.count()
-# ========== SHARE MODEL ==========
 
+
+# ========== SHARE MODEL ==========
 class Share(models.Model):
     SHARE_TYPES = [
         ('photo', 'Photo'),
@@ -206,7 +270,6 @@ class Share(models.Model):
 
 
 # ========== CALL SESSION MODEL ==========
-
 class CallSession(models.Model):
     CALL_STATUS = [
         ('pending', 'Pending'),
@@ -223,26 +286,17 @@ class CallSession(models.Model):
         ('phone_to_phone', 'Phone to Phone'),
     ]
     
-    # Participants
     caller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='outgoing_calls')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='incoming_calls')
-    
-    # Call details
     call_type = models.CharField(max_length=20, choices=CALL_TYPE, default='browser')
     status = models.CharField(max_length=20, choices=CALL_STATUS, default='pending')
     receiver_phone_number = models.CharField(max_length=20, blank=True, null=True)
-    
-    # Duration and pricing
     duration = models.PositiveIntegerField(default=0, help_text="Duration in seconds")
     price_per_minute = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    
-    # Timestamps
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
-    # WebRTC and Twilio tracking
     room_name = models.CharField(max_length=255, unique=True, blank=True)
     twilio_call_sid = models.CharField(max_length=255, blank=True, null=True)
     twilio_status = models.CharField(max_length=50, blank=True, null=True)
@@ -271,9 +325,7 @@ class CallSession(models.Model):
 
 
 # ========== MESSAGING MODELS ==========
-
 class MessageThread(models.Model):
-    """Message thread/conversation between users"""
     participants = models.ManyToManyField(User, related_name='message_threads')
     subject = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -310,7 +362,6 @@ class MessageThread(models.Model):
 
 
 class Message(models.Model):
-    """Individual message in a thread"""
     FILE_TYPES = [
         ('image', 'Image'),
         ('video', 'Video'),
@@ -321,17 +372,15 @@ class Message(models.Model):
     
     thread = models.ForeignKey(MessageThread, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
-    content = models.TextField(max_length=5000, blank=True)  # Made blank=True for file-only messages
+    content = models.TextField(max_length=5000, blank=True)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     edited = models.BooleanField(default=False)
     edited_at = models.DateTimeField(null=True, blank=True)
-    
-    # File attachment fields
     file = models.FileField(upload_to='chat_files/%Y/%m/%d/', null=True, blank=True)
     file_type = models.CharField(max_length=20, choices=FILE_TYPES, null=True, blank=True)
     file_name = models.CharField(max_length=255, null=True, blank=True)
-    file_size = models.PositiveIntegerField(null=True, blank=True)  # Size in bytes
+    file_size = models.PositiveIntegerField(null=True, blank=True)
     
     class Meta:
         ordering = ['-created_at']
@@ -360,18 +409,8 @@ class Message(models.Model):
             self.file_size /= 1024.0
         return f"{self.file_size:.1f} GB"
 
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        UserProfile.objects.get_or_create(user=instance)
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    if hasattr(instance, 'profile'):
-        instance.profile.save()
-
-
-
+# ========== BACKGROUND MEDIA MODEL ==========
 class BackgroundMedia(models.Model):
     MEDIA_TYPES = (
         ('image', 'Image'),
@@ -385,7 +424,12 @@ class BackgroundMedia(models.Model):
     def __str__(self):
         return f"{self.media_type} - {self.is_active}"
     
+    class Meta:
+        verbose_name = 'Background Media'
+        verbose_name_plural = 'Background Media'
 
+
+# ========== MPESA TRANSACTION MODEL ==========
 class MpesaTransaction(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -405,7 +449,7 @@ class MpesaTransaction(models.Model):
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     phone_number = models.CharField(max_length=15)
-    reference_id = models.CharField(max_length=100, unique=True)  # CheckoutRequestID
+    reference_id = models.CharField(max_length=100, unique=True)
     merchant_request_id = models.CharField(max_length=100, blank=True, null=True)
     mpesa_receipt_number = models.CharField(max_length=50, blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -413,10 +457,8 @@ class MpesaTransaction(models.Model):
     result_desc = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
-    # For specific content
-    content_id = models.IntegerField(blank=True, null=True)  # Photo/Video ID
-    content_type = models.CharField(max_length=20, blank=True, null=True)  # 'photo', 'video', 'call'
+    content_id = models.IntegerField(blank=True, null=True)
+    content_type = models.CharField(max_length=20, blank=True, null=True)
     
     class Meta:
         ordering = ['-created_at']
@@ -425,6 +467,7 @@ class MpesaTransaction(models.Model):
         return f"{self.user.username} - {self.amount} KES - {self.status}"
 
 
+# ========== PAID MESSAGE MODEL ==========
 class PaidMessage(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_paid_messages')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_paid_messages')
@@ -440,3 +483,15 @@ class PaidMessage(models.Model):
     
     def __str__(self):
         return f"{self.sender.username} -> {self.receiver.username}: {self.amount} KES"
+
+
+# ========== SIGNALS ==========
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.get_or_create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'profile'):
+        instance.profile.save()

@@ -40,8 +40,9 @@
                     <div class="media-grid">
                         {% for photo in photos %}
                             <div class="media-card glass">
-                                <a href="{% url 'frontend:photo_detail' photo.id %}" class="media-link">
-                                    <div class="media-poster">
+                                <div class="media-poster">
+                                    <!-- PHOTO IMAGE - Links to photo detail -->
+                                    <a href="{% url 'frontend:photo_detail' photo.id %}" class="media-link-img">
                                         <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" class="media-image">
                                         <div class="media-overlay">
                                             <div class="media-stats">
@@ -49,29 +50,31 @@
                                                 <span class="stat-item">👁️ {{ photo.views }}</span>
                                             </div>
                                         </div>
+                                    </a>
+                                    <div class="media-like-btn-wrapper">
+                                        <button class="like-btn {% if user in photo.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_photo' photo.id %}" onclick="likeMedia(this)">
+                                            <span class="heart-icon">❤️</span>
+                                            <span class="like-count">{{ photo.likes.count }}</span>
+                                        </button>
                                     </div>
-                                    <div class="media-info">
-                                        <div class="media-author">
-                                            <div class="author-avatar">
-                                                {% if photo.author.profile.avatar %}
-                                                    <img src="{{ photo.author.profile.avatar.url }}" alt="{{ photo.author.username }}" class="avatar-img">
-                                                {% else %}
-                                                    <div class="avatar-placeholder">{{ photo.author.username|first|upper }}</div>
-                                                {% endif %}
-                                            </div>
-                                            <div class="author-details">
-                                                <span class="author-name">{{ photo.author.username }}</span>
-                                                <span class="post-time">{{ photo.created_at|timesince }} ago</span>
-                                            </div>
+                                </div>
+                                <div class="media-info">
+                                    <div class="media-author">
+                                        <!-- AUTHOR AVATAR - Links to profile -->
+                                        <a href="{% url 'frontend:user_profile' username=photo.author.username %}" class="author-avatar">
+                                            {% if photo.author.profile.avatar %}
+                                                <img src="{{ photo.author.profile.avatar.url }}" alt="{{ photo.author.username }}" class="avatar-img">
+                                            {% else %}
+                                                <div class="avatar-placeholder">{{ photo.author.username|first|upper }}</div>
+                                            {% endif %}
+                                        </a>
+                                        <div class="author-details">
+                                            <!-- AUTHOR USERNAME - Links to profile -->
+                                            <a href="{% url 'frontend:user_profile' username=photo.author.username %}" class="author-name">{{ photo.author.username }}</a>
+                                            <span class="post-time">{{ photo.created_at|timesince }} ago</span>
                                         </div>
-                                        <div class="media-title">{{ photo.caption|default:"Untitled"|truncatechars:50 }}</div>
                                     </div>
-                                </a>
-                                <div class="media-like-btn-wrapper">
-                                    <button class="like-btn {% if user in photo.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_photo' photo.id %}" onclick="likeMedia(this)">
-                                        <span class="heart-icon">❤️</span>
-                                        <span class="like-count">{{ photo.likes.count }}</span>
-                                    </button>
+                                    <div class="media-title">{{ photo.caption|default:"Untitled"|truncatechars:50 }}</div>
                                 </div>
                             </div>
                         {% endfor %}
@@ -116,9 +119,10 @@
                     <div class="media-grid">
                         {% for video in videos %}
                             <div class="media-card glass">
-                                <a href="{% url 'frontend:video_detail' video.id %}" class="media-link">
-                                    <div class="media-poster">
-                                        <video class="media-video">
+                                <div class="media-poster">
+                                    <!-- VIDEO THUMBNAIL - Links to video detail -->
+                                    <a href="{% url 'frontend:video_detail' video.id %}" class="media-link-img">
+                                        <video class="media-video" preload="metadata">
                                             <source src="{{ video.video_file.url }}">
                                         </video>
                                         <div class="media-overlay">
@@ -128,29 +132,31 @@
                                                 <span class="stat-item">👁️ {{ video.views }}</span>
                                             </div>
                                         </div>
+                                    </a>
+                                    <div class="media-like-btn-wrapper">
+                                        <button class="like-btn {% if user in video.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_video' video.id %}" onclick="likeMedia(this)">
+                                            <span class="heart-icon">❤️</span>
+                                            <span class="like-count">{{ video.likes.count }}</span>
+                                        </button>
                                     </div>
-                                    <div class="media-info">
-                                        <div class="media-author">
-                                            <div class="author-avatar">
-                                                {% if video.author.profile.avatar %}
-                                                    <img src="{{ video.author.profile.avatar.url }}" alt="{{ video.author.username }}" class="avatar-img">
-                                                {% else %}
-                                                    <div class="avatar-placeholder">{{ video.author.username|first|upper }}</div>
-                                                {% endif %}
-                                            </div>
-                                            <div class="author-details">
-                                                <span class="author-name">{{ video.author.username }}</span>
-                                                <span class="post-time">{{ video.created_at|timesince }} ago</span>
-                                            </div>
+                                </div>
+                                <div class="media-info">
+                                    <div class="media-author">
+                                        <!-- AUTHOR AVATAR - Links to profile -->
+                                        <a href="{% url 'frontend:user_profile' username=video.author.username %}" class="author-avatar">
+                                            {% if video.author.profile.avatar %}
+                                                <img src="{{ video.author.profile.avatar.url }}" alt="{{ video.author.username }}" class="avatar-img">
+                                            {% else %}
+                                                <div class="avatar-placeholder">{{ video.author.username|first|upper }}</div>
+                                            {% endif %}
+                                        </a>
+                                        <div class="author-details">
+                                            <!-- AUTHOR USERNAME - Links to profile -->
+                                            <a href="{% url 'frontend:user_profile' username=video.author.username %}" class="author-name">{{ video.author.username }}</a>
+                                            <span class="post-time">{{ video.created_at|timesince }} ago</span>
                                         </div>
-                                        <div class="media-title">{{ video.title|truncatechars:50 }}</div>
                                     </div>
-                                </a>
-                                <div class="media-like-btn-wrapper">
-                                    <button class="like-btn {% if user in video.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_video' video.id %}" onclick="likeMedia(this)">
-                                        <span class="heart-icon">❤️</span>
-                                        <span class="like-count">{{ video.likes.count }}</span>
-                                    </button>
+                                    <div class="media-title">{{ video.title|truncatechars:50 }}</div>
                                 </div>
                             </div>
                         {% endfor %}
@@ -311,16 +317,19 @@
     box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
 }
 
-.media-link {
-    text-decoration: none;
-}
-
 /* Media Poster */
 .media-poster {
     position: relative;
     aspect-ratio: 1 / 1;
     overflow: hidden;
     background: #0f172a;
+}
+
+.media-link-img {
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 .media-image {
@@ -432,6 +441,7 @@
 
 .author-avatar {
     flex-shrink: 0;
+    text-decoration: none;
 }
 
 .avatar-img {
@@ -464,6 +474,12 @@
     font-size: 12px;
     font-weight: 600;
     color: #f1f5f9;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.author-name:hover {
+    color: #60a5fa;
 }
 
 .post-time {

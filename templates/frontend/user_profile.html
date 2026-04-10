@@ -144,7 +144,7 @@
     }
     
     .stat-item:hover {
-        background: rgba(59, 130, 246, 0.1);
+        background: rgba(59, 130, 246, 0.15);
         transform: translateY(-2px);
     }
     
@@ -266,7 +266,7 @@
     .dropdown-menu {
         position: absolute;
         top: 100%;
-        left: 0;
+        right: 0;
         background: rgba(22, 27, 34, 0.95);
         backdrop-filter: blur(12px);
         border: 1px solid rgba(59, 130, 246, 0.3);
@@ -642,6 +642,150 @@
         transform: rotate(90deg);
     }
     
+    /* Followers/Following Modal */
+    .users-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 3000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .users-modal.active {
+        display: flex;
+    }
+    
+    .users-modal-content {
+        background: rgba(22, 27, 34, 0.98);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 16px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow: hidden;
+        animation: modalIn 0.2s ease;
+    }
+    
+    .users-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .users-modal-header h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin: 0;
+    }
+    
+    .users-modal-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 24px;
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .users-modal-close:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+    }
+    
+    .users-list {
+        padding: 8px 0;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    .user-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+    }
+    
+    .user-item:hover {
+        background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .user-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .user-avatar-placeholder {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 600;
+        color: white;
+    }
+    
+    .user-info {
+        flex: 1;
+    }
+    
+    .user-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin-bottom: 2px;
+    }
+    
+    .user-bio {
+        font-size: 12px;
+        color: #94a3b8;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 300px;
+    }
+    
+    .empty-users {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+        font-size: 14px;
+    }
+    
+    @keyframes modalIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
     .empty-state {
         text-align: center;
         padding: 80px 20px;
@@ -680,17 +824,6 @@
         padding: 24px;
         border: 1px solid rgba(59, 130, 246, 0.3);
         animation: modalIn 0.2s ease-out;
-    }
-    
-    @keyframes modalIn {
-        from {
-            transform: scale(0.95);
-            opacity: 0;
-        }
-        to {
-            transform: scale(1);
-            opacity: 1;
-        }
     }
     
     .modal-box h3 {
@@ -814,6 +947,10 @@
         .stat-label {
             font-size: 10px;
         }
+        
+        .user-bio {
+            max-width: 200px;
+        }
     }
 </style>
 {% endblock %}
@@ -845,16 +982,16 @@
             <div class="profile-meta">
                 {% if profile.location %}
                     <div class="profile-meta-item">
-                        {{ profile.location }}
+                        📍 {{ profile.location }}
                     </div>
                 {% endif %}
                 {% if profile.website %}
                     <div class="profile-meta-item">
-                        <a href="{{ profile.website }}" target="_blank">{{ profile.website|truncatechars:30 }}</a>
+                        🔗 <a href="{{ profile.website }}" target="_blank">{{ profile.website|truncatechars:30 }}</a>
                     </div>
                 {% endif %}
                 <div class="profile-meta-item">
-                    Joined {{ profile_user.date_joined|date:"F Y" }}
+                    📅 Joined {{ profile_user.date_joined|date:"F Y" }}
                 </div>
             </div>
             
@@ -871,11 +1008,11 @@
                     <div class="stat-number">{{ total_videos }}</div>
                     <div class="stat-label">Videos</div>
                 </div>
-                <div class="stat-item">
+                <div class="stat-item" onclick="openFollowersModal()">
                     <div class="stat-number" id="followersCount">{{ profile.followers.count }}</div>
                     <div class="stat-label">Followers</div>
                 </div>
-                <div class="stat-item">
+                <div class="stat-item" onclick="openFollowingModal()">
                     <div class="stat-number">{{ profile.following.count }}</div>
                     <div class="stat-label">Following</div>
                 </div>
@@ -886,20 +1023,20 @@
                     <button class="btn follow-btn {% if is_following %}btn-success{% else %}btn-primary{% endif %}" 
                             data-url="{% url 'frontend:follow_user' profile_user.username %}" 
                             data-username="{{ profile_user.username }}">
-                        {% if is_following %}Following{% else %}Follow{% endif %}
+                        {% if is_following %}✓ Following{% else %}Follow{% endif %}
                     </button>
                     <a href="{% url 'frontend:new_message' profile_user.username %}" class="btn btn-primary">
-                        Message
+                        💬 Message
                     </a>
                 {% elif user.is_authenticated and user == profile_user %}
                     <a href="{% url 'frontend:upload_photo' %}" class="btn btn-primary">
-                        Photo
+                        📷 Photo
                     </a>
                     <a href="{% url 'frontend:upload_video' %}" class="btn btn-primary">
-                        Video
+                        🎬 Video
                     </a>
                     <a href="{% url 'frontend:edit_profile' %}" class="btn btn-outline">
-                        Edit
+                        ✏️ Edit
                     </a>
                 {% endif %}
             </div>
@@ -931,8 +1068,8 @@
                         Upload
                     </button>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="{% url 'frontend:upload_photo' %}">Upload Photo</a>
-                        <a class="dropdown-item" href="{% url 'frontend:upload_video' %}">Upload Video</a>
+                        <a class="dropdown-item" href="{% url 'frontend:upload_photo' %}">📷 Upload Photo</a>
+                        <a class="dropdown-item" href="{% url 'frontend:upload_video' %}">🎬 Upload Video</a>
                     </div>
                 </div>
             {% endif %}
@@ -944,11 +1081,11 @@
                     <div class="media-card" data-id="{{ item.id }}" data-type="{{ item.type }}">
                         <div class="media-actions">
                             {% if item.type == 'photo' %}
-                                <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('photo', {{ item.id }}, '{{ item.caption|escapejs }}', '')">Edit</button>
+                                <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('photo', {{ item.id }}, '{{ item.caption|escapejs }}', '')">✏️</button>
                             {% else %}
-                                <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('video', {{ item.id }}, '{{ item.title|escapejs }}', '{{ item.description|escapejs }}')">Edit</button>
+                                <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('video', {{ item.id }}, '{{ item.title|escapejs }}', '{{ item.description|escapejs }}')">✏️</button>
                             {% endif %}
-                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('{{ item.type }}', {{ item.id }})">Delete</button>
+                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('{{ item.type }}', {{ item.id }})">🗑️</button>
                         </div>
                         <div class="media-type-badge {{ item.type }}">
                             {{ item.type|capfirst }}
@@ -965,9 +1102,9 @@
                         
                         <div class="media-info">
                             <div class="media-stats">
-                                <span>{{ item.likes_count }} likes</span>
-                                <span>{{ item.comments_count }} comments</span>
-                                <span>{{ item.views }} views</span>
+                                <span>❤️ {{ item.likes_count }}</span>
+                                <span>💬 {{ item.comments_count }}</span>
+                                <span>👁️ {{ item.views }}</span>
                             </div>
                             {% if item.type == 'photo' and item.caption %}
                                 <div class="media-caption">{{ item.caption|truncatechars:50 }}</div>
@@ -1010,15 +1147,15 @@
                 {% for photo in photos %}
                     <div class="photo-card" data-id="{{ photo.id }}" data-type="photo">
                         <div class="photo-actions">
-                            <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('photo', {{ photo.id }}, '{{ photo.caption|escapejs }}', '')">Edit</button>
-                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('photo', {{ photo.id }})">Delete</button>
+                            <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('photo', {{ photo.id }}, '{{ photo.caption|escapejs }}', '')">✏️</button>
+                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('photo', {{ photo.id }})">🗑️</button>
                         </div>
                         <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'Photo' }}" onclick="window.location.href='{% url 'frontend:photo_detail' photo.id %}'">
                         <div class="photo-info">
                             <div class="photo-stats">
-                                <span>{{ photo.likes_count }} likes</span>
-                                <span>{{ photo.comments_count }} comments</span>
-                                <span>{{ photo.views }} views</span>
+                                <span>❤️ {{ photo.likes_count }}</span>
+                                <span>💬 {{ photo.comments_count }}</span>
+                                <span>👁️ {{ photo.views }}</span>
                             </div>
                             {% if photo.caption %}
                                 <div class="media-caption">{{ photo.caption|truncatechars:50 }}</div>
@@ -1056,8 +1193,8 @@
                 {% for video in videos %}
                     <div class="video-card" data-id="{{ video.id }}" data-type="video">
                         <div class="video-actions">
-                            <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('video', {{ video.id }}, '{{ video.title|escapejs }}', '{{ video.description|escapejs }}')">Edit</button>
-                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('video', {{ video.id }})">Delete</button>
+                            <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('video', {{ video.id }}, '{{ video.title|escapejs }}', '{{ video.description|escapejs }}')">✏️</button>
+                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('video', {{ video.id }})">🗑️</button>
                         </div>
                         <video controls preload="metadata" {% if video.thumbnail %}poster="{{ video.thumbnail.url }}"{% endif %}>
                             <source src="{{ video.video_file.url }}" type="video/mp4">
@@ -1066,9 +1203,9 @@
                         <div class="video-info">
                             <div class="video-title">{{ video.title|default:"Untitled" }}</div>
                             <div class="video-stats">
-                                <span>{{ video.likes_count }} likes</span>
-                                <span>{{ video.comments_count }} comments</span>
-                                <span>{{ video.views }} views</span>
+                                <span>❤️ {{ video.likes_count }}</span>
+                                <span>💬 {{ video.comments_count }}</span>
+                                <span>👁️ {{ video.views }}</span>
                             </div>
                             {% if video.description %}
                                 <div class="media-caption">{{ video.description|truncatechars:50 }}</div>
@@ -1109,6 +1246,32 @@
     {% else %}
         <div class="avatar-placeholder-large">{{ profile_user.username|make_list|first|upper }}</div>
     {% endif %}
+</div>
+
+<!-- Followers Modal -->
+<div id="followersModal" class="users-modal">
+    <div class="users-modal-content">
+        <div class="users-modal-header">
+            <h3>Followers</h3>
+            <button class="users-modal-close" onclick="closeFollowersModal()">×</button>
+        </div>
+        <div class="users-list" id="followersList">
+            <div class="empty-users">Loading...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Following Modal -->
+<div id="followingModal" class="users-modal">
+    <div class="users-modal-content">
+        <div class="users-modal-header">
+            <h3>Following</h3>
+            <button class="users-modal-close" onclick="closeFollowingModal()">×</button>
+        </div>
+        <div class="users-list" id="followingList">
+            <div class="empty-users">Loading...</div>
+        </div>
+    </div>
 </div>
 
 <!-- Edit Modal -->
@@ -1169,6 +1332,82 @@ function openAvatarViewer() {
 
 function closeAvatarViewer() {
     document.getElementById('avatarViewer').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Followers Modal
+function openFollowersModal() {
+    const modal = document.getElementById('followersModal');
+    const listContainer = document.getElementById('followersList');
+    listContainer.innerHTML = '<div class="empty-users">Loading...</div>';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    fetch(`/api/users/{{ profile_user.username }}/followers/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.users && data.users.length > 0) {
+                listContainer.innerHTML = data.users.map(user => `
+                    <a href="/profile/${user.username}/" class="user-item">
+                        ${user.avatar ? 
+                            `<img src="${user.avatar}" class="user-avatar" alt="${user.username}">` : 
+                            `<div class="user-avatar-placeholder">${user.username.charAt(0).toUpperCase()}</div>`
+                        }
+                        <div class="user-info">
+                            <div class="user-name">${user.username}</div>
+                            <div class="user-bio">${user.bio || 'No bio'}</div>
+                        </div>
+                    </a>
+                `).join('');
+            } else {
+                listContainer.innerHTML = '<div class="empty-users">No followers yet</div>';
+            }
+        })
+        .catch(() => {
+            listContainer.innerHTML = '<div class="empty-users">Failed to load followers</div>';
+        });
+}
+
+function closeFollowersModal() {
+    document.getElementById('followersModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Following Modal
+function openFollowingModal() {
+    const modal = document.getElementById('followingModal');
+    const listContainer = document.getElementById('followingList');
+    listContainer.innerHTML = '<div class="empty-users">Loading...</div>';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    fetch(`/api/users/{{ profile_user.username }}/following/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.users && data.users.length > 0) {
+                listContainer.innerHTML = data.users.map(user => `
+                    <a href="/profile/${user.username}/" class="user-item">
+                        ${user.avatar ? 
+                            `<img src="${user.avatar}" class="user-avatar" alt="${user.username}">` : 
+                            `<div class="user-avatar-placeholder">${user.username.charAt(0).toUpperCase()}</div>`
+                        }
+                        <div class="user-info">
+                            <div class="user-name">${user.username}</div>
+                            <div class="user-bio">${user.bio || 'No bio'}</div>
+                        </div>
+                    </a>
+                `).join('');
+            } else {
+                listContainer.innerHTML = '<div class="empty-users">Not following anyone yet</div>';
+            }
+        })
+        .catch(() => {
+            listContainer.innerHTML = '<div class="empty-users">Failed to load following</div>';
+        });
+}
+
+function closeFollowingModal() {
+    document.getElementById('followingModal').classList.remove('active');
     document.body.style.overflow = '';
 }
 
@@ -1325,7 +1564,7 @@ document.querySelectorAll('.follow-btn').forEach(btn => {
         .then(response => response.json())
         .then(data => {
             if (data.followed) {
-                this.textContent = 'Following';
+                this.textContent = '✓ Following';
                 this.classList.remove('btn-primary');
                 this.classList.add('btn-success');
                 showToast(`You are now following ${this.dataset.username}`);
@@ -1333,13 +1572,13 @@ document.querySelectorAll('.follow-btn').forEach(btn => {
                 this.textContent = 'Follow';
                 this.classList.remove('btn-success');
                 this.classList.add('btn-primary');
-                showToast(`You unfollowed ${this.dataset.username}`, 'info');
+                showToast(`You unfollowed ${this.dataset.username}`);
             }
             if (followersSpan) followersSpan.textContent = data.count;
             this.disabled = false;
         })
         .catch(() => {
-            this.textContent = isFollowing ? 'Following' : 'Follow';
+            this.textContent = isFollowing ? '✓ Following' : 'Follow';
             this.disabled = false;
             showToast('An error occurred', 'error');
         });
@@ -1351,7 +1590,17 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeAvatarViewer();
         closeEditModal();
+        closeFollowersModal();
+        closeFollowingModal();
     }
+});
+
+// Close modals when clicking outside
+document.getElementById('followersModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeFollowersModal();
+});
+document.getElementById('followingModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeFollowingModal();
 });
 </script>
 {% endblock %}

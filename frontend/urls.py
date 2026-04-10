@@ -87,5 +87,12 @@ urlpatterns = [
     path('mpesa/pay/', views.mpesa_payment, name='mpesa_payment'),
     path('mpesa/callback/', views.mpesa_callback, name='mpesa_callback'),
     path('mpesa/status/<int:transaction_id>/', views.check_payment_status, name='mpesa_status'),
+    path('api/users/<str:username>/followers/', views.get_user_followers, name='get_user_followers'),
+    path('api/users/<str:username>/following/', views.get_user_following, name='get_user_following'),
+    # Add these to your urlpatterns in frontend/urls.py
+
+# API endpoints for followers/following
+    path('api/users/<str:username>/followers/', views.get_user_followers, name='get_user_followers'),
+    path('api/users/<str:username>/following/', views.get_user_following, name='get_user_following'),
 
 ]

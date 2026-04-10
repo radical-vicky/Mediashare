@@ -4,8 +4,148 @@ from django.contrib.auth.models import User
 from .models import (
     UserProfile, Photo, Video, Comment, Share, 
     CallSession, MessageThread, Message, VideoView, BackgroundMedia,
-    MpesaTransaction, PaidMessage
+    MpesaTransaction, PaidMessage, SiteSetting, Feature, UserSession, Match
 )
+
+# ========== SITE SETTING ADMIN (ADD THIS) ==========
+
+@admin.register(SiteSetting)
+class SiteSettingAdmin(admin.ModelAdmin):
+    list_display = ['key', 'value_preview', 'description_preview', 'updated_at']
+    list_filter = ['updated_at']
+    search_fields = ['key', 'value', 'description']
+    readonly_fields = ['updated_at']
+    
+    fieldsets = (
+        ('Setting Information', {
+            'fields': ('key', 'value', 'description')
+        }),
+        ('Timestamps', {
+            'fields': ('updated_at',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def value_preview(self, obj):
+        return obj.value[:50] + '...' if len(obj.value) > 50 else obj.value
+    value_preview.short_description = 'Value'
+    
+    def description_preview(self, obj):
+        return obj.description[:50] + '...' if len(obj.description) > 50 else obj.description
+    description_preview.short_description = 'Description'
+    
+    actions = ['delete_selected']
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request)
+
+
+# ========== FEATURE ADMIN (ADD THIS) ==========
+
+@admin.register(Feature)
+class FeatureAdmin(admin.ModelAdmin):
+    list_display = ['id', 'icon_preview', 'title', 'description_preview', 'order', 'is_active']
+    list_filter = ['is_active', 'created_at']
+    list_editable = ['order', 'is_active']
+    search_fields = ['title', 'description']
+    readonly_fields = ['created_at']
+    
+    fieldsets = (
+        ('Feature Information', {
+            'fields': ('title', 'description', 'icon_image', 'order', 'is_active')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def icon_preview(self, obj):
+        if obj.icon_image:
+            return format_html('<img src="{}" width="40" height="40" style="object-fit: cover; border-radius: 50%;" />', obj.icon_image.url)
+        return format_html('<span style="color: gray;">No icon</span>')
+    icon_preview.short_description = 'Icon'
+    
+    def description_preview(self, obj):
+        return obj.description[:50] + '...' if len(obj.description) > 50 else obj.description
+    description_preview.short_description = 'Description'
+    
+    actions = ['activate_features', 'deactivate_features']
+    
+    def activate_features(self, request, queryset):
+        queryset.update(is_active=True)
+        self.message_user(request, f'{queryset.count()} features activated.')
+    activate_features.short_description = 'Activate selected features'
+    
+    def deactivate_features(self, request, queryset):
+        queryset.update(is_active=False)
+        self.message_user(request, f'{queryset.count()} features deactivated.')
+    deactivate_features.short_description = 'Deactivate selected features'
+
+
+# ========== USER SESSION ADMIN (ADD THIS) ==========
+
+@admin.register(UserSession)
+class UserSessionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'session_key_preview', 'last_activity', 'ip_address']
+    list_filter = ['last_activity']
+    search_fields = ['user__username', 'session_key', 'ip_address']
+    readonly_fields = ['last_activity']
+    
+    fieldsets = (
+        ('Session Information', {
+            'fields': ('user', 'session_key', 'ip_address')
+        }),
+        ('Activity', {
+            'fields': ('last_activity',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def session_key_preview(self, obj):
+        return obj.session_key[:20] + '...' if len(obj.session_key) > 20 else obj.session_key
+    session_key_preview.short_description = 'Session Key'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user')
+    
+    actions = ['delete_old_sessions']
+    
+    def delete_old_sessions(self, request, queryset):
+        from django.utils import timezone
+        from datetime import timedelta
+        old_cutoff = timezone.now() - timedelta(days=7)
+        old_sessions = queryset.filter(last_activity__lt=old_cutoff)
+        count = old_sessions.count()
+        old_sessions.delete()
+        self.message_user(request, f'{count} old sessions deleted.')
+    delete_old_sessions.short_description = 'Delete sessions older than 7 days'
+
+
+# ========== MATCH ADMIN (ADD THIS) ==========
+
+@admin.register(Match)
+class MatchAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user1', 'user2', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['user1__username', 'user2__username']
+    readonly_fields = ['created_at']
+    
+    fieldsets = (
+        ('Match Information', {
+            'fields': ('user1', 'user2')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user1', 'user2')
+    
+    actions = ['delete_selected']
+
 
 # ========== USER PROFILE ADMIN ==========
 
@@ -323,10 +463,12 @@ class CallSessionAdmin(admin.ModelAdmin):
     
     def mark_as_completed(self, request, queryset):
         queryset.update(status='completed')
+        self.message_user(request, f'{queryset.count()} calls marked as completed.')
     mark_as_completed.short_description = 'Mark selected calls as completed'
     
     def mark_as_cancelled(self, request, queryset):
         queryset.update(status='cancelled')
+        self.message_user(request, f'{queryset.count()} calls marked as cancelled.')
     mark_as_cancelled.short_description = 'Mark selected calls as cancelled'
 
 

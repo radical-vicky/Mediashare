@@ -3,25 +3,195 @@
 
 {% block title %}VibeGaze - Connect with Beautiful People{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* Entrance Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+    }
+
+    .animate-on-scroll {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s ease-out;
+    }
+
+    .animate-on-scroll.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Sticky Social Proof Bar */
+    .social-proof-bar {
+        position: sticky;
+        top: 70px;
+        z-index: 98;
+        background: rgba(15, 25, 45, 0.95);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+        padding: 10px 0;
+        margin-bottom: 20px;
+    }
+
+    .proof-content {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        flex-wrap: wrap;
+    }
+
+    .proof-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #94a3b8;
+        font-size: 13px;
+    }
+
+    .proof-number {
+        font-size: 18px;
+        font-weight: 800;
+        color: #3b82f6;
+    }
+
+    /* Hover Zoom Cards */
+    .media-card {
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .media-card:hover {
+        transform: translateY(-12px) scale(1.02);
+    }
+
+    /* Floating CTA */
+    .floating-cta {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 100;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .floating-cta .btn {
+        padding: 14px 28px;
+        font-size: 16px;
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Loading Skeleton */
+    .skeleton {
+        background: linear-gradient(90deg, rgba(59,130,246,0.1) 25%, rgba(59,130,246,0.2) 50%, rgba(59,130,246,0.1) 75%);
+        background-size: 1000px 100%;
+        animation: shimmer 2s infinite;
+    }
+
+    /* Badges from DB */
+    .trending-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 700;
+        z-index: 5;
+    }
+
+    .new-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 700;
+        z-index: 5;
+    }
+
+    /* View Counter Animation */
+    .view-count {
+        transition: all 0.3s ease;
+    }
+
+    .media-card:hover .view-count {
+        transform: scale(1.1);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="homepage">
-    <section class="hero">
+    <!-- Sticky Social Proof Bar - Data from DB -->
+    <div class="social-proof-bar">
+        <div class="container">
+            <div class="proof-content">
+                <div class="proof-item">
+                    <span class="proof-number" id="onlineCount">{{ online_count|default:"0" }}</span>
+                    <span>Online Now</span>
+                </div>
+                <div class="proof-item">
+                    <span class="proof-number" id="memberCount">{{ total_members|default:"0" }}+</span>
+                    <span>Active Members</span>
+                </div>
+                <div class="proof-item">
+                    <span class="proof-number" id="dailyMatches">{{ daily_matches|default:"0" }}</span>
+                    <span>New Matches Today</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="hero animate-on-scroll">
         <div class="hero-banner">
             <div class="banner-wrapper">
-                <div class="banner-gradient"></div>
+                <!-- Background Media from DB -->
+                {% if background_media %}
+                    {% if background_media.media_type == 'image' %}
+                        <img src="{{ background_media.file.url }}" alt="Background" class="banner-background">
+                    {% elif background_media.media_type == 'video' %}
+                        <video class="banner-background" autoplay muted loop playsinline>
+                            <source src="{{ background_media.file.url }}" type="video/mp4">
+                        </video>
+                    {% endif %}
+                {% else %}
+                    <div class="banner-gradient"></div>
+                {% endif %}
                 <div class="banner-overlay">
                     <div class="banner-content">
-                        <h1 class="banner-title">Connect, Chat & Vibe</h1>
-                        <p class="banner-description">Meet beautiful people, make meaningful connections through interactive chats and video calls.</p>
+                        <h1 class="banner-title">{{ hero_title|default:"Connect, Chat & Vibe" }}</h1>
+                        <p class="banner-description">{{ hero_description|default:"Meet beautiful people, make meaningful connections through interactive chats and video calls." }}</p>
                         {% if user.is_authenticated %}
                             <div class="banner-buttons">
-                                <a href="{% url 'frontend:feed' %}" class="btn btn-primary">Explore People</a>
+                                <a href="{% url 'frontend:feed' %}" class="btn btn-primary" id="exploreBtn">Explore People</a>
                                 <a href="{% url 'frontend:upload_photo' %}" class="btn btn-outline">Share Your Vibe</a>
                                 <a href="{% url 'frontend:upload_video' %}" class="btn btn-outline">Upload Video</a>
                             </div>
                         {% else %}
                             <div class="banner-buttons">
-                                <a href="{% url 'account_signup' %}" class="btn btn-primary">Join Now</a>
+                                <a href="{% url 'account_signup' %}" class="btn btn-primary" id="joinNowBtn">Join Now</a>
                                 <a href="{% url 'account_login' %}" class="btn btn-outline">Sign In</a>
                             </div>
                         {% endif %}
@@ -31,78 +201,101 @@
         </div>
     </section>
 
-    <section class="features">
+    <section class="features animate-on-scroll">
         <div class="container">
             <div class="section-header text-center">
-                <h2 class="section-title">Why Choose VibeGaze</h2>
-                <p class="section-subtitle">Everything you need to connect and vibe</p>
+                <h2 class="section-title">{{ features_title|default:"Why Choose VibeGaze" }}</h2>
+                <p class="section-subtitle">{{ features_subtitle|default:"Everything you need to connect and vibe" }}</p>
             </div>
             <div class="features-grid">
-                <div class="feature-card glass">
-                    <div class="feature-image-wrapper">
-                        <div class="feature-image-circle">
-                            <img src="{% static 'images/choose.png' %}" alt="Chat" class="feature-img-circle">
+                {% for feature in features %}
+                    <div class="feature-card glass">
+                        <div class="feature-image-wrapper">
+                            <div class="feature-image-circle">
+                                {% if feature.icon_image %}
+                                    <img src="{{ feature.icon_image.url }}" alt="{{ feature.title }}" class="feature-img-circle">
+                                {% else %}
+                                    <div class="feature-icon-placeholder">{{ feature.title|first|upper }}</div>
+                                {% endif %}
+                            </div>
                         </div>
+                        <h3 class="feature-title">{{ feature.title }}</h3>
+                        <p class="feature-description">{{ feature.description }}</p>
                     </div>
-                    <h3 class="feature-title">Instant Chat</h3>
-                    <p class="feature-description">Connect instantly with beautiful people through real-time messaging.</p>
-                </div>
-                <div class="feature-card glass">
-                    <div class="feature-image-wrapper">
-                        <div class="feature-image-circle">
-                            <img src="{% static 'images/choose1.png' %}" alt="Video Calls" class="feature-img-circle">
+                {% empty %}
+                    <!-- Default features if none in DB -->
+                    <div class="feature-card glass">
+                        <div class="feature-image-wrapper">
+                            <div class="feature-image-circle">
+                                <div class="feature-icon-placeholder">C</div>
+                            </div>
                         </div>
+                        <h3 class="feature-title">Instant Chat</h3>
+                        <p class="feature-description">Connect instantly with beautiful people through real-time messaging.</p>
                     </div>
-                    <h3 class="feature-title">Video Calls</h3>
-                    <p class="feature-description">Face-to-face connections through high-quality video calls.</p>
-                </div>
-                <div class="feature-card glass">
-                    <div class="feature-image-wrapper">
-                        <div class="feature-image-circle">
-                            <img src="{% static 'images/choose4.png' %}" alt="Community" class="feature-img-circle">
+                    <div class="feature-card glass">
+                        <div class="feature-image-wrapper">
+                            <div class="feature-image-circle">
+                                <div class="feature-icon-placeholder">V</div>
+                            </div>
                         </div>
+                        <h3 class="feature-title">Video Calls</h3>
+                        <p class="feature-description">Face-to-face connections through high-quality video calls.</p>
                     </div>
-                    <h3 class="feature-title">Vibrant Community</h3>
-                    <p class="feature-description">Join a community of amazing people looking to connect and vibe.</p>
-                </div>
-                <div class="feature-card glass">
-                    <div class="feature-image-wrapper">
-                        <div class="feature-image-circle">
-                            <img src="{% static 'images/choose3.png' %}" alt="Safe & Secure" class="feature-img-circle">
+                    <div class="feature-card glass">
+                        <div class="feature-image-wrapper">
+                            <div class="feature-image-circle">
+                                <div class="feature-icon-placeholder">P</div>
+                            </div>
                         </div>
+                        <h3 class="feature-title">Vibrant Community</h3>
+                        <p class="feature-description">Join a community of amazing people looking to connect and vibe.</p>
                     </div>
-                    <h3 class="feature-title">Safe & Secure</h3>
-                    <p class="feature-description">Your privacy and safety are our top priority.</p>
-                </div>
+                    <div class="feature-card glass">
+                        <div class="feature-image-wrapper">
+                            <div class="feature-image-circle">
+                                <div class="feature-icon-placeholder">S</div>
+                            </div>
+                        </div>
+                        <h3 class="feature-title">Safe & Secure</h3>
+                        <p class="feature-description">Your privacy and safety are our top priority.</p>
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </section>
 
-    <section class="recent-content">
+    <section class="recent-content animate-on-scroll">
         <div class="container">
             <div class="section-header">
                 <div>
-                    <h2 class="section-title">Featured Profiles</h2>
-                    <p class="section-subtitle">Meet amazing people ready to connect</p>
+                    <h2 class="section-title">{{ photos_section_title|default:"Featured Profiles" }}</h2>
+                    <p class="section-subtitle">{{ photos_section_subtitle|default:"Meet amazing people ready to connect" }}</p>
                 </div>
-                <a href="{% url 'frontend:feed' %}?filter=photos" class="link-arrow">View all →</a>
+                <a href="{% url 'frontend:feed' %}?filter=photos" class="link-arrow">View all</a>
             </div>
             {% if recent_photos %}
-                <div class="media-grid">
+                <div class="media-grid" id="photoGrid">
                     {% for photo in recent_photos %}
-                        <div class="media-card glass">
+                        <div class="media-card glass" data-id="{{ photo.id }}">
+                            {% if photo.is_trending %}
+                                <div class="trending-badge">Trending</div>
+                            {% elif photo.is_new %}
+                                <div class="new-badge">New</div>
+                            {% endif %}
                             <div class="media-poster">
-                                <a href="{% url 'frontend:user_profile' username=photo.author.username %}" class="media-link">
-                                    <img src="{{ photo.image.url }}" alt="{{ photo.author.username }}" class="media-image">
+                                <a href="{% url 'frontend:photo_detail' photo.id %}" class="media-link">
+                                    <img src="{{ photo.image.url }}" alt="{{ photo.title }}" class="media-image" loading="lazy">
                                     <div class="media-overlay">
                                         <div class="media-stats">
-                                            <span class="stat-item">{{ photo.views }} views</span>
+                                            <span class="stat-item view-count">{{ photo.views }} views</span>
+                                            <span class="stat-item">{{ photo.comments.count }} comments</span>
                                         </div>
                                     </div>
                                 </a>
                                 <div class="media-like-btn-wrapper">
                                     <button class="like-btn {% if user in photo.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_photo' photo.id %}" onclick="likeMedia(this)">
-                                        <span class="heart-icon">❤️</span>
+                                        <span class="heart-icon"></span>
                                         <span class="like-count">{{ photo.likes.count }}</span>
                                     </button>
                                 </div>
@@ -121,7 +314,7 @@
                                         <span class="post-time">Active {{ photo.created_at|timesince }} ago</span>
                                     </div>
                                 </div>
-                                <div class="media-title">@{{ photo.author.username }}</div>
+                                <div class="media-title">{{ photo.author.username }}</div>
                             </div>
                         </div>
                     {% endfor %}
@@ -137,34 +330,38 @@
         </div>
     </section>
 
-    <section class="recent-content">
+    <section class="recent-content animate-on-scroll">
         <div class="container">
             <div class="section-header">
                 <div>
-                    <h2 class="section-title">Video Vibes</h2>
-                    <p class="section-subtitle">Watch and connect through videos</p>
+                    <h2 class="section-title">{{ videos_section_title|default:"Video Vibes" }}</h2>
+                    <p class="section-subtitle">{{ videos_section_subtitle|default:"Watch and connect through videos" }}</p>
                 </div>
-                <a href="{% url 'frontend:feed' %}?filter=videos" class="link-arrow">View all →</a>
+                <a href="{% url 'frontend:feed' %}?filter=videos" class="link-arrow">View all</a>
             </div>
             {% if recent_videos %}
-                <div class="media-grid">
+                <div class="media-grid" id="videoGrid">
                     {% for video in recent_videos %}
-                        <div class="media-card glass">
+                        <div class="media-card glass" data-id="{{ video.id }}">
+                            {% if video.is_trending %}
+                                <div class="trending-badge">Trending</div>
+                            {% endif %}
                             <div class="media-poster">
-                                <a href="{% url 'frontend:user_profile' username=video.author.username %}" class="media-link">
-                                    <video class="media-video">
+                                <a href="{% url 'frontend:video_detail' video.id %}" class="media-link">
+                                    <video class="media-video" preload="metadata" poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}">
                                         <source src="{{ video.video_file.url }}">
                                     </video>
                                     <div class="media-overlay">
                                         <div class="media-stats">
-                                            <span class="stat-item">{{ video.views }} views</span>
+                                            <span class="stat-item view-count">{{ video.views }} views</span>
+                                            <span class="stat-item">{{ video.comments.count }} comments</span>
                                         </div>
                                     </div>
                                     <div class="play-icon"></div>
                                 </a>
                                 <div class="media-like-btn-wrapper">
                                     <button class="like-btn {% if user in video.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_video' video.id %}" onclick="likeMedia(this)">
-                                        <span class="heart-icon">❤️</span>
+                                        <span class="heart-icon"></span>
                                         <span class="like-count">{{ video.likes.count }}</span>
                                     </button>
                                 </div>
@@ -198,6 +395,15 @@
             {% endif %}
         </div>
     </section>
+
+    <!-- Floating CTA -->
+    <div class="floating-cta">
+        {% if user.is_authenticated %}
+            <a href="{% url 'frontend:feed' %}" class="btn btn-primary">Start Connecting</a>
+        {% else %}
+            <a href="{% url 'account_signup' %}" class="btn btn-primary">Join {{ total_members|default:"50K" }}+ Members</a>
+        {% endif %}
+    </div>
 </div>
 
 <style>
@@ -233,10 +439,20 @@
 .banner-wrapper {
     position: relative;
     width: 100%;
-    min-height: 500px;
+    min-height: 550px;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.banner-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
 }
 
 .banner-gradient {
@@ -246,6 +462,7 @@
     width: 100%;
     height: 100%;
     background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #0a0e1a 100%);
+    z-index: 0;
 }
 
 .banner-overlay {
@@ -254,10 +471,11 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(10, 14, 26, 0.6) 0%, rgba(59, 130, 246, 0.15) 100%);
+    background: linear-gradient(135deg, rgba(10, 14, 26, 0.65) 0%, rgba(59, 130, 246, 0.25) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1;
 }
 
 .banner-content {
@@ -394,6 +612,9 @@
     background: rgba(20, 30, 55, 0.8);
     border: 2px solid rgba(59, 130, 246, 0.3);
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .feature-card:hover .feature-image-circle {
@@ -406,6 +627,12 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.feature-icon-placeholder {
+    font-size: 48px;
+    font-weight: 800;
+    color: #3b82f6;
 }
 
 .feature-title {
@@ -473,12 +700,14 @@
 
 .media-card {
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border-radius: 12px;
+    cursor: pointer;
+    position: relative;
 }
 
 .media-card:hover {
-    transform: translateY(-6px);
+    transform: translateY(-12px) scale(1.02);
     border-color: #3b82f6;
     box-shadow: 0 12px 40px rgba(59, 130, 246, 0.25);
 }
@@ -579,13 +808,15 @@
 }
 
 .like-btn .heart-icon {
-    font-size: 13px;
-    color: #64748b;
-    transition: color 0.2s ease;
+    width: 12px;
+    height: 12px;
+    background: #64748b;
+    display: inline-block;
+    clip-path: path("M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z");
 }
 
 .like-btn.liked .heart-icon {
-    color: #ef4444;
+    background: #ef4444;
 }
 
 .like-btn:hover {
@@ -796,6 +1027,15 @@
     .empty-state {
         padding: 40px 16px;
     }
+    .proof-content {
+        gap: 20px;
+    }
+    .proof-number {
+        font-size: 14px;
+    }
+    .proof-item {
+        font-size: 11px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -825,6 +1065,13 @@
     }
     .author-name {
         font-size: 12px;
+    }
+    .proof-content {
+        gap: 12px;
+    }
+    .floating-cta .btn {
+        padding: 10px 20px;
+        font-size: 13px;
     }
 }
 </style>
@@ -863,6 +1110,10 @@ function likeMedia(button) {
             likeCountSpan.textContent = data.count;
             if (data.liked) {
                 button.classList.add('liked');
+                button.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    button.style.transform = '';
+                }, 200);
             } else {
                 button.classList.remove('liked');
             }
@@ -870,5 +1121,39 @@ function likeMedia(button) {
     })
     .catch(error => console.error('Error:', error));
 }
+
+// Scroll Animation
+function initScrollAnimation() {
+    const elements = document.querySelectorAll('.animate-on-scroll');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    elements.forEach(el => observer.observe(el));
+}
+
+// Button Click Effect
+function addButtonEffects() {
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            this.classList.add('btn-clicked');
+            setTimeout(() => {
+                this.classList.remove('btn-clicked');
+            }, 200);
+        });
+    });
+}
+
+// Initialize all
+document.addEventListener('DOMContentLoaded', function() {
+    initScrollAnimation();
+    addButtonEffects();
+});
 </script>
 {% endblock %}
