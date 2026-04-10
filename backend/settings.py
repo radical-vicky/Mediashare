@@ -45,7 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Must be first after SecurityMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -118,7 +118,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# ========== STATIC FILES CONFIGURATION ==========
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
@@ -128,12 +128,12 @@ STATICFILES_DIRS = [
 # WhiteNoise configuration for static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# ========== CLOUDINARY CONFIGURATION - FIXED ==========
+# ========== MEDIA FILES & CLOUDINARY CONFIGURATION ==========
 # Get credentials from environment variables (set these in Render)
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'dvuooxbqi'),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', ''),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '875143959481713'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'BsLyRtEvfVCEZOdQ6JWnY6mTEqI'),
 }
 
 # Configure cloudinary
@@ -144,7 +144,7 @@ cloudinary.config(
     secure=True
 )
 
-# Media files - Use Cloudinary for storage (ONLY ONE definition)
+# Media files - Use Cloudinary for storage
 MEDIA_URL = '/media/'
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
