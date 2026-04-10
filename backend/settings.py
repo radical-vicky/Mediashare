@@ -131,7 +131,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # ========== CLOUDINARY CONFIGURATION - FIXED ==========
 # Get credentials from environment variables (set these in Render)
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'Root'),
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'dvuooxbqi'),
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', ''),
 }
