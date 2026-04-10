@@ -6,13 +6,16 @@ from pathlib import Path
 from decouple import config
 import os
 import dj_database_url
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-y*y(t(yg6blp%6&f6*-j688zbdd0y#8h-i3qe11-684@cltox^')
-DEBUG = config('DEBUG', default=False, cast=bool)  # Changed to False for production
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 # ALLOWED_HOSTS - Updated for Render
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,vibegaze.onrender.com,.onrender.com').split(',')
@@ -33,12 +36,16 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     
+    # Cloudinary apps - MUST be before 'frontend'
+    'cloudinary_storage',
+    'cloudinary',
+    
     'frontend',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Added WhiteNoise for static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -121,35 +128,38 @@ STATICFILES_DIRS = [
 # WhiteNoise configuration for static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files
+# ========== CLOUDINARY CONFIGURATION - FIXED ==========
+# Get credentials from environment variables (set these in Render)
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'dvuooxbqi'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', ''),
+}
+
+# Configure cloudinary
+cloudinary.config(
+    cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
+    api_key=CLOUDINARY_STORAGE['API_KEY'],
+    api_secret=CLOUDINARY_STORAGE['API_SECRET'],
+    secure=True
+)
+
+# Media files - Use Cloudinary for storage (ONLY ONE definition)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.VideoMediaCloudinaryStorage'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'
 
-# ========== FILE UPLOAD SETTINGS - NO LIMITS ==========
-
-# Remove all size limits
-DATA_UPLOAD_MAX_MEMORY_SIZE = None  # No memory limit
-DATA_UPLOAD_MAX_NUMBER_FIELDS = None  # No field limit
-DATA_UPLOAD_MAX_NUMBER_FILES = None  # No file limit
-
-# Increase timeout for large file uploads (in seconds)
-REQUEST_TIMEOUT = 3600  # 1 hour timeout
-
-# File upload handlers - use temporary file handler for large files
+# ========== FILE UPLOAD SETTINGS ==========
+DATA_UPLOAD_MAX_MEMORY_SIZE = None
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None
+DATA_UPLOAD_MAX_NUMBER_FILES = None
+REQUEST_TIMEOUT = 3600
 FILE_UPLOAD_HANDLERS = [
     'django.core.files.uploadhandler.TemporaryFileUploadHandler',
 ]
-
-# Large file upload settings
-FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440  # 2.5MB before writing to disk
-FILE_UPLOAD_TEMP_DIR = None  # Use system temp directory
-
-# Chunked upload settings (for very large files)
-CHUNKED_UPLOAD_MAX_FILE_SIZE = None  # No limit
-CHUNKED_UPLOAD_MAX_CHUNK_SIZE = None  # No chunk limit
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440
+FILE_UPLOAD_TEMP_DIR = None
+CHUNKED_UPLOAD_MAX_FILE_SIZE = None
+CHUNKED_UPLOAD_MAX_CHUNK_SIZE = None
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -202,38 +212,22 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
 
-
-
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
-
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'Root',
-    'API_KEY': 'CLOUDINARY_URL=cloudinary://<your_api_key>:<your_api_secret>@dvuooxbqi',
-    'API_SECRET': '8mnHSRQIPsGdQ54Go_akpWbkPR0',
-}
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
 # ========== SECURITY SETTINGS ==========
 SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = 'same-origin'
-
-# HTTPS settings (for production on Render)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = False  # Render handles HTTPS automatically
-SESSION_COOKIE_SECURE = True  # Only send cookies over HTTPS
-CSRF_COOKIE_SECURE = True  # Only send CSRF cookies over HTTPS
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 # ========== MPESA CONFIGURATION ==========
-MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', 'LQost6BhC09UpLKaYjbRunq3IZN1ylfzHzI8tz47jxlaVHvI')
-MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', 'Kn2l7P0mCnFAJAi7KdOMsIRkpAsH698PBLbhG5EqVRc7CY27pv6d0U96hEhmByo6')
+MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', '')
+MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', '')
 MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE', '174379')
 MPESA_SHORTCODE_TYPE = os.environ.get('MPESA_SHORTCODE_TYPE', 'paybill')
-MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')
+MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', '')
 MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', 'https://vibegaze.onrender.com/mpesa/callback/')
 MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'sandbox')
 MPESA_INITIATOR_NAME = os.environ.get('MPESA_INITIATOR_NAME', 'testapi')
-MPESA_INITIATOR_PASSWORD = os.environ.get('MPESA_INITIATOR_PASSWORD', 'Safaricom2018')
+MPESA_INITIATOR_PASSWORD = os.environ.get('MPESA_INITIATOR_PASSWORD', '')
