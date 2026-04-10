@@ -84,6 +84,8 @@ DATABASES = {
     }
 }
 
+
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -159,7 +161,7 @@ ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 ACCOUNT_RATE_LIMITS = {
     'login_failed': '5/5m',
 }
-ACCOUNT_EMAIL_VERIFICATION = 'optional'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_SESSION_REMEMBER = True

@@ -1,0 +1,11 @@
+<!-- Make sure your email confirmation link looks like this -->
+{% load account %}
+{% user_display user as user_display %}
+
+{% block content %}
+<p>Hello from VibeGaze!</p>
+<p>You're receiving this email because user {{ user_display }} has given your email address to register an account.</p>
+<p>To confirm this is correct, go to the following link:</p>
+<p><a href="{{ activate_url }}">{{ activate_url }}</a></p>
+<p>Thank you for joining VibeGaze!</p>
+{% endblock %}

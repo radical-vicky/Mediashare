@@ -1165,40 +1165,33 @@ def check_payment_status(request, transaction_id):
         return JsonResponse({'error': 'Transaction not found'}, status=404)
     
 
-# Add these API endpoints for followers/following
+
 def get_user_followers(request, username):
     """API endpoint to get user's followers"""
     try:
         user = get_object_or_404(User, username=username)
         
-        # Get the profile and its followers
-        try:
-            profile = user.profile
-        except UserProfile.DoesNotExist:
-            profile = UserProfile.objects.create(user=user)
+        # Get or create profile
+        profile, created = UserProfile.objects.get_or_create(user=user)
         
+        # Get followers - these are users who follow THIS user
         followers = profile.followers.all()
         
         users_data = []
         for follower in followers:
-            try:
-                follower_profile = follower.profile
-            except UserProfile.DoesNotExist:
-                follower_profile = UserProfile.objects.create(user=follower)
-            
+            follower_profile, _ = UserProfile.objects.get_or_create(user=follower)
             users_data.append({
                 'id': follower.id,
                 'username': follower.username,
                 'avatar': follower_profile.avatar.url if follower_profile.avatar else None,
-                'bio': follower_profile.bio if follower_profile.bio else '',
+                'bio': follower_profile.bio or '',
             })
         
-        return JsonResponse({'users': users_data})
+        return JsonResponse({'users': users_data, 'count': len(users_data)})
     
-    except User.DoesNotExist:
-        return JsonResponse({'error': 'User not found', 'users': []}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e), 'users': []}, status=400)
+
 
 
 def get_user_following(request, username):
@@ -1206,75 +1199,22 @@ def get_user_following(request, username):
     try:
         user = get_object_or_404(User, username=username)
         
-        # Get the profile and its following
-        try:
-            profile = user.profile
-        except UserProfile.DoesNotExist:
-            profile = UserProfile.objects.create(user=user)
-        
-        following = profile.following.all()
+        # Get users that THIS user follows
+        # Since the ManyToManyField has related_name='following' on UserProfile,
+        # the user object has a 'following' attribute
+        following_users = user.following.all()  # This works because related_name='following'
         
         users_data = []
-        for followed in following:
-            try:
-                followed_profile = followed.profile
-            except UserProfile.DoesNotExist:
-                followed_profile = UserProfile.objects.create(user=followed)
-            
+        for followed in following_users:
+            followed_profile, _ = UserProfile.objects.get_or_create(user=followed)
             users_data.append({
                 'id': followed.id,
                 'username': followed.username,
                 'avatar': followed_profile.avatar.url if followed_profile.avatar else None,
-                'bio': followed_profile.bio if followed_profile.bio else '',
+                'bio': followed_profile.bio or '',
             })
         
-        return JsonResponse({'users': users_data})
+        return JsonResponse({'users': users_data, 'count': len(users_data)})
     
-    except User.DoesNotExist:
-        return JsonResponse({'error': 'User not found', 'users': []}, status=404)
-    except Exception as e:
-        return JsonResponse({'error': str(e), 'users': []}, status=400)
-
-
-# Add these functions to your views.py (after your existing imports)
-
-def get_user_followers(request, username):
-    """API endpoint to get user's followers"""
-    try:
-        user = get_object_or_404(User, username=username)
-        profile, created = UserProfile.objects.get_or_create(user=user)
-        followers = profile.followers.all()
-        
-        users_data = []
-        for follower in followers:
-            follower_profile, created = UserProfile.objects.get_or_create(user=follower)
-            users_data.append({
-                'id': follower.id,
-                'username': follower.username,
-                'avatar': follower_profile.avatar.url if follower_profile.avatar else None,
-                'bio': follower_profile.bio if follower_profile.bio else '',
-            })
-        return JsonResponse({'users': users_data})
-    except Exception as e:
-        return JsonResponse({'error': str(e), 'users': []}, status=400)
-
-
-def get_user_following(request, username):
-    """API endpoint to get users that the user follows"""
-    try:
-        user = get_object_or_404(User, username=username)
-        profile, created = UserProfile.objects.get_or_create(user=user)
-        following = profile.following.all()
-        
-        users_data = []
-        for followed in following:
-            followed_profile, created = UserProfile.objects.get_or_create(user=followed)
-            users_data.append({
-                'id': followed.id,
-                'username': followed.username,
-                'avatar': followed_profile.avatar.url if followed_profile.avatar else None,
-                'bio': followed_profile.bio if followed_profile.bio else '',
-            })
-        return JsonResponse({'users': users_data})
     except Exception as e:
         return JsonResponse({'error': str(e), 'users': []}, status=400)

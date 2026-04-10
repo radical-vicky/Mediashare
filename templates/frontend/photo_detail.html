@@ -425,38 +425,66 @@
         color: #3b82f6;
     }
     
-    /* Viewer Close Button */
+    /* Viewer Close Button - Top Right */
     .viewer-close {
         position: fixed;
         top: 20px;
         right: 20px;
-        width: 44px;
-        height: 44px;
-        background: rgba(33, 38, 45, 0.9);
+        width: 50px;
+        height: 50px;
+        background: #ef4444;
         backdrop-filter: blur(8px);
-        border: 1px solid rgba(59, 130, 246, 0.3);
+        border: 2px solid white;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        z-index: 1001;
+        z-index: 1002;
         transition: all 0.2s ease;
-        color: #cbd5e1;
-        font-size: 24px;
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        font-family: Arial, sans-serif;
     }
     
     .viewer-close:hover {
-        background: #ef4444;
+        background: #dc2626;
+        transform: scale(1.1) rotate(90deg);
+    }
+    
+    /* Viewer Close Button - Top Left (Backup) */
+    .viewer-close-left {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(239, 68, 68, 0.9);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 30px;
+        padding: 10px 20px;
+        cursor: pointer;
+        z-index: 1002;
+        transition: all 0.2s ease;
         color: white;
-        transform: rotate(90deg);
+        font-size: 14px;
+        font-weight: 600;
+        font-family: Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .viewer-close-left:hover {
+        background: #dc2626;
+        transform: scale(1.05);
     }
     
     /* Viewer Counter */
     .viewer-counter {
         position: fixed;
         top: 20px;
-        left: 20px;
+        left: 120px;
         background: rgba(33, 38, 45, 0.9);
         backdrop-filter: blur(8px);
         padding: 6px 14px;
@@ -1175,6 +1203,27 @@
         .container {
             padding: 0 16px;
         }
+        
+        .viewer-close {
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            top: 10px;
+            right: 10px;
+        }
+        
+        .viewer-close-left {
+            padding: 6px 12px;
+            font-size: 12px;
+            top: 10px;
+            left: 10px;
+        }
+        
+        .viewer-counter {
+            top: 10px;
+            left: 100px;
+            font-size: 10px;
+        }
     }
 
     @media (max-width: 480px) {
@@ -1215,12 +1264,12 @@
                 <span class="dropdown-arrow">▼</span>
             </button>
             <div class="dropdown-menu" id="dropdownMenu">
-                <a href="/" class="dropdown-item">🏠 Home</a>
-                <a href="/feed/" class="dropdown-item">📱 Feed</a>
+                <a href="/" class="dropdown-item">Home</a>
+                <a href="/feed/" class="dropdown-item">Feed</a>
                 <div class="dropdown-item-divider"></div>
-                <button class="dropdown-item" onclick="goBack()">← Previous Page</button>
+                <button class="dropdown-item" onclick="goBack()">Previous Page</button>
                 <div class="dropdown-item-divider"></div>
-                <a href="javascript:history.go(-2)" class="dropdown-item">↺ Go back 2 pages</a>
+                <a href="javascript:history.go(-2)" class="dropdown-item">Go back 2 pages</a>
             </div>
         </div>
     </div>
@@ -1450,6 +1499,9 @@
 
 <!-- Full Screen Photo Viewer -->
 <div id="photoViewer" class="photo-viewer">
+    <!-- Top Left Close Button -->
+    <button class="viewer-close-left" id="viewerCloseLeft">✕ Close</button>
+    
     <div class="viewer-container">
         <img id="viewerImage" class="viewer-image" src="" alt="">
     </div>
@@ -1466,7 +1518,8 @@
         <button class="control-btn" id="downloadViewerBtn" title="Download">↓</button>
     </div>
     
-    <button class="viewer-close" id="viewerClose">×</button>
+    <!-- Top Right Close Button -->
+    <button class="viewer-close" id="viewerClose" style="margin-top: 70px"> ✕</button>
     
     <div class="viewer-counter" id="viewerCounter"></div>
     
@@ -1571,6 +1624,7 @@ const viewerCounter = document.getElementById('viewerCounter');
 const captionAuthor = document.getElementById('captionAuthor');
 const captionText = document.getElementById('captionText');
 const viewerClose = document.getElementById('viewerClose');
+const viewerCloseLeft = document.getElementById('viewerCloseLeft');
 const viewerPrev = document.getElementById('viewerPrev');
 const viewerNext = document.getElementById('viewerNext');
 
@@ -1704,8 +1758,16 @@ document.querySelectorAll('.thumbnail').forEach((thumb, idx) => {
     });
 });
 
+// Close button event listeners
 if (viewerClose) {
     viewerClose.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeViewer();
+    });
+}
+
+if (viewerCloseLeft) {
+    viewerCloseLeft.addEventListener('click', function(e) {
         e.stopPropagation();
         closeViewer();
     });
@@ -2013,10 +2075,23 @@ document.getElementById('commentForm')?.addEventListener('submit', function(e) {
 // FORCE FIX FOR CLOSE BUTTON
 document.addEventListener('DOMContentLoaded', function() {
     const closeBtn = document.getElementById('viewerClose');
+    const closeBtnLeft = document.getElementById('viewerCloseLeft');
     const viewerOverlay = document.getElementById('photoViewer');
     
     if (closeBtn) {
         closeBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (viewerOverlay) {
+                viewerOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            return false;
+        };
+    }
+    
+    if (closeBtnLeft) {
+        closeBtnLeft.onclick = function(e) {
             e.preventDefault();
             e.stopPropagation();
             if (viewerOverlay) {

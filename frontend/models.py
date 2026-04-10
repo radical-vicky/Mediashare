@@ -99,7 +99,6 @@ class Match(models.Model):
         verbose_name_plural = 'Matches'
 
 
-# ========== USER PROFILE MODEL ==========
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     bio = models.TextField(blank=True, null=True)
@@ -111,7 +110,12 @@ class UserProfile(models.Model):
     is_available_for_calls = models.BooleanField(default=False)
     call_price_per_minute = models.DecimalField(max_digits=10, decimal_places=2, default=50.00)
     paid_message_price = models.DecimalField(max_digits=10, decimal_places=2, default=20.00)
+    
+    # IMPORTANT: These two lines are critical
     followers = models.ManyToManyField(User, related_name='following', blank=True)
+    # The 'following' field is the reverse relation from User to UserProfile
+    # So User objects have a 'following' attribute that gives them access to users they follow
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

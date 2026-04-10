@@ -982,16 +982,16 @@
             <div class="profile-meta">
                 {% if profile.location %}
                     <div class="profile-meta-item">
-                        📍 {{ profile.location }}
+                        Location: {{ profile.location }}
                     </div>
                 {% endif %}
                 {% if profile.website %}
                     <div class="profile-meta-item">
-                        🔗 <a href="{{ profile.website }}" target="_blank">{{ profile.website|truncatechars:30 }}</a>
+                        Website: <a href="{{ profile.website }}" target="_blank">{{ profile.website|truncatechars:30 }}</a>
                     </div>
                 {% endif %}
                 <div class="profile-meta-item">
-                    📅 Joined {{ profile_user.date_joined|date:"F Y" }}
+                    Joined: {{ profile_user.date_joined|date:"F Y" }}
                 </div>
             </div>
             
@@ -1013,9 +1013,9 @@
                     <div class="stat-label">Followers</div>
                 </div>
                 <div class="stat-item" onclick="openFollowingModal()">
-                    <div class="stat-number">{{ profile.following.count }}</div>
-                    <div class="stat-label">Following</div>
-                </div>
+        <div class="stat-number" id="followingCount">{{ profile.following.count|default:"0" }}</div>
+        <div class="stat-label">FOLLOWING</div>
+    </div>
             </div>
             
             <div class="profile-actions">
@@ -1023,20 +1023,20 @@
                     <button class="btn follow-btn {% if is_following %}btn-success{% else %}btn-primary{% endif %}" 
                             data-url="{% url 'frontend:follow_user' profile_user.username %}" 
                             data-username="{{ profile_user.username }}">
-                        {% if is_following %}✓ Following{% else %}Follow{% endif %}
+                        {% if is_following %}Following{% else %}Follow{% endif %}
                     </button>
                     <a href="{% url 'frontend:new_message' profile_user.username %}" class="btn btn-primary">
-                        💬 Message
+                        Message
                     </a>
                 {% elif user.is_authenticated and user == profile_user %}
                     <a href="{% url 'frontend:upload_photo' %}" class="btn btn-primary">
-                        📷 Photo
+                        Photo
                     </a>
                     <a href="{% url 'frontend:upload_video' %}" class="btn btn-primary">
-                        🎬 Video
+                        Video
                     </a>
                     <a href="{% url 'frontend:edit_profile' %}" class="btn btn-outline">
-                        ✏️ Edit
+                        Edit
                     </a>
                 {% endif %}
             </div>
@@ -1068,8 +1068,8 @@
                         Upload
                     </button>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="{% url 'frontend:upload_photo' %}">📷 Upload Photo</a>
-                        <a class="dropdown-item" href="{% url 'frontend:upload_video' %}">🎬 Upload Video</a>
+                        <a class="dropdown-item" href="{% url 'frontend:upload_photo' %}">Upload Photo</a>
+                        <a class="dropdown-item" href="{% url 'frontend:upload_video' %}">Upload Video</a>
                     </div>
                 </div>
             {% endif %}
@@ -1081,11 +1081,11 @@
                     <div class="media-card" data-id="{{ item.id }}" data-type="{{ item.type }}">
                         <div class="media-actions">
                             {% if item.type == 'photo' %}
-                                <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('photo', {{ item.id }}, '{{ item.caption|escapejs }}', '')">✏️</button>
+                                <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('photo', {{ item.id }}, '{{ item.caption|escapejs }}', '')">E</button>
                             {% else %}
-                                <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('video', {{ item.id }}, '{{ item.title|escapejs }}', '{{ item.description|escapejs }}')">✏️</button>
+                                <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('video', {{ item.id }}, '{{ item.title|escapejs }}', '{{ item.description|escapejs }}')">E</button>
                             {% endif %}
-                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('{{ item.type }}', {{ item.id }})">🗑️</button>
+                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('{{ item.type }}', {{ item.id }})">D</button>
                         </div>
                         <div class="media-type-badge {{ item.type }}">
                             {{ item.type|capfirst }}
@@ -1102,9 +1102,9 @@
                         
                         <div class="media-info">
                             <div class="media-stats">
-                                <span>❤️ {{ item.likes_count }}</span>
-                                <span>💬 {{ item.comments_count }}</span>
-                                <span>👁️ {{ item.views }}</span>
+                                <span>Likes: {{ item.likes_count }}</span>
+                                <span>Comments: {{ item.comments_count }}</span>
+                                <span>Views: {{ item.views }}</span>
                             </div>
                             {% if item.type == 'photo' and item.caption %}
                                 <div class="media-caption">{{ item.caption|truncatechars:50 }}</div>
@@ -1147,15 +1147,15 @@
                 {% for photo in photos %}
                     <div class="photo-card" data-id="{{ photo.id }}" data-type="photo">
                         <div class="photo-actions">
-                            <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('photo', {{ photo.id }}, '{{ photo.caption|escapejs }}', '')">✏️</button>
-                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('photo', {{ photo.id }})">🗑️</button>
+                            <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('photo', {{ photo.id }}, '{{ photo.caption|escapejs }}', '')">E</button>
+                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('photo', {{ photo.id }})">D</button>
                         </div>
                         <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'Photo' }}" onclick="window.location.href='{% url 'frontend:photo_detail' photo.id %}'">
                         <div class="photo-info">
                             <div class="photo-stats">
-                                <span>❤️ {{ photo.likes_count }}</span>
-                                <span>💬 {{ photo.comments_count }}</span>
-                                <span>👁️ {{ photo.views }}</span>
+                                <span>Likes: {{ photo.likes_count }}</span>
+                                <span>Comments: {{ photo.comments_count }}</span>
+                                <span>Views: {{ photo.views }}</span>
                             </div>
                             {% if photo.caption %}
                                 <div class="media-caption">{{ photo.caption|truncatechars:50 }}</div>
@@ -1193,8 +1193,8 @@
                 {% for video in videos %}
                     <div class="video-card" data-id="{{ video.id }}" data-type="video">
                         <div class="video-actions">
-                            <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('video', {{ video.id }}, '{{ video.title|escapejs }}', '{{ video.description|escapejs }}')">✏️</button>
-                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('video', {{ video.id }})">🗑️</button>
+                            <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('video', {{ video.id }}, '{{ video.title|escapejs }}', '{{ video.description|escapejs }}')">E</button>
+                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('video', {{ video.id }})">D</button>
                         </div>
                         <video controls preload="metadata" {% if video.thumbnail %}poster="{{ video.thumbnail.url }}"{% endif %}>
                             <source src="{{ video.video_file.url }}" type="video/mp4">
@@ -1203,9 +1203,9 @@
                         <div class="video-info">
                             <div class="video-title">{{ video.title|default:"Untitled" }}</div>
                             <div class="video-stats">
-                                <span>❤️ {{ video.likes_count }}</span>
-                                <span>💬 {{ video.comments_count }}</span>
-                                <span>👁️ {{ video.views }}</span>
+                                <span>Likes: {{ video.likes_count }}</span>
+                                <span>Comments: {{ video.comments_count }}</span>
+                                <span>Views: {{ video.views }}</span>
                             </div>
                             {% if video.description %}
                                 <div class="media-caption">{{ video.description|truncatechars:50 }}</div>
@@ -1240,7 +1240,7 @@
 
 <!-- Avatar Viewer Modal -->
 <div id="avatarViewer" class="avatar-viewer" onclick="closeAvatarViewer()">
-    <div class="avatar-viewer-close" onclick="closeAvatarViewer()">×</div>
+    <div class="avatar-viewer-close" onclick="closeAvatarViewer()">x</div>
     {% if profile.avatar and profile.avatar.url %}
         <img src="{{ profile.avatar.url }}" alt="{{ profile_user.username }}">
     {% else %}
@@ -1253,7 +1253,7 @@
     <div class="users-modal-content">
         <div class="users-modal-header">
             <h3>Followers</h3>
-            <button class="users-modal-close" onclick="closeFollowersModal()">×</button>
+            <button class="users-modal-close" onclick="closeFollowersModal()">x</button>
         </div>
         <div class="users-list" id="followersList">
             <div class="empty-users">Loading...</div>
@@ -1266,7 +1266,7 @@
     <div class="users-modal-content">
         <div class="users-modal-header">
             <h3>Following</h3>
-            <button class="users-modal-close" onclick="closeFollowingModal()">×</button>
+            <button class="users-modal-close" onclick="closeFollowingModal()">x</button>
         </div>
         <div class="users-list" id="followingList">
             <div class="empty-users">Loading...</div>
@@ -1564,7 +1564,7 @@ document.querySelectorAll('.follow-btn').forEach(btn => {
         .then(response => response.json())
         .then(data => {
             if (data.followed) {
-                this.textContent = '✓ Following';
+                this.textContent = 'Following';
                 this.classList.remove('btn-primary');
                 this.classList.add('btn-success');
                 showToast(`You are now following ${this.dataset.username}`);
@@ -1578,7 +1578,7 @@ document.querySelectorAll('.follow-btn').forEach(btn => {
             this.disabled = false;
         })
         .catch(() => {
-            this.textContent = isFollowing ? '✓ Following' : 'Follow';
+            this.textContent = isFollowing ? 'Following' : 'Follow';
             this.disabled = false;
             showToast('An error occurred', 'error');
         });
