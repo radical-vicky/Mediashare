@@ -252,6 +252,14 @@
         color: #94a3b8;
     }
     
+    .form-hint.error {
+        color: #f87171;
+    }
+    
+    .form-hint.success {
+        color: #22c55e;
+    }
+    
     /* Row Layout */
     .form-row {
         display: grid;
@@ -648,11 +656,14 @@
                         <p>Your account details and settings</p>
                     </div>
                     <div class="edit-card-body">
+                        <!-- Username Field - Now Editable -->
                         <div class="form-group">
                             <label class="form-label">Username</label>
-                            <input type="text" class="form-control" value="{{ user.username }}" disabled>
+                            <input type="text" name="username" id="usernameField" class="form-control" value="{{ user.username }}" required>
+                            <div class="form-hint" id="usernameHint">Username can only contain letters, numbers, and underscores. Min 3 characters.</div>
                         </div>
                         
+                        <!-- Email Field - Still Disabled -->
                         <div class="form-group">
                             <label class="form-label">Email</label>
                             <input type="email" class="form-control" value="{{ user.email }}" disabled>
@@ -712,7 +723,54 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 3000);
 }
 
-// Avatar Preview
+// ========== USERNAME VALIDATION ==========
+const usernameField = document.getElementById('usernameField');
+const usernameHint = document.getElementById('usernameHint');
+let isUsernameValid = true;
+
+function validateUsername() {
+    const username = usernameField.value.trim();
+    
+    if (username === '') {
+        usernameHint.textContent = 'Username is required';
+        usernameHint.classList.add('error');
+        usernameHint.classList.remove('success');
+        usernameField.classList.add('field-error');
+        isUsernameValid = false;
+        return false;
+    }
+    
+    if (username.length < 3) {
+        usernameHint.textContent = 'Username must be at least 3 characters';
+        usernameHint.classList.add('error');
+        usernameHint.classList.remove('success');
+        usernameField.classList.add('field-error');
+        isUsernameValid = false;
+        return false;
+    }
+    
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        usernameHint.textContent = 'Username can only contain letters, numbers, and underscores';
+        usernameHint.classList.add('error');
+        usernameHint.classList.remove('success');
+        usernameField.classList.add('field-error');
+        isUsernameValid = false;
+        return false;
+    }
+    
+    usernameHint.textContent = 'Username is available';
+    usernameHint.classList.add('success');
+    usernameHint.classList.remove('error');
+    usernameField.classList.remove('field-error');
+    isUsernameValid = true;
+    return true;
+}
+
+// Real-time username validation
+usernameField.addEventListener('input', validateUsername);
+usernameField.addEventListener('blur', validateUsername);
+
+// ========== AVATAR FUNCTIONS ==========
 const avatarInput = document.getElementById('avatarInput');
 const avatarPreview = document.getElementById('avatarPreview');
 
@@ -773,7 +831,7 @@ if (removeAvatarBtn) {
     });
 }
 
-// Scroll to section
+// ========== SCROLL FUNCTIONS ==========
 function scrollToSection(sectionId) {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -812,7 +870,7 @@ window.addEventListener('scroll', function() {
     }
 });
 
-// Call Toggle Status
+// ========== CALL TOGGLE ==========
 const callToggle = document.getElementById('callToggle');
 const statusHint = document.getElementById('statusHint');
 
@@ -828,7 +886,7 @@ if (callToggle && statusHint) {
     });
 }
 
-// Phone Number Validation
+// ========== PHONE VALIDATION ==========
 const phoneInput = document.getElementById('phoneInput');
 
 if (phoneInput) {
@@ -857,7 +915,7 @@ if (phoneInput) {
     });
 }
 
-// Price Validation
+// ========== PRICE VALIDATION ==========
 const priceInput = document.getElementById('priceInput');
 
 if (priceInput) {
@@ -869,12 +927,21 @@ if (priceInput) {
     });
 }
 
-// Form Submission
+// ========== FORM SUBMISSION ==========
 const profileForm = document.getElementById('profileForm');
 const submitBtn = document.getElementById('submitBtn');
 
 if (profileForm) {
     profileForm.addEventListener('submit', function(e) {
+        // Validate username
+        if (!validateUsername()) {
+            e.preventDefault();
+            showToast('Please enter a valid username', 'error');
+            usernameField.focus();
+            return;
+        }
+        
+        // Validate phone number if provided
         const phone = phoneInput?.value.trim();
         if (phone && !/^\+\d{1,15}$/.test(phone)) {
             e.preventDefault();
@@ -890,12 +957,28 @@ if (profileForm) {
     });
 }
 
+// ========== ADD CSS FOR FIELD ERROR ==========
+const style = document.createElement('style');
+style.textContent = `
+    .field-error {
+        border-color: #ef4444 !important;
+    }
+    .form-hint.error {
+        color: #f87171 !important;
+    }
+    .form-hint.success {
+        color: #22c55e !important;
+    }
+`;
+document.head.appendChild(style);
+
 // Reset button state on page load
 window.addEventListener('load', function() {
     if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Save Changes';
     }
+    validateUsername();
 });
 </script>
 {% endblock %}

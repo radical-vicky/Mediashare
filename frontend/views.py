@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 import cloudinary.uploader
 
 
+# frontend/views.py
 def home(request):
     """Home page - landing page with database-driven content"""
     
@@ -32,13 +33,13 @@ def home(request):
         pass
     
     # Get hero section content from SiteSettings
-    hero_title = get_site_setting('hero_title', 'Connect, Chat & Vibe')
+    hero_title = get_site_setting('hero_title', 'Connect, Chat and Vibe')
     hero_description = get_site_setting('hero_description', 'Meet beautiful people, make meaningful connections through interactive chats and video calls.')
     
     # Get social proof counts
-    online_count = get_online_users_count()  # Users active in last 5 minutes
+    online_count = get_online_users_count()
     total_members = User.objects.count()
-    daily_matches = get_daily_matches_count()  # Connections made today
+    daily_matches = get_daily_matches_count()
     
     # Get features from database
     features = []
@@ -57,45 +58,10 @@ def home(request):
     recent_photos = Photo.objects.select_related('author').all().order_by('-created_at')[:8]
     recent_videos = Video.objects.select_related('author').all().order_by('-created_at')[:8]
     
-    # Add trending/new flags to photos (based on views or likes)
+    # Add trending/new flags to photos
     for photo in recent_photos:
         photo.is_trending = photo.views > 100 or photo.likes.count() > 50
-        photo.is_new = photo.created_at > timezone.now() - timedelta(days=1)
-    
-    # Add trending flags to videos
-    for video in recent_videos:
-        video.is_trending = video.views > 500 or video.likes.count() > 100
-        video.is_new = video.created_at > timezone.now() - timedelta(days=1)
-    
-    context = {
-        # Hero section
-        'background_media': background_media,
-        'hero_title': hero_title,
-        'hero_description': hero_description,
-        
-        # Social proof
-        'online_count': online_count,
-        'total_members': total_members,
-        'daily_matches': daily_matches,
-        
-        # Features section
-        'features_title': get_site_setting('features_title', 'Why Choose VibeGaze'),
-        'features_subtitle': get_site_setting('features_subtitle', 'Everything you need to connect and vibe'),
-        'features': features,
-        
-        # Photos section
-        'photos_section_title': photos_section_title,
-        'photos_section_subtitle': photos_section_subtitle,
-        'recent_photos': recent_photos,
-        
-        # Videos section
-        'videos_section_title': videos_section_title,
-        'videos_section_subtitle': videos_section_subtitle,
-        'recent_videos': recent_videos,
-    }
-    return render(request, 'frontend/home.html', context)
-
-
+        photo.is_new
 def get_site_setting(key, default=''):
     """Helper function to get site settings from database"""
     try:
