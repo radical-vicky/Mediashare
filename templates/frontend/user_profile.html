@@ -858,7 +858,7 @@
     }
     
     /* Toast */
-    .github-toast {
+    .toast-custom {
         position: fixed;
         bottom: 20px;
         right: 20px;
@@ -876,7 +876,7 @@
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     }
     
-    .github-toast.error {
+    .toast-custom.error {
         border-left-color: #ef4444;
     }
     
@@ -965,7 +965,7 @@
         <!-- Clickable Avatar -->
         <div class="profile-avatar" onclick="openAvatarViewer()">
             {% if profile.avatar and profile.avatar.url %}
-                <img src="{{ profile.avatar.url }}" alt="{{ profile_user.username }}">
+                <img src="{{ profile.avatar.url }}?w_150,h_150,c_fill,q_auto,f_auto" alt="{{ profile_user.username }}">
             {% else %}
                 <div class="avatar-placeholder">{{ profile_user.username|make_list|first|upper }}</div>
             {% endif %}
@@ -1013,9 +1013,9 @@
                     <div class="stat-label">Followers</div>
                 </div>
                 <div class="stat-item" onclick="openFollowingModal()">
-        <div class="stat-number" id="followingCount">{{ profile.following.count|default:"0" }}</div>
-        <div class="stat-label">FOLLOWING</div>
-    </div>
+                    <div class="stat-number" id="followingCount">{{ profile.following.count|default:"0" }}</div>
+                    <div class="stat-label">Following</div>
+                </div>
             </div>
             
             <div class="profile-actions">
@@ -1092,10 +1092,10 @@
                         </div>
                         
                         {% if item.type == 'photo' %}
-                            <img src="{{ item.thumbnail_url }}" alt="{{ item.caption|default:'Photo' }}" onclick="window.location.href='{% url 'frontend:photo_detail' item.id %}'">
+                            <img src="{{ item.thumbnail_url }}?w_400,h_400,c_fill,q_auto,f_auto" alt="{{ item.caption|default:'Photo' }}" onclick="window.location.href='{% url 'frontend:photo_detail' item.id %}'">
                         {% else %}
-                            <video controls preload="metadata" {% if item.thumbnail_url %}poster="{{ item.thumbnail_url }}"{% endif %}>
-                                <source src="{{ item.file_url }}" type="video/mp4">
+                            <video controls preload="metadata" {% if item.thumbnail_url %}poster="{{ item.thumbnail_url }}?w_400,h_400,c_fill,q_auto,f_auto"{% endif %}>
+                                <source src="{{ item.file_url }}?q_auto,f_auto" type="video/mp4">
                                 Your browser does not support the video tag.
                             </video>
                         {% endif %}
@@ -1150,7 +1150,7 @@
                             <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('photo', {{ photo.id }}, '{{ photo.caption|escapejs }}', '')">E</button>
                             <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('photo', {{ photo.id }})">D</button>
                         </div>
-                        <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'Photo' }}" onclick="window.location.href='{% url 'frontend:photo_detail' photo.id %}'">
+                        <img src="{{ photo.image.url }}?w_400,h_400,c_fill,q_auto,f_auto" alt="{{ photo.caption|default:'Photo' }}" onclick="window.location.href='{% url 'frontend:photo_detail' photo.id %}'">
                         <div class="photo-info">
                             <div class="photo-stats">
                                 <span>Likes: {{ photo.likes_count }}</span>
@@ -1196,8 +1196,8 @@
                             <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditModal('video', {{ video.id }}, '{{ video.title|escapejs }}', '{{ video.description|escapejs }}')">E</button>
                             <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('video', {{ video.id }})">D</button>
                         </div>
-                        <video controls preload="metadata" {% if video.thumbnail %}poster="{{ video.thumbnail.url }}"{% endif %}>
-                            <source src="{{ video.video_file.url }}" type="video/mp4">
+                        <video controls preload="metadata" {% if video.thumbnail %}poster="{{ video.thumbnail.url }}?w_400,h_400,c_fill,q_auto,f_auto"{% endif %}>
+                            <source src="{{ video.video_file.url }}?q_auto,f_auto" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
                         <div class="video-info">
@@ -1242,7 +1242,7 @@
 <div id="avatarViewer" class="avatar-viewer" onclick="closeAvatarViewer()">
     <div class="avatar-viewer-close" onclick="closeAvatarViewer()">x</div>
     {% if profile.avatar and profile.avatar.url %}
-        <img src="{{ profile.avatar.url }}" alt="{{ profile_user.username }}">
+        <img src="{{ profile.avatar.url }}?w_300,h_300,c_fill,q_auto,f_auto" alt="{{ profile_user.username }}">
     {% else %}
         <div class="avatar-placeholder-large">{{ profile_user.username|make_list|first|upper }}</div>
     {% endif %}
@@ -1314,11 +1314,11 @@ const csrftoken = getCookie('csrftoken');
 const isOwner = {% if user == profile_user %}true{% else %}false{% endif %};
 
 function showToast(message, type = 'success') {
-    const existingToast = document.querySelector('.github-toast');
+    const existingToast = document.querySelector('.toast-custom');
     if (existingToast) existingToast.remove();
     
     const toast = document.createElement('div');
-    toast.className = `github-toast ${type === 'error' ? 'error' : ''}`;
+    toast.className = `toast-custom ${type === 'error' ? 'error' : ''}`;
     toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
@@ -1350,7 +1350,7 @@ function openFollowersModal() {
                 listContainer.innerHTML = data.users.map(user => `
                     <a href="/profile/${user.username}/" class="user-item">
                         ${user.avatar ? 
-                            `<img src="${user.avatar}" class="user-avatar" alt="${user.username}">` : 
+                            `<img src="${user.avatar}?w_50,h_50,c_fill,q_auto,f_auto" class="user-avatar" alt="${user.username}">` : 
                             `<div class="user-avatar-placeholder">${user.username.charAt(0).toUpperCase()}</div>`
                         }
                         <div class="user-info">
@@ -1388,7 +1388,7 @@ function openFollowingModal() {
                 listContainer.innerHTML = data.users.map(user => `
                     <a href="/profile/${user.username}/" class="user-item">
                         ${user.avatar ? 
-                            `<img src="${user.avatar}" class="user-avatar" alt="${user.username}">` : 
+                            `<img src="${user.avatar}?w_50,h_50,c_fill,q_auto,f_auto" class="user-avatar" alt="${user.username}">` : 
                             `<div class="user-avatar-placeholder">${user.username.charAt(0).toUpperCase()}</div>`
                         }
                         <div class="user-info">
