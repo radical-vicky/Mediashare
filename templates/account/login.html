@@ -1,10 +1,154 @@
 {% extends "base.html" %}
 {% load static %}
+{% load account socialaccount %}
 
 {% block title %}Sign In - MediaShare{% endblock %}
 
 {% block extra_head %}
 <link rel="icon" type="image/jpg" href="{% static 'images/18+.jpg' %}">
+<style>
+    /* Error Message Styles */
+    .error-messages {
+        margin-bottom: 20px;
+    }
+    
+    .error-message {
+        background: rgba(239, 68, 68, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideIn 0.3s ease;
+    }
+    
+    .error-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    
+    .error-text {
+        color: #f87171;
+        font-size: 13px;
+        flex: 1;
+    }
+    
+    .error-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 0 4px;
+    }
+    
+    .error-close:hover {
+        color: #f87171;
+    }
+    
+    /* Success Message Styles */
+    .success-message {
+        background: rgba(34, 197, 94, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(34, 197, 94, 0.5);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideIn 0.3s ease;
+    }
+    
+    .success-text {
+        color: #4ade80;
+        font-size: 13px;
+        flex: 1;
+    }
+    
+    /* Info Message Styles */
+    .info-message {
+        background: rgba(59, 130, 246, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.5);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideIn 0.3s ease;
+    }
+    
+    .info-text {
+        color: #60a5fa;
+        font-size: 13px;
+        flex: 1;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Field Error Styles */
+    .field-error {
+        border-color: #ef4444 !important;
+    }
+    
+    .field-error:focus {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    }
+    
+    .field-error-message {
+        color: #f87171;
+        font-size: 11px;
+        margin-top: 6px;
+        display: block;
+    }
+    
+    /* Loading State */
+    .btn-loading {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+    
+    .btn-loading .btn-text {
+        display: inline-block;
+        animation: pulse 1s ease infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    /* Spinner */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        margin-right: 8px;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -12,26 +156,92 @@
     <div class="auth-card">
         <div class="auth-header">
             <img src="{% static 'images/18+.jpg' %}" alt="MediaShare" style="width: 80px; height: 80px; margin-bottom: 16px; border-radius: 50%;">
-            <h1>Welcome back</h1>
+            <h1>Welcome Back</h1>
             <p>Sign in to continue to MediaShare</p>
         </div>
         
-        <form method="POST" action="{% url 'account_login' %}" class="auth-form">
+        <!-- Display Django Messages -->
+        {% if messages %}
+            <div class="error-messages">
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <div class="error-message">
+                            <span class="error-icon">!</span>
+                            <span class="error-text">{{ message }}</span>
+                            <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    {% elif message.tags == 'success' %}
+                        <div class="success-message">
+                            <span class="error-icon">✓</span>
+                            <span class="success-text">{{ message }}</span>
+                            <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    {% elif message.tags == 'info' %}
+                        <div class="info-message">
+                            <span class="error-icon">i</span>
+                            <span class="info-text">{{ message }}</span>
+                            <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Display Non-Field Errors -->
+        {% if form.non_field_errors %}
+            <div class="error-messages">
+                {% for error in form.non_field_errors %}
+                    <div class="error-message">
+                        <span class="error-icon">!</span>
+                        <span class="error-text">{{ error }}</span>
+                        <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <form method="POST" action="{% url 'account_login' %}" class="auth-form" id="loginForm" novalidate>
             {% csrf_token %}
             
+            <!-- Login Field -->
             <div class="form-group">
                 <label class="form-label">Email or Username</label>
-                <input type="text" name="login" class="form-control" placeholder="Enter your email or username" required autofocus>
+                <input type="text" 
+                       name="login" 
+                       id="loginField"
+                       class="form-control {% if form.login.errors %}field-error{% endif %}" 
+                       placeholder="Enter your email or username" 
+                       value="{{ form.login.value|default:'' }}"
+                       required 
+                       autofocus>
+                {% if form.login.errors %}
+                    {% for error in form.login.errors %}
+                        <span class="field-error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+                <div class="form-hint" id="loginHint"></div>
             </div>
             
+            <!-- Password Field -->
             <div class="form-group">
                 <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                <input type="password" 
+                       name="password" 
+                       id="passwordField"
+                       class="form-control {% if form.password.errors %}field-error{% endif %}" 
+                       placeholder="Enter your password" 
+                       required>
+                {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                        <span class="field-error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
             </div>
             
+            <!-- Remember Me -->
             <div class="form-options">
                 <label class="checkbox-label">
-                    <input type="checkbox" name="remember">
+                    <input type="checkbox" name="remember" id="rememberCheckbox">
                     <span>Remember me</span>
                 </label>
                 <a href="{% url 'account_reset_password' %}" class="forgot-link">Forgot password?</a>
@@ -41,7 +251,10 @@
                 <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
             {% endif %}
             
-            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-block" id="submitBtn">
+                <span class="btn-text">Sign In</span>
+            </button>
         </form>
         
         <div class="auth-footer">
@@ -118,6 +331,12 @@
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
     
+    .form-hint {
+        font-size: 11px;
+        color: #94a3b8;
+        margin-top: 6px;
+    }
+    
     .form-options {
         display: flex;
         justify-content: space-between;
@@ -176,4 +395,180 @@
         text-decoration: underline;
     }
 </style>
+
+<script>
+    // Client-side validation
+    const loginForm = document.getElementById('loginForm');
+    const loginField = document.getElementById('loginField');
+    const passwordField = document.getElementById('passwordField');
+    const submitBtn = document.getElementById('submitBtn');
+    const rememberCheckbox = document.getElementById('rememberCheckbox');
+    const loginHint = document.getElementById('loginHint');
+    
+    // Validation functions
+    function validateLogin() {
+        const value = loginField.value.trim();
+        
+        if (value === '') {
+            loginField.classList.add('field-error');
+            loginHint.textContent = 'Please enter your email or username';
+            loginHint.style.color = '#f87171';
+            return false;
+        } else {
+            loginField.classList.remove('field-error');
+            loginHint.textContent = '';
+            return true;
+        }
+    }
+    
+    function validatePassword() {
+        const value = passwordField.value.trim();
+        
+        if (value === '') {
+            passwordField.classList.add('field-error');
+            return false;
+        } else {
+            passwordField.classList.remove('field-error');
+            return true;
+        }
+    }
+    
+    // Real-time validation
+    loginField.addEventListener('input', function() {
+        if (this.value.trim() !== '') {
+            this.classList.remove('field-error');
+            loginHint.textContent = '';
+        }
+    });
+    
+    passwordField.addEventListener('input', function() {
+        if (this.value.trim() !== '') {
+            this.classList.remove('field-error');
+        }
+    });
+    
+    loginField.addEventListener('blur', validateLogin);
+    passwordField.addEventListener('blur', validatePassword);
+    
+    // Form submission
+    loginForm.addEventListener('submit', function(e) {
+        const isLoginValid = validateLogin();
+        const isPasswordValid = validatePassword();
+        
+        if (!isLoginValid || !isPasswordValid) {
+            e.preventDefault();
+            
+            // Show error message if fields are empty
+            if (!isLoginValid) {
+                loginField.focus();
+            } else if (!isPasswordValid) {
+                passwordField.focus();
+            }
+            
+            // Create toast for empty fields
+            showToast('Please fill in all required fields', 'error');
+        } else {
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.classList.add('btn-loading');
+            submitBtn.innerHTML = '<span class="spinner"></span><span class="btn-text">Signing In...</span>';
+        }
+    });
+    
+    // Toast notification function
+    function showToast(message, type = 'error') {
+        // Remove existing toasts
+        const existingToasts = document.querySelectorAll('.error-message, .success-message, .info-message');
+        existingToasts.forEach(toast => {
+            if (!toast.closest('.error-messages')) {
+                toast.remove();
+            }
+        });
+        
+        // Create new toast
+        const toast = document.createElement('div');
+        if (type === 'error') {
+            toast.className = 'error-message';
+            toast.innerHTML = `
+                <span class="error-icon">!</span>
+                <span class="error-text">${message}</span>
+                <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+            `;
+        } else if (type === 'success') {
+            toast.className = 'success-message';
+            toast.innerHTML = `
+                <span class="error-icon">✓</span>
+                <span class="success-text">${message}</span>
+                <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+            `;
+        } else {
+            toast.className = 'info-message';
+            toast.innerHTML = `
+                <span class="error-icon">i</span>
+                <span class="info-text">${message}</span>
+                <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+            `;
+        }
+        
+        // Insert at the top of the form
+        const form = document.querySelector('.auth-form');
+        form.insertBefore(toast, form.firstChild);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+    
+    // Load saved email/username if remember me was checked
+    if (localStorage.getItem('remembered_login')) {
+        loginField.value = localStorage.getItem('remembered_login');
+        rememberCheckbox.checked = true;
+    }
+    
+    // Save login if remember me is checked
+    rememberCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            localStorage.setItem('remembered_login', loginField.value);
+        } else {
+            localStorage.removeItem('remembered_login');
+        }
+    });
+    
+    // Auto-save on input when remember me is checked
+    loginField.addEventListener('input', function() {
+        if (rememberCheckbox.checked) {
+            localStorage.setItem('remembered_login', this.value);
+        }
+    });
+    
+    // Clear field error when typing
+    loginField.addEventListener('input', function() {
+        if (this.value.trim() !== '') {
+            this.classList.remove('field-error');
+            const hint = document.getElementById('loginHint');
+            if (hint) hint.textContent = '';
+        }
+    });
+    
+    passwordField.addEventListener('input', function() {
+        if (this.value.trim() !== '') {
+            this.classList.remove('field-error');
+        }
+    });
+    
+    // Reset button state on page load
+    window.addEventListener('load', function() {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('btn-loading');
+        submitBtn.innerHTML = '<span class="btn-text">Sign In</span>';
+    });
+    
+    // Auto-focus on login field if empty
+    if (loginField && loginField.value === '') {
+        loginField.focus();
+    }
+</script>
 {% endblock %}
