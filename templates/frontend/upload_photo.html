@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Upload photo - MediaShare{% endblock %}
+{% block title %}Upload Photo - MediaShare{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -510,10 +510,10 @@
     
     <div class="upload-card">
         <div class="upload-header">
-            <h2>Upload photo</h2>
+            <h2>Upload Photo</h2>
             <div class="header-actions">
                 <a href="{% url 'frontend:upload_video' %}" class="header-btn">
-                    Upload video
+                    Upload Video
                 </a>
             </div>
         </div>
@@ -527,7 +527,7 @@
                     <h3>Drag and drop your photo here</h3>
                     <p>or</p>
                     <button type="button" class="dropzone-btn" id="selectFileBtn">
-                        Choose file
+                        Choose File
                     </button>
                     <input type="file" id="fileInput" name="image" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" style="display: none;">
                 </div>
@@ -570,7 +570,7 @@
                 <!-- Actions -->
                 <div class="form-actions">
                     <a href="{% url 'frontend:feed' %}" class="btn btn-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Upload photo</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Upload Photo</button>
                 </div>
             </form>
         </div>
@@ -624,7 +624,7 @@ function formatFileSize(bytes) {
 function updateCharCounter() {
     const length = captionInput.value.length;
     const max = 500;
-    charCounter.textContent = `${length} / ${max} characters`;
+    charCounter.textContent = length + ' / ' + max + ' characters';
     
     if (length > max) {
         charCounter.classList.add('danger');
