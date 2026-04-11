@@ -8,9 +8,10 @@ import random
 from django.utils.deconstruct import deconstructible
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from cloudinary.models import CloudinaryField
 
 
-# ========== FILE UPLOAD PATH HELPERS ==========
+# ========== FILE UPLOAD PATH HELPERS (Keep for reference, but Cloudinary handles paths) ==========
 
 @deconstructible
 class PhotoUploadPath:
@@ -32,7 +33,7 @@ photo_upload_path = PhotoUploadPath()
 video_upload_path = VideoUploadPath()
 
 
-# ========== SITE SETTINGS MODEL (ADD THIS) ==========
+# ========== SITE SETTINGS MODEL ==========
 class SiteSetting(models.Model):
     """Dynamic site settings from database"""
     key = models.CharField(max_length=100, unique=True)
@@ -48,12 +49,12 @@ class SiteSetting(models.Model):
         verbose_name_plural = 'Site Settings'
 
 
-# ========== FEATURE MODEL (ADD THIS) ==========
+# ========== FEATURE MODEL ==========
 class Feature(models.Model):
     """Features section content"""
     title = models.CharField(max_length=100)
     description = models.TextField()
-    icon_image = models.ImageField(upload_to='features/', blank=True, null=True)
+    icon_image = CloudinaryField('image', folder='features/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
     order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -67,7 +68,7 @@ class Feature(models.Model):
         verbose_name_plural = 'Features'
 
 
-# ========== USER SESSION MODEL (ADD THIS) ==========
+# ========== USER SESSION MODEL ==========
 class UserSession(models.Model):
     """Track user online status"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sessions')
@@ -83,7 +84,7 @@ class UserSession(models.Model):
         verbose_name_plural = 'User Sessions'
 
 
-# ========== MATCH MODEL (ADD THIS) ==========
+# ========== MATCH MODEL ==========
 class Match(models.Model):
     """Track matches/connections between users"""
     user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='matches_as_user1')
@@ -99,10 +100,12 @@ class Match(models.Model):
         verbose_name_plural = 'Matches'
 
 
+# ========== USER PROFILE MODEL WITH CLOUDINARY ==========
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     bio = models.TextField(blank=True, null=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    # Use CloudinaryField for avatar
+    avatar = CloudinaryField('image', folder='avatars/', blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True)
     website = models.URLField(blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
@@ -123,10 +126,11 @@ class UserProfile(models.Model):
         return self.user.username
 
 
-# ========== PHOTO MODEL ==========
+# ========== PHOTO MODEL WITH CLOUDINARY ==========
 class Photo(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='photos')
-    image = models.ImageField(upload_to=photo_upload_path, max_length=500)
+    # Use CloudinaryField instead of ImageField
+    image = CloudinaryField('image', folder='photos/')
     caption = models.CharField(max_length=500, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -154,7 +158,7 @@ class Photo(models.Model):
         return self.comments.count()
 
 
-# ========== VIDEO MODEL ==========
+# ========== VIDEO MODEL WITH CLOUDINARY ==========
 class Video(models.Model):
     VIDEO_TYPES = [
         ('short', 'Short Video (< 60s)'),
@@ -162,8 +166,10 @@ class Video(models.Model):
     ]
     
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='videos')
-    video_file = models.FileField(upload_to=video_upload_path, max_length=500)
-    thumbnail = models.ImageField(upload_to='video_thumbnails/', blank=True, null=True)
+    # Use CloudinaryField for video_file (with resource_type='video')
+    video_file = CloudinaryField('video', resource_type='video', folder='videos/')
+    # Use CloudinaryField for thumbnail
+    thumbnail = CloudinaryField('image', folder='video_thumbnails/', blank=True, null=True)
     title = models.CharField(max_length=200)
     description = models.TextField(max_length=2000, blank=True)
     video_type = models.CharField(max_length=10, choices=VIDEO_TYPES, default='short')
@@ -414,14 +420,15 @@ class Message(models.Model):
         return f"{self.file_size:.1f} GB"
 
 
-# ========== BACKGROUND MEDIA MODEL ==========
+# ========== BACKGROUND MEDIA MODEL WITH CLOUDINARY ==========
 class BackgroundMedia(models.Model):
     MEDIA_TYPES = (
         ('image', 'Image'),
         ('video', 'Video'),
     )
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPES, default='image')
-    file = models.FileField(upload_to='backgrounds/')
+    # Use CloudinaryField for background media
+    file = CloudinaryField('file', folder='backgrounds/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
