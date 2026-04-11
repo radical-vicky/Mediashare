@@ -20,33 +20,33 @@
     }
     
     /* Main Container */
-    .github-container {
+    .container {
         max-width: 1280px;
         margin: 0 auto;
         padding: 0 32px;
     }
     
     /* Layout - Two Column */
-    .github-layout {
+    .layout {
         display: flex;
         gap: 32px;
         margin-top: 24px;
     }
     
     /* Main Content */
-    .github-main {
+    .main-content {
         flex: 1;
         min-width: 0;
     }
     
     /* Sidebar */
-    .github-sidebar {
+    .sidebar {
         width: 320px;
         flex-shrink: 0;
     }
     
     /* Glass Card */
-    .github-card {
+    .card {
         background: rgba(15, 25, 45, 0.65);
         backdrop-filter: blur(12px);
         border: 1px solid rgba(59, 130, 246, 0.3);
@@ -55,20 +55,20 @@
         margin-bottom: 16px;
     }
     
-    .github-card-header {
+    .card-header {
         padding: 16px;
         border-bottom: 1px solid rgba(59, 130, 246, 0.2);
         background: rgba(10, 14, 26, 0.5);
     }
     
-    .github-card-header h2 {
+    .card-header h2 {
         font-size: 16px;
         font-weight: 600;
         color: #f1f5f9;
         margin: 0;
     }
     
-    .github-card-body {
+    .card-body {
         padding: 16px;
     }
     
@@ -132,7 +132,7 @@
     }
     
     /* Glass Buttons */
-    .github-btn {
+    .btn {
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -150,42 +150,42 @@
         transition: all 0.2s ease;
     }
     
-    .github-btn:hover {
+    .btn:hover {
         background: rgba(59, 130, 246, 0.25);
         border-color: #3b82f6;
         transform: translateY(-1px);
         color: #f1f5f9;
     }
     
-    .github-btn-primary {
+    .btn-primary {
         background: linear-gradient(135deg, #3b82f6, #2563eb);
         border-color: #3b82f6;
         color: white;
         box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
     }
     
-    .github-btn-primary:hover {
+    .btn-primary:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
     }
     
-    .github-btn-danger {
+    .btn-danger {
         border-color: #ef4444;
         color: #ef4444;
     }
     
-    .github-btn-danger:hover {
+    .btn-danger:hover {
         background: rgba(239, 68, 68, 0.15);
         border-color: #ef4444;
     }
     
-    .github-btn-success {
+    .btn-success {
         background: #238636;
         border-color: #2ea043;
         color: white;
     }
     
-    .github-btn-success:hover {
+    .btn-success:hover {
         background: #2ea043;
         transform: translateY(-1px);
     }
@@ -439,14 +439,14 @@
     }
     
     /* Empty State */
-    .github-empty {
+    .empty-state {
         text-align: center;
         padding: 60px 20px;
         color: #94a3b8;
     }
     
     /* Toast */
-    .github-toast {
+    .toast-custom {
         position: fixed;
         bottom: 20px;
         right: 20px;
@@ -464,7 +464,7 @@
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     }
     
-    .github-toast.error {
+    .toast-custom.error {
         border-left-color: #ef4444;
     }
     
@@ -480,7 +480,7 @@
     }
     
     /* Modal */
-    .github-modal {
+    .modal {
         display: none;
         position: fixed;
         top: 0;
@@ -493,11 +493,11 @@
         justify-content: center;
     }
     
-    .github-modal.active {
+    .modal.active {
         display: flex;
     }
     
-    .github-modal-content {
+    .modal-content {
         background: rgba(15, 25, 45, 0.95);
         backdrop-filter: blur(12px);
         border: 1px solid rgba(59, 130, 246, 0.3);
@@ -506,7 +506,7 @@
         max-width: 360px;
     }
     
-    .github-modal-header {
+    .modal-header {
         padding: 16px;
         border-bottom: 1px solid rgba(59, 130, 246, 0.2);
         display: flex;
@@ -514,14 +514,14 @@
         align-items: center;
     }
     
-    .github-modal-header h3 {
+    .modal-header h3 {
         font-size: 14px;
         font-weight: 600;
         margin: 0;
         color: #f1f5f9;
     }
     
-    .github-modal-close {
+    .modal-close {
         background: none;
         border: none;
         color: #94a3b8;
@@ -529,11 +529,11 @@
         cursor: pointer;
     }
     
-    .github-modal-close:hover {
+    .modal-close:hover {
         color: #ef4444;
     }
     
-    .github-modal-body {
+    .modal-body {
         padding: 12px;
     }
     
@@ -785,11 +785,6 @@
         padding: 32px;
     }
     
-    .login-prompt-icon {
-        font-size: 64px;
-        margin-bottom: 16px;
-    }
-    
     .login-prompt-text {
         margin-bottom: 24px;
         color: #cbd5e1;
@@ -803,15 +798,15 @@
     
     /* Responsive */
     @media (max-width: 768px) {
-        .github-layout {
+        .layout {
             flex-direction: column;
         }
         
-        .github-sidebar {
+        .sidebar {
             width: 100%;
         }
         
-        .github-container {
+        .container {
             padding: 0 16px;
         }
         
@@ -843,7 +838,7 @@
             flex-direction: column;
         }
         
-        .login-prompt-buttons .github-btn,
+        .login-prompt-buttons .btn,
         .login-prompt-buttons .btn-secondary {
             width: 100%;
             text-align: center;
@@ -854,16 +849,16 @@
 {% endblock %}
 
 {% block content %}
-<div class="github-container">
-    <div class="github-layout">
+<div class="container">
+    <div class="layout">
         <!-- Main Content -->
-        <div class="github-main">
+        <div class="main-content">
             <!-- Video Player -->
-            <div class="github-card">
-                <div class="github-card-body" style="padding: 0;">
+            <div class="card">
+                <div class="card-body" style="padding: 0;">
                     <div class="video-player-wrapper">
                         <video class="video-player" controls autoplay preload="metadata">
-                            <source src="{{ video.video_file.url }}" type="video/mp4">
+                            <source src="{{ video.video_file.url }}?q_auto,f_auto" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
                     </div>
@@ -880,35 +875,35 @@
                     <div class="video-stat"><strong>{{ video.comments.count }}</strong> comments</div>
                 </div>
                 <div class="video-actions">
-                    <button class="github-btn like-btn" data-url="{% url 'frontend:like_video' video.id %}">
+                    <button class="btn like-btn" data-url="{% url 'frontend:like_video' video.id %}">
                         <span class="like-count">{{ video.likes.count }}</span>
                     </button>
-                    <button class="github-btn" id="shareBtn">Share</button>
-                    <a href="{% url 'frontend:download_media' 'video' video.id %}" class="github-btn">Download</a>
+                    <button class="btn" id="shareBtn">Share</button>
+                    <a href="{% url 'frontend:download_media' 'video' video.id %}" class="btn">Download</a>
                     
                     {% if user.is_authenticated %}
                         {% if user != video.author and video.author.profile.is_available_for_calls %}
-                            <button class="github-btn github-btn-primary" onclick="openMpesaModal('{{ video.author.username }}', 'call', {{ video.author.profile.call_price_per_minute|default:50 }})">
+                            <button class="btn btn-primary" onclick="openMpesaModal('{{ video.author.username }}', 'call', {{ video.author.profile.call_price_per_minute|default:50 }})">
                                 Call {{ video.author.username }}
                             </button>
                         {% endif %}
                         {% if user != video.author %}
-                            <button class="github-btn github-btn-success" onclick="openMpesaModal('{{ video.author.username }}', 'message', {{ video.author.profile.paid_message_price|default:20 }})">
+                            <button class="btn btn-success" onclick="openMpesaModal('{{ video.author.username }}', 'message', {{ video.author.profile.paid_message_price|default:20 }})">
                                 Send Paid Message
                             </button>
                         {% endif %}
                     {% else %}
-                        <button class="github-btn github-btn-primary" onclick="showLoginPrompt()">
+                        <button class="btn btn-primary" onclick="showLoginPrompt()">
                             Call {{ video.author.username }}
                         </button>
-                        <button class="github-btn github-btn-success" onclick="showLoginPrompt()">
+                        <button class="btn btn-success" onclick="showLoginPrompt()">
                             Send Paid Message
                         </button>
                     {% endif %}
                     
                     {% if user == video.author %}
-                        <a href="{% url 'frontend:upload_video' %}" class="github-btn github-btn-primary">Upload</a>
-                        <button class="github-btn github-btn-danger" id="deleteButton" data-url="{% url 'frontend:delete_post' 'video' video.id %}">Delete</button>
+                        <a href="{% url 'frontend:upload_video' %}" class="btn btn-primary">Upload</a>
+                        <button class="btn btn-danger" id="deleteButton" data-url="{% url 'frontend:delete_post' 'video' video.id %}">Delete</button>
                     {% endif %}
                 </div>
             </div>
@@ -921,11 +916,11 @@
             {% endif %}
             
             <!-- Comments -->
-            <div class="github-card">
-                <div class="github-card-header">
+            <div class="card">
+                <div class="card-header">
                     <h2>Comments</h2>
                 </div>
-                <div class="github-card-body">
+                <div class="card-body">
                     {% if video.comments.all %}
                         <div class="comments-list">
                             {% for comment in video.comments.all %}
@@ -933,7 +928,7 @@
                                 <div class="comment-header">
                                     <a href="{% url 'frontend:user_profile' comment.author.username %}">
                                         {% if comment.author.profile.avatar %}
-                                            <img src="{{ comment.author.profile.avatar.url }}" class="comment-avatar">
+                                            <img src="{{ comment.author.profile.avatar.url }}?w_40,h_40,c_fill,q_auto,f_auto" class="comment-avatar">
                                         {% else %}
                                             <div class="comment-avatar-placeholder">{{ comment.author.username|first|upper }}</div>
                                         {% endif %}
@@ -946,7 +941,7 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        <div class="github-empty">
+                        <div class="empty-state">
                             <p>No comments yet.</p>
                         </div>
                     {% endif %}
@@ -957,13 +952,13 @@
                             {% csrf_token %}
                             <textarea class="comment-input" name="text" rows="3" placeholder="Leave a comment..."></textarea>
                             <div class="comment-form-actions">
-                                <button type="submit" class="github-btn github-btn-primary">Comment</button>
+                                <button type="submit" class="btn btn-primary">Comment</button>
                             </div>
                         </form>
                     </div>
                     {% else %}
                     <div class="comment-form" style="text-align: center;">
-                        <a href="{% url 'account_login' %}" class="github-btn github-btn-primary">Sign in to comment</a>
+                        <a href="{% url 'account_login' %}" class="btn btn-primary">Sign in to comment</a>
                     </div>
                     {% endif %}
                 </div>
@@ -971,13 +966,13 @@
         </div>
         
         <!-- Sidebar -->
-        <div class="github-sidebar">
+        <div class="sidebar">
             <!-- Author Card -->
             <div class="author-card">
                 <div class="author-header">
                     <a href="{% url 'frontend:user_profile' video.author.username %}">
                         {% if video.author.profile.avatar %}
-                            <img src="{{ video.author.profile.avatar.url }}" class="author-avatar">
+                            <img src="{{ video.author.profile.avatar.url }}?w_60,h_60,c_fill,q_auto,f_auto" class="author-avatar">
                         {% else %}
                             <div class="author-avatar-placeholder">{{ video.author.username|first|upper }}</div>
                         {% endif %}
@@ -989,11 +984,11 @@
                         </div>
                     </div>
                     {% if user.is_authenticated and user != video.author %}
-                        <button class="github-btn follow-btn" data-url="{% url 'frontend:follow_user' video.author.username %}">
+                        <button class="btn follow-btn" data-url="{% url 'frontend:follow_user' video.author.username %}">
                             {% if is_following %}Unfollow{% else %}Follow{% endif %}
                         </button>
                     {% elif not user.is_authenticated %}
-                        <button class="github-btn" onclick="showLoginPrompt()">Follow</button>
+                        <button class="btn" onclick="showLoginPrompt()">Follow</button>
                     {% endif %}
                 </div>
                 {% if video.author.profile.bio %}
@@ -1012,17 +1007,17 @@
             
             <!-- Related Videos -->
             {% if related_videos %}
-            <div class="github-card">
-                <div class="github-card-header">
+            <div class="card">
+                <div class="card-header">
                     <h2>More from {{ video.author.username }}</h2>
                 </div>
-                <div class="github-card-body">
+                <div class="card-body">
                     <div class="related-grid">
                         {% for related in related_videos|slice:":5" %}
                         <a href="{% url 'frontend:video_detail' related.id %}" class="related-card">
                             <div class="related-thumbnail">
-                                <video preload="metadata" muted>
-                                    <source src="{{ related.video_file.url }}" type="video/mp4">
+                                <video preload="metadata" muted poster="{{ related.thumbnail.url }}?w_120,h_68,c_fill,q_auto,f_auto">
+                                    <source src="{{ related.video_file.url }}?q_auto,f_auto" type="video/mp4">
                                 </video>
                             </div>
                             <div class="related-info">
@@ -1047,13 +1042,13 @@
 {% endif %}
 
 <!-- Share Modal -->
-<div id="shareModal" class="github-modal">
-    <div class="github-modal-content">
-        <div class="github-modal-header">
+<div id="shareModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
             <h3>Share</h3>
-            <button class="github-modal-close">×</button>
+            <button class="modal-close">×</button>
         </div>
-        <div class="github-modal-body">
+        <div class="modal-body">
             <div class="share-option" data-platform="facebook">Facebook</div>
             <div class="share-option" data-platform="twitter">Twitter</div>
             <div class="share-option" data-platform="whatsapp">WhatsApp</div>
@@ -1078,7 +1073,7 @@
                     <span class="amount-label">Amount:</span>
                     <span class="amount-value" id="mpesaAmount">KES 0.00</span>
                 </div>
-                <p class="mpesa-note">You'll receive an STK Push on your M-PESA phone to complete payment.</p>
+                <p class="mpesa-note">You will receive an STK Push on your M-PESA phone to complete payment.</p>
             </div>
             <form id="mpesaForm">
                 <div class="form-group">
@@ -1094,7 +1089,7 @@
                 </div>
                 <div class="mpesa-buttons">
                     <button type="button" class="btn-secondary" onclick="closeMpesaModal()">Cancel</button>
-                    <button type="submit" class="github-btn github-btn-primary">Pay Now</button>
+                    <button type="submit" class="btn btn-primary">Pay Now</button>
                 </div>
             </form>
             <div id="paymentStatus"></div>
@@ -1103,17 +1098,16 @@
 </div>
 
 <!-- Login Prompt Modal -->
-<div id="loginPromptModal" class="github-modal">
-    <div class="github-modal-content">
-        <div class="github-modal-header">
+<div id="loginPromptModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
             <h3>Login Required</h3>
-            <button class="github-modal-close" onclick="closeLoginPrompt()">×</button>
+            <button class="modal-close" onclick="closeLoginPrompt()">×</button>
         </div>
         <div class="login-prompt-content">
-            <div class="login-prompt-icon">🔐</div>
             <p class="login-prompt-text">You need to be logged in to make payments, send messages, or make calls.</p>
             <div class="login-prompt-buttons">
-                <a href="{% url 'account_login' %}" class="github-btn github-btn-primary">Login</a>
+                <a href="{% url 'account_login' %}" class="btn btn-primary">Login</a>
                 <a href="{% url 'account_signup' %}" class="btn-secondary">Sign Up</a>
                 <button class="btn-secondary" onclick="closeLoginPrompt()">Cancel</button>
             </div>
@@ -1141,11 +1135,11 @@ const csrf = getCookie('csrftoken');
 const isAuthenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
 
 function showToast(message, type = 'success') {
-    const existing = document.querySelector('.github-toast');
+    const existing = document.querySelector('.toast-custom');
     if (existing) existing.remove();
     
     const toast = document.createElement('div');
-    toast.className = `github-toast ${type === 'error' ? 'error' : ''}`;
+    toast.className = `toast-custom ${type === 'error' ? 'error' : ''}`;
     toast.textContent = message;
     document.body.appendChild(toast);
     
@@ -1193,7 +1187,7 @@ const modal = document.getElementById('shareModal');
 const shareBtn = document.getElementById('shareBtn');
 
 shareBtn?.addEventListener('click', () => modal.classList.add('active'));
-modal?.querySelector('.github-modal-close')?.addEventListener('click', () => modal.classList.remove('active'));
+modal?.querySelector('.modal-close')?.addEventListener('click', () => modal.classList.remove('active'));
 modal?.addEventListener('click', (e) => {
     if (e.target === modal) modal.classList.remove('active');
 });
@@ -1382,7 +1376,7 @@ async function pollPaymentStatus(checkoutRequestId) {
                 clearInterval(interval);
                 
                 if (currentPaymentType === 'call') {
-                    showPaymentStatus('Payment successful! Starting call...');
+                    showPaymentStatus('Payment successful. Starting call...');
                     setTimeout(() => {
                         closeMpesaModal();
                         window.location.href = `/call/initiate/${currentReceiverUsername}/`;
@@ -1405,7 +1399,7 @@ async function pollPaymentStatus(checkoutRequestId) {
                     const sendData = await sendResponse.json();
                     
                     if (sendData.success) {
-                        showPaymentStatus('Payment successful! Message sent.');
+                        showPaymentStatus('Payment successful. Message sent.');
                         setTimeout(() => {
                             closeMpesaModal();
                             location.reload();
@@ -1470,7 +1464,7 @@ document.getElementById('mpesaForm')?.addEventListener('submit', async function(
         const data = await response.json();
         
         if (data.success) {
-            showPaymentStatus('STK Push sent! Check your phone to complete payment...');
+            showPaymentStatus('STK Push sent. Check your phone to complete payment...');
             pollPaymentStatus(data.checkout_request_id);
         } else {
             showPaymentStatus(data.error || 'Payment failed', true);
