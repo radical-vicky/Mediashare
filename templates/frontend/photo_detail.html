@@ -1276,7 +1276,7 @@
     
     <a href="{% url 'frontend:user_profile' photo.author.username %}" class="user-info">
         {% if photo.author.profile.avatar %}
-            <img src="{{ photo.author.profile.avatar.url }}" class="avatar">
+            <img src="{{ photo.author.profile.avatar.url }}?w_50,h_50,c_fill,q_auto,f_auto" class="avatar">
         {% else %}
             <div class="avatar-placeholder">{{ photo.author.username|first|upper }}</div>
         {% endif %}
@@ -1304,7 +1304,7 @@
 <!-- Main Photo -->
 <div class="photo-container" id="mainPhotoContainer">
     <div class="photo-wrapper">
-        <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'Photo' }}" class="photo-image" id="mainPhoto">
+        <img src="{{ photo.image.url }}?q_auto,f_auto,w_1200" alt="{{ photo.caption|default:'Photo' }}" class="photo-image" id="mainPhoto">
     </div>
 </div>
 
@@ -1312,7 +1312,7 @@
 {% if all_photos|length > 1 %}
 <div class="carousel-thumbnails" id="thumbnailCarousel">
     {% for p in all_photos %}
-    <img src="{{ p.image.url }}" 
+    <img src="{{ p.image.url }}?w_100,h_100,c_fill,q_auto,f_auto" 
          alt="Thumbnail" 
          class="thumbnail {% if p.id == photo.id %}active{% endif %}"
          data-id="{{ p.id }}"
@@ -1379,7 +1379,7 @@
         <div class="related-grid" id="relatedGrid">
             {% for related in related_photos %}
             <a href="{% url 'frontend:photo_detail' related.id %}" class="related-card">
-                <img src="{{ related.image.url }}" alt="{{ related.caption|default:'Photo' }}" loading="lazy">
+                <img src="{{ related.image.url }}?w_300,h_300,c_fill,q_auto,f_auto" alt="{{ related.caption|default:'Photo' }}" loading="lazy">
                 <div class="related-info">
                     <div class="related-user">{{ related.author.username }}</div>
                     <div class="related-title">{{ related.caption|truncatechars:40|default:"Untitled" }}</div>
@@ -1402,7 +1402,7 @@
                 <div class="comment" id="comment-{{ comment.id }}">
                     <a href="{% url 'frontend:user_profile' comment.author.username %}">
                         {% if comment.author.profile.avatar %}
-                            <img src="{{ comment.author.profile.avatar.url }}" class="comment-avatar">
+                            <img src="{{ comment.author.profile.avatar.url }}?w_40,h_40,c_fill,q_auto,f_auto" class="comment-avatar">
                         {% else %}
                             <div class="comment-avatar-placeholder">{{ comment.author.username|first|upper }}</div>
                         {% endif %}
@@ -1438,7 +1438,7 @@
                             <div class="reply-item" id="comment-{{ reply.id }}">
                                 <a href="{% url 'frontend:user_profile' reply.author.username %}">
                                     {% if reply.author.profile.avatar %}
-                                        <img src="{{ reply.author.profile.avatar.url }}" class="comment-avatar" style="width: 28px; height: 28px;">
+                                        <img src="{{ reply.author.profile.avatar.url }}?w_30,h_30,c_fill,q_auto,f_auto" class="comment-avatar" style="width: 28px; height: 28px;">
                                     {% else %}
                                         <div class="comment-avatar-placeholder" style="width: 28px; height: 28px; font-size: 11px;">{{ reply.author.username|first|upper }}</div>
                                     {% endif %}
