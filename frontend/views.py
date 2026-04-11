@@ -17,6 +17,7 @@ from django.contrib.auth.decorators import login_required
 from .mpesa_utils import initiate_stk_push
 from .models import MpesaTransaction
 from datetime import datetime, timedelta
+import cloudinary.uploader
 
 
 def home(request):
@@ -114,7 +115,6 @@ def get_online_users_count():
         five_minutes_ago = timezone.now() - timedelta(minutes=5)
         return UserSession.objects.filter(last_activity__gte=five_minutes_ago).count()
     except:
-        # Fallback to random number for demo if model doesn't exist
         import random
         return random.randint(800, 1500)
 
@@ -126,7 +126,6 @@ def get_daily_matches_count():
         today = timezone.now().date()
         return Match.objects.filter(created_at__date=today).count()
     except:
-        # Fallback to random number for demo if model doesn't exist
         import random
         return random.randint(2000, 3000)
 
@@ -172,8 +171,9 @@ def photo_detail(request, photo_id):
         }
         return render(request, 'frontend/photo_not_found.html', context, status=404)
     
-    if photo.image and not os.path.exists(photo.image.path):
-        messages.warning(request, 'This photo file is missing. It may have been removed from the server.')
+    # Cloudinary files don't have a local path, so skip the file existence check
+    # if photo.image and not os.path.exists(photo.image.path):
+    #     messages.warning(request, 'This photo file is missing.')
     
     if not request.session.get(f'viewed_photo_{photo_id}'):
         photo.views += 1
@@ -207,12 +207,10 @@ def track_video_view(request, video_id):
     except Http404:
         return JsonResponse({'error': 'Video not found'}, status=404)
     
-    # Get session key
     if not request.session.session_key:
         request.session.create()
     session_key = request.session.session_key
     
-    # Parse request body
     try:
         data = json.loads(request.body)
         watch_time = data.get('watch_time', 0)
@@ -221,20 +219,17 @@ def track_video_view(request, video_id):
         watch_time = 0
         completed = False
     
-    # Check if already viewed in this session
     existing_view = VideoView.objects.filter(
         video=video,
         session_key=session_key
     ).first()
     
     if existing_view:
-        # Update existing view with watch time
         existing_view.watch_time = max(existing_view.watch_time, watch_time)
         existing_view.completed = completed or existing_view.completed
         existing_view.save()
         view_tracked = False
     else:
-        # Create new view record
         VideoView.objects.create(
             video=video,
             user=request.user if request.user.is_authenticated else None,
@@ -245,7 +240,6 @@ def track_video_view(request, video_id):
         )
         view_tracked = True
     
-    # Update video's total unique view count
     unique_views = VideoView.objects.filter(video=video).values('session_key').distinct().count()
     video.views = unique_views
     video.save()
@@ -259,7 +253,6 @@ def track_video_view(request, video_id):
 
 
 def get_client_ip(request):
-    """Get client IP address from request"""
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]
@@ -283,27 +276,22 @@ def video_detail(request, video_id):
         }
         return render(request, 'frontend/video_not_found.html', context, status=404)
     
-    if video.video_file and not os.path.exists(video.video_file.path):
-        messages.warning(request, 'This video file is missing. It may have been removed from the server.')
+    # Cloudinary files don't have local paths
+    # if video.video_file and not os.path.exists(video.video_file.path):
+    #     messages.warning(request, 'This video file is missing.')
     
-    # Get unique view count from database
     unique_views = VideoView.objects.filter(video=video).values('session_key').distinct().count()
     video.view_count = unique_views
     video.save()
     
-    # Get related videos
     related_videos = Video.objects.filter(author=video.author).exclude(id=video_id)[:4]
     if not related_videos:
         related_videos = Video.objects.exclude(id=video_id).order_by('-views')[:4]
     
-    # Get next video (newer videos first)
     next_video = Video.objects.filter(created_at__gt=video.created_at).order_by('created_at').first()
-    
-    # If no newer video, get the oldest video as next (loop)
     if not next_video:
         next_video = Video.objects.exclude(id=video_id).order_by('created_at').first()
     
-    # Also get previous video for optional previous button
     prev_video = Video.objects.filter(created_at__lt=video.created_at).order_by('-created_at').first()
     
     context = {
@@ -332,7 +320,6 @@ def user_profile(request, username):
     photos = Photo.objects.filter(author=profile_user)
     videos = Video.objects.filter(author=profile_user)
     
-    # Create all_media list combining photos and videos with proper fields
     all_media = []
     for photo in photos:
         all_media.append({
@@ -341,8 +328,8 @@ def user_profile(request, username):
             'caption': photo.caption,
             'title': '',
             'description': '',
-            'thumbnail_url': photo.image.url,
-            'file_url': photo.image.url,
+            'thumbnail_url': photo.image.url if photo.image else None,
+            'file_url': photo.image.url if photo.image else None,
             'likes_count': photo.likes_count,
             'comments_count': photo.comments_count,
             'views': photo.views,
@@ -355,7 +342,7 @@ def user_profile(request, username):
             'title': video.title,
             'description': video.description,
             'thumbnail_url': video.thumbnail.url if video.thumbnail else None,
-            'file_url': video.video_file.url,
+            'file_url': video.video_file.url if video.video_file else None,
             'likes_count': video.likes_count,
             'comments_count': video.comments_count,
             'views': video.views,
@@ -380,15 +367,13 @@ def user_profile(request, username):
 
 @login_required
 def edit_profile(request):
-    """Edit user profile with avatar upload"""
+    """Edit user profile with avatar upload using Cloudinary"""
     profile, created = UserProfile.objects.get_or_create(user=request.user)
     
     if request.method == 'POST':
-        # Check if it's an AJAX request
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
         try:
-            # Update text fields
             profile.bio = request.POST.get('bio', '')
             profile.location = request.POST.get('location', '')
             profile.website = request.POST.get('website', '')
@@ -396,24 +381,15 @@ def edit_profile(request):
             profile.call_price_per_minute = request.POST.get('call_price_per_minute', 0)
             profile.is_available_for_calls = request.POST.get('is_available_for_calls') == 'on'
             
-            # Handle avatar upload
+            # Handle avatar upload to Cloudinary
             if request.FILES.get('avatar'):
-                # Delete old avatar if exists
-                if profile.avatar:
-                    try:
-                        profile.avatar.delete(save=False)
-                    except:
-                        pass
-                profile.avatar = request.FILES['avatar']
+                avatar_file = request.FILES['avatar']
+                # Upload to Cloudinary
+                upload_result = cloudinary.uploader.upload(avatar_file, folder='avatars/')
+                profile.avatar = upload_result['public_id']
             
-            # Handle avatar removal
             if request.POST.get('remove_avatar') == 'true':
-                if profile.avatar:
-                    try:
-                        profile.avatar.delete(save=False)
-                    except:
-                        pass
-                    profile.avatar = None
+                profile.avatar = None
             
             profile.save()
             
@@ -463,29 +439,25 @@ def follow_user(request, username):
 
 @login_required
 def download_media(request, media_type, media_id):
-    """Download photo or video with error handling"""
+    """Download photo or video - For Cloudinary, provide download URL"""
     try:
         if media_type == 'photo':
             media = get_object_or_404(Photo, id=media_id)
-            if not os.path.exists(media.image.path):
-                messages.error(request, 'Photo file not found on server.')
+            if media.image:
+                # For Cloudinary, redirect to the image URL or provide download link
+                return redirect(media.image.url)
+            else:
+                messages.error(request, 'Photo file not found.')
                 return redirect('frontend:feed')
-            file_path = media.image.path
-            filename = f"{media.author.username}_photo_{media_id}.jpg"
         elif media_type == 'video':
             media = get_object_or_404(Video, id=media_id)
-            if not os.path.exists(media.video_file.path):
-                messages.error(request, 'Video file not found on server.')
+            if media.video_file:
+                return redirect(media.video_file.url)
+            else:
+                messages.error(request, 'Video file not found.')
                 return redirect('frontend:feed')
-            file_path = media.video_file.path
-            filename = f"{media.author.username}_video_{media_id}.mp4"
         else:
             return JsonResponse({'error': 'Invalid media type'}, status=400)
-        
-        with open(file_path, 'rb') as f:
-            response = HttpResponse(f.read(), content_type='application/octet-stream')
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
-            return response
     except Http404:
         messages.error(request, f'{media_type.capitalize()} not found.')
         return redirect('frontend:feed')
@@ -599,7 +571,6 @@ def call_room(request, room_name):
         messages.error(request, 'You are not authorized to join this call')
         return redirect('frontend:feed')
     
-    # Get the other participant
     other_user = call_session.receiver if call_session.caller == request.user else call_session.caller
     
     context = {
@@ -636,7 +607,7 @@ def end_call(request, call_id):
 
 @login_required
 def upload_photo(request):
-    """Upload a new photo"""
+    """Upload a new photo to Cloudinary"""
     if request.method == 'POST':
         if request.FILES.get('image'):
             image_file = request.FILES['image']
@@ -651,19 +622,26 @@ def upload_photo(request):
                 messages.error(request, 'Invalid file type. Please upload an image file (JPG, PNG, GIF, WEBP, BMP).')
                 return render(request, 'frontend/upload_photo.html')
             
-            original_name = image_file.name
-            name, ext = os.path.splitext(original_name)
-            clean_name = re.sub(r'[^a-zA-Z0-9_.-]', '_', name)
-            clean_name = clean_name[:100]
-            image_file.name = f"{clean_name}{ext}"
-            
-            photo = Photo.objects.create(
-                author=request.user,
-                image=image_file,
-                caption=request.POST.get('caption', '')
-            )
-            messages.success(request, 'Your photo has been uploaded successfully!')
-            return redirect('frontend:photo_detail', photo_id=photo.id)
+            try:
+                # Upload directly to Cloudinary
+                upload_result = cloudinary.uploader.upload(
+                    image_file,
+                    folder='photos/',
+                    transformation={'quality': 'auto', 'fetch_format': 'auto'}
+                )
+                
+                photo = Photo.objects.create(
+                    author=request.user,
+                    image=upload_result['public_id'],
+                    caption=request.POST.get('caption', '')
+                )
+                
+                messages.success(request, 'Your photo has been uploaded successfully!')
+                return redirect('frontend:photo_detail', photo_id=photo.id)
+                
+            except Exception as e:
+                messages.error(request, f'Error uploading to Cloudinary: {str(e)}')
+                return render(request, 'frontend/upload_photo.html')
         else:
             messages.error(request, 'Please select an image file.')
     
@@ -672,28 +650,34 @@ def upload_photo(request):
 
 @login_required
 def upload_video(request):
-    """Upload a new video - NO SIZE LIMITS, ANY FORMAT"""
+    """Upload a new video to Cloudinary"""
     if request.method == 'POST':
         if request.FILES.get('video_file'):
             video_file = request.FILES['video_file']
             
-            # Keep original filename for better compatibility
-            original_name = video_file.name
-            name, ext = os.path.splitext(original_name)
-            clean_name = re.sub(r'[^a-zA-Z0-9_.-]', '_', name)
-            clean_name = clean_name[:100]
-            video_file.name = f"{clean_name}{ext}"
-            
-            # Create video record
-            video = Video.objects.create(
-                author=request.user,
-                video_file=video_file,
-                title=request.POST.get('title', ''),
-                description=request.POST.get('description', '')
-            )
-            
-            messages.success(request, 'Your video has been uploaded successfully!')
-            return redirect('frontend:video_detail', video_id=video.id)
+            try:
+                # Upload directly to Cloudinary
+                upload_result = cloudinary.uploader.upload(
+                    video_file,
+                    resource_type='video',
+                    folder='videos/',
+                    eager_async=True,
+                    eager=[{'quality': 'auto', 'fetch_format': 'auto'}]
+                )
+                
+                video = Video.objects.create(
+                    author=request.user,
+                    video_file=upload_result['public_id'],
+                    title=request.POST.get('title', ''),
+                    description=request.POST.get('description', '')
+                )
+                
+                messages.success(request, 'Your video has been uploaded successfully!')
+                return redirect('frontend:video_detail', video_id=video.id)
+                
+            except Exception as e:
+                messages.error(request, f'Error uploading to Cloudinary: {str(e)}')
+                return render(request, 'frontend/upload_video.html')
         else:
             messages.error(request, 'Please select a video file.')
     
@@ -762,7 +746,6 @@ def add_comment(request, content_type, content_id):
                 else:
                     return JsonResponse({'error': 'Invalid content type'}, status=400)
                 
-                # Handle reply
                 if parent_id:
                     parent_comment = get_object_or_404(Comment, id=parent_id)
                     comment.parent = parent_comment
@@ -775,7 +758,6 @@ def add_comment(request, content_type, content_id):
                 return redirect('frontend:feed')
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                # Return simple JSON response without template rendering
                 return JsonResponse({
                     'success': True,
                     'comment_id': comment.id,
@@ -846,16 +828,6 @@ def delete_post(request, post_type, post_id):
         messages.error(request, 'You can only delete your own posts.')
         return redirect('frontend:feed')
     
-    try:
-        if post_type == 'photo' and post.image:
-            if os.path.exists(post.image.path):
-                os.remove(post.image.path)
-        elif post_type == 'video' and post.video_file:
-            if os.path.exists(post.video_file.path):
-                os.remove(post.video_file.path)
-    except Exception as e:
-        print(f"Error deleting file: {e}")
-    
     post_id_value = post.id
     post.delete()
     
@@ -890,12 +862,10 @@ def get_photo_data(request, photo_id):
     except Http404:
         return JsonResponse({'error': 'Photo not found'}, status=404)
     
-    # Get related photos
     related_photos = Photo.objects.filter(author=photo.author).exclude(id=photo_id)[:4]
     if not related_photos:
         related_photos = Photo.objects.exclude(id=photo_id).order_by('-views')[:4]
     
-    # Get avatar safely
     author_avatar = None
     is_available = False
     if hasattr(photo.author, 'profile') and photo.author.profile:
@@ -905,7 +875,7 @@ def get_photo_data(request, photo_id):
     
     return JsonResponse({
         'id': photo.id,
-        'image_url': photo.image.url,
+        'image_url': photo.image.url if photo.image else None,
         'caption': photo.caption if photo.caption else '',
         'description': '',
         'views': photo.views,
@@ -926,7 +896,7 @@ def get_all_photos_api(request):
     for photo in photos:
         photos_data.append({
             'id': photo.id,
-            'image_url': photo.image.url,
+            'image_url': photo.image.url if photo.image else None,
             'caption': photo.caption,
         })
     return JsonResponse({'photos': photos_data})
@@ -1063,7 +1033,6 @@ def mpesa_payment(request):
             if not phone_number or not amount:
                 return JsonResponse({'error': 'Phone number and amount required'}, status=400)
             
-            # Generate unique reference
             import uuid
             reference = f"VIBE{str(uuid.uuid4())[:8].upper()}"
             description = f"VibeGaze {transaction_type} payment"
@@ -1101,23 +1070,19 @@ def mpesa_callback(request):
         try:
             data = json.loads(request.body)
             
-            # Extract callback data
             body = data.get('Body', {})
             stk_callback = body.get('stkCallback', {})
             
             result_code = stk_callback.get('ResultCode')
             result_desc = stk_callback.get('ResultDesc')
             checkout_request_id = stk_callback.get('CheckoutRequestID')
-            merchant_request_id = stk_callback.get('MerchantRequestID')
             
-            # Find transaction
             try:
                 transaction = MpesaTransaction.objects.get(reference_id=checkout_request_id)
             except MpesaTransaction.DoesNotExist:
                 return JsonResponse({'error': 'Transaction not found'}, status=404)
             
-            if result_code == 0:  # Success
-                # Get callback metadata
+            if result_code == 0:
                 callback_metadata = stk_callback.get('CallbackMetadata', {})
                 items = callback_metadata.get('Item', [])
                 
@@ -1163,7 +1128,6 @@ def check_payment_status(request, transaction_id):
         })
     except MpesaTransaction.DoesNotExist:
         return JsonResponse({'error': 'Transaction not found'}, status=404)
-    
 
 
 def get_user_followers(request, username):
@@ -1171,10 +1135,7 @@ def get_user_followers(request, username):
     try:
         user = get_object_or_404(User, username=username)
         
-        # Get or create profile
         profile, created = UserProfile.objects.get_or_create(user=user)
-        
-        # Get followers - these are users who follow THIS user
         followers = profile.followers.all()
         
         users_data = []
@@ -1193,16 +1154,12 @@ def get_user_followers(request, username):
         return JsonResponse({'error': str(e), 'users': []}, status=400)
 
 
-
 def get_user_following(request, username):
     """API endpoint to get users that the user follows"""
     try:
         user = get_object_or_404(User, username=username)
         
-        # Get users that THIS user follows
-        # Since the ManyToManyField has related_name='following' on UserProfile,
-        # the user object has a 'following' attribute
-        following_users = user.following.all()  # This works because related_name='following'
+        following_users = user.following.all()
         
         users_data = []
         for followed in following_users:
