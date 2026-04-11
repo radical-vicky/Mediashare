@@ -285,7 +285,7 @@
                             {% endif %}
                             <div class="media-poster">
                                 <a href="{% url 'frontend:photo_detail' photo.id %}" class="media-link">
-                                    <img src="{{ photo.image.url }}?w_400,h_400,c_fill,q_auto,f_auto" alt="{{ photo.title }}" class="media-image" loading="lazy">
+                                    <img src="{{ photo.image.url }}?w_400,h_400,c_fill,q_auto,f_auto" alt="{{ photo.caption|default:'Photo' }}" class="media-image" loading="lazy">
                                     <div class="media-overlay">
                                         <div class="media-stats">
                                             <span class="stat-item view-count">Views: {{ photo.views }}</span>
