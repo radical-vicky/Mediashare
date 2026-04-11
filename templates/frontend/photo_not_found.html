@@ -78,7 +78,7 @@
         margin: 24px 0;
     }
     
-    .github-btn {
+    .btn {
         display: inline-flex;
         align-items: center;
         gap: 8px;
@@ -94,29 +94,29 @@
         color: #cbd5e1;
     }
     
-    .github-btn:hover {
+    .btn:hover {
         background: rgba(59, 130, 246, 0.25);
         transform: translateY(-1px);
     }
     
-    .github-btn-primary {
+    .btn-primary {
         background: linear-gradient(135deg, #3b82f6, #2563eb);
         border-color: #3b82f6;
         color: white;
     }
     
-    .github-btn-primary:hover {
+    .btn-primary:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
     }
     
-    .github-btn-outline {
+    .btn-outline {
         background: transparent;
         border-color: #3b82f6;
         color: #60a5fa;
     }
     
-    .github-btn-outline:hover {
+    .btn-outline:hover {
         background: rgba(59, 130, 246, 0.15);
     }
     
@@ -156,7 +156,7 @@
     }
     
     /* Toast */
-    .github-toast {
+    .toast-custom {
         position: fixed;
         bottom: 20px;
         right: 20px;
@@ -174,7 +174,7 @@
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     }
     
-    .github-toast.error {
+    .toast-custom.error {
         border-left-color: #ef4444;
     }
     
@@ -219,33 +219,33 @@
 <div class="error-container">
     <div class="error-card">
         <div class="error-code">404</div>
-        <h1 class="error-title">User not found</h1>
+        <h1 class="error-title">User Not Found</h1>
         <p class="error-message">
-            {{ error_message|default:"The user you're looking for doesn't exist." }}
+            {{ error_message|default:"The user you are looking for does not exist." }}
         </p>
         
         {% if username %}
         <div class="error-details">
-            <p><strong>Username:</strong> @{{ username }}</p>
-            <p><strong>Status:</strong> <span style="color: #ef4444;">Not found</span></p>
+            <p><strong>Username:</strong> {{ username }}</p>
+            <p><strong>Status:</strong> <span style="color: #ef4444;">Not Found</span></p>
             <p><strong>Suggestion:</strong> The user may have deleted their account or the username is incorrect.</p>
         </div>
         {% endif %}
         
         <div class="action-buttons">
-            <a href="{% url 'frontend:feed' %}" class="github-btn github-btn-primary">
+            <a href="{% url 'frontend:feed' %}" class="btn btn-primary">
                 Go to Feed
             </a>
-            <a href="javascript:history.back()" class="github-btn github-btn-outline">
+            <a href="javascript:history.back()" class="btn btn-outline">
                 Go Back
             </a>
         </div>
         
         <div class="search-box">
-            <div class="search-title">Search for another user</div>
+            <div class="search-title">Search for Another User</div>
             <form method="GET" action="{% url 'frontend:feed' %}" class="search-form">
                 <input type="text" name="q" placeholder="Search by username..." class="search-input">
-                <button type="submit" class="github-btn github-btn-primary">
+                <button type="submit" class="btn btn-primary">
                     Search
                 </button>
             </form>
