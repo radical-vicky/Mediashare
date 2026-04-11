@@ -167,13 +167,13 @@
     <section class="hero animate-on-scroll">
         <div class="hero-banner">
             <div class="banner-wrapper">
-                <!-- Background Media from DB -->
+                <!-- Background Media from DB with Cloudinary optimization -->
                 {% if background_media %}
                     {% if background_media.media_type == 'image' %}
-                        <img src="{{ background_media.file.url }}" alt="Background" class="banner-background">
+                        <img src="{{ background_media.file.url }}?q_auto,f_auto" alt="Background" class="banner-background">
                     {% elif background_media.media_type == 'video' %}
                         <video class="banner-background" autoplay muted loop playsinline>
-                            <source src="{{ background_media.file.url }}" type="video/mp4">
+                            <source src="{{ background_media.file.url }}?q_auto,f_auto" type="video/mp4">
                         </video>
                     {% endif %}
                 {% else %}
@@ -181,7 +181,7 @@
                 {% endif %}
                 <div class="banner-overlay">
                     <div class="banner-content">
-                        <h1 class="banner-title">{{ hero_title|default:"Connect, Chat & Vibe" }}</h1>
+                        <h1 class="banner-title">{{ hero_title|default:"Connect, Chat and Vibe" }}</h1>
                         <p class="banner-description">{{ hero_description|default:"Meet beautiful people, make meaningful connections through interactive chats and video calls." }}</p>
                         {% if user.is_authenticated %}
                             <div class="banner-buttons">
@@ -213,7 +213,7 @@
                         <div class="feature-image-wrapper">
                             <div class="feature-image-circle">
                                 {% if feature.icon_image %}
-                                    <img src="{{ feature.icon_image.url }}" alt="{{ feature.title }}" class="feature-img-circle">
+                                    <img src="{{ feature.icon_image.url }}?w_120,h_120,c_fill,q_auto,f_auto" alt="{{ feature.title }}" class="feature-img-circle">
                                 {% else %}
                                     <div class="feature-icon-placeholder">{{ feature.title|first|upper }}</div>
                                 {% endif %}
@@ -257,7 +257,7 @@
                                 <div class="feature-icon-placeholder">S</div>
                             </div>
                         </div>
-                        <h3 class="feature-title">Safe & Secure</h3>
+                        <h3 class="feature-title">Safe and Secure</h3>
                         <p class="feature-description">Your privacy and safety are our top priority.</p>
                     </div>
                 {% endfor %}
@@ -285,11 +285,11 @@
                             {% endif %}
                             <div class="media-poster">
                                 <a href="{% url 'frontend:photo_detail' photo.id %}" class="media-link">
-                                    <img src="{{ photo.image.url }}" alt="{{ photo.title }}" class="media-image" loading="lazy">
+                                    <img src="{{ photo.image.url }}?w_400,h_400,c_fill,q_auto,f_auto" alt="{{ photo.title }}" class="media-image" loading="lazy">
                                     <div class="media-overlay">
                                         <div class="media-stats">
-                                            <span class="stat-item view-count">{{ photo.views }} views</span>
-                                            <span class="stat-item">{{ photo.comments.count }} comments</span>
+                                            <span class="stat-item view-count">Views: {{ photo.views }}</span>
+                                            <span class="stat-item">Comments: {{ photo.comments.count }}</span>
                                         </div>
                                     </div>
                                 </a>
@@ -304,7 +304,7 @@
                                 <div class="media-author">
                                     <a href="{% url 'frontend:user_profile' username=photo.author.username %}" class="author-avatar">
                                         {% if photo.author.profile.avatar %}
-                                            <img src="{{ photo.author.profile.avatar.url }}" alt="{{ photo.author.username }}" class="avatar-img">
+                                            <img src="{{ photo.author.profile.avatar.url }}?w_50,h_50,c_fill,q_auto,f_auto" alt="{{ photo.author.username }}" class="avatar-img">
                                         {% else %}
                                             <div class="avatar-placeholder">{{ photo.author.username|first|upper }}</div>
                                         {% endif %}
@@ -348,13 +348,13 @@
                             {% endif %}
                             <div class="media-poster">
                                 <a href="{% url 'frontend:video_detail' video.id %}" class="media-link">
-                                    <video class="media-video" preload="metadata" poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}">
-                                        <source src="{{ video.video_file.url }}">
+                                    <video class="media-video" preload="metadata" poster="{% if video.thumbnail %}{{ video.thumbnail.url }}?w_400,h_400,c_fill,q_auto,f_auto{% endif %}">
+                                        <source src="{{ video.video_file.url }}?q_auto,f_auto">
                                     </video>
                                     <div class="media-overlay">
                                         <div class="media-stats">
-                                            <span class="stat-item view-count">{{ video.views }} views</span>
-                                            <span class="stat-item">{{ video.comments.count }} comments</span>
+                                            <span class="stat-item view-count">Views: {{ video.views }}</span>
+                                            <span class="stat-item">Comments: {{ video.comments.count }}</span>
                                         </div>
                                     </div>
                                     <div class="play-icon"></div>
@@ -370,7 +370,7 @@
                                 <div class="media-author">
                                     <a href="{% url 'frontend:user_profile' username=video.author.username %}" class="author-avatar">
                                         {% if video.author.profile.avatar %}
-                                            <img src="{{ video.author.profile.avatar.url }}" alt="{{ video.author.username }}" class="avatar-img">
+                                            <img src="{{ video.author.profile.avatar.url }}?w_50,h_50,c_fill,q_auto,f_auto" alt="{{ video.author.username }}" class="avatar-img">
                                         {% else %}
                                             <div class="avatar-placeholder">{{ video.author.username|first|upper }}</div>
                                         {% endif %}
