@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Upload video - MediaShare{% endblock %}
+{% block title %}Upload Video - MediaShare{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -515,10 +515,10 @@
     
     <div class="upload-card">
         <div class="upload-header">
-            <h2>Upload video</h2>
+            <h2>Upload Video</h2>
             <div class="header-actions">
                 <a href="{% url 'frontend:upload_photo' %}" class="header-btn">
-                    Upload photo
+                    Upload Photo
                 </a>
             </div>
         </div>
@@ -532,7 +532,7 @@
                     <h3>Drag and drop your video here</h3>
                     <p>or</p>
                     <button type="button" class="dropzone-btn" id="selectFileBtn">
-                        Choose file
+                        Choose File
                     </button>
                     <input type="file" id="fileInput" name="video_file" accept="video/mp4,video/webm,video/quicktime,video/x-msvideo,video/x-matroska" style="display: none;">
                 </div>
@@ -592,7 +592,7 @@
                 <!-- Actions -->
                 <div class="form-actions">
                     <a href="{% url 'frontend:feed' %}" class="btn btn-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Upload video</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Upload Video</button>
                 </div>
             </form>
         </div>
@@ -652,15 +652,15 @@ function formatDuration(seconds) {
     const secs = Math.floor(seconds % 60);
     
     if (hours > 0) {
-        return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        return hours + ':' + minutes.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
     }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    return minutes + ':' + secs.toString().padStart(2, '0');
 }
 
 function updateCharCounters() {
     const titleLength = titleInput.value.length;
     const titleMax = 200;
-    titleCounter.textContent = `${titleLength} / ${titleMax} characters`;
+    titleCounter.textContent = titleLength + ' / ' + titleMax + ' characters';
     
     if (titleLength > titleMax) {
         titleCounter.classList.add('danger');
@@ -674,7 +674,7 @@ function updateCharCounters() {
     
     const descLength = descInput.value.length;
     const descMax = 1000;
-    descCounter.textContent = `${descLength} / ${descMax} characters`;
+    descCounter.textContent = descLength + ' / ' + descMax + ' characters';
     
     if (descLength > descMax) {
         descCounter.classList.add('danger');
@@ -709,7 +709,7 @@ function getVideoDuration(file) {
     video.onloadedmetadata = function() {
         URL.revokeObjectURL(video.src);
         const duration = video.duration;
-        fileDuration.textContent = `Duration: ${formatDuration(duration)}`;
+        fileDuration.textContent = 'Duration: ' + formatDuration(duration);
         reqDuration.className = 'valid';
     };
     video.onerror = function() {
@@ -848,7 +848,7 @@ uploadForm.addEventListener('submit', function(e) {
     
     submitBtn.disabled = true;
     submitBtn.textContent = 'Uploading...';
-    showToast('Uploading your video... This may take a while.', 'info');
+    showToast('Uploading your video. This may take a while.', 'info');
 });
 </script>
 {% endblock %}
