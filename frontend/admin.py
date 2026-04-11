@@ -7,7 +7,7 @@ from .models import (
     MpesaTransaction, PaidMessage, SiteSetting, Feature, UserSession, Match
 )
 
-# ========== SITE SETTING ADMIN (ADD THIS) ==========
+# ========== SITE SETTING ADMIN ==========
 
 @admin.register(SiteSetting)
 class SiteSettingAdmin(admin.ModelAdmin):
@@ -35,12 +35,9 @@ class SiteSettingAdmin(admin.ModelAdmin):
     description_preview.short_description = 'Description'
     
     actions = ['delete_selected']
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request)
 
 
-# ========== FEATURE ADMIN (ADD THIS) ==========
+# ========== FEATURE ADMIN ==========
 
 @admin.register(Feature)
 class FeatureAdmin(admin.ModelAdmin):
@@ -62,7 +59,7 @@ class FeatureAdmin(admin.ModelAdmin):
     
     def icon_preview(self, obj):
         if obj.icon_image:
-            return format_html('<img src="{}" width="40" height="40" style="object-fit: cover; border-radius: 50%;" />', obj.icon_image.url)
+            return format_html('<img src="{}?w_50,h_50,c_fill,q_auto,f_auto" width="40" height="40" style="object-fit: cover; border-radius: 50%;" />', obj.icon_image.url)
         return format_html('<span style="color: gray;">No icon</span>')
     icon_preview.short_description = 'Icon'
     
@@ -83,7 +80,7 @@ class FeatureAdmin(admin.ModelAdmin):
     deactivate_features.short_description = 'Deactivate selected features'
 
 
-# ========== USER SESSION ADMIN (ADD THIS) ==========
+# ========== USER SESSION ADMIN ==========
 
 @admin.register(UserSession)
 class UserSessionAdmin(admin.ModelAdmin):
@@ -122,7 +119,7 @@ class UserSessionAdmin(admin.ModelAdmin):
     delete_old_sessions.short_description = 'Delete sessions older than 7 days'
 
 
-# ========== MATCH ADMIN (ADD THIS) ==========
+# ========== MATCH ADMIN ==========
 
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
@@ -151,7 +148,7 @@ class MatchAdmin(admin.ModelAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'phone_number', 'is_available_for_calls', 'call_price_per_minute', 'paid_message_price', 'followers_count', 'is_verified']
+    list_display = ['user', 'avatar_preview', 'phone_number', 'is_available_for_calls', 'call_price_per_minute', 'paid_message_price', 'followers_count', 'is_verified']
     list_filter = ['is_available_for_calls', 'is_verified', 'created_at']
     search_fields = ['user__username', 'user__email', 'phone_number', 'location']
     readonly_fields = ['followers_count', 'following_count', 'created_at', 'updated_at']
@@ -180,6 +177,12 @@ class UserProfileAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    
+    def avatar_preview(self, obj):
+        if obj.avatar:
+            return format_html('<img src="{}?w_50,h_50,c_fill,q_auto,f_auto" width="40" height="40" style="object-fit: cover; border-radius: 50%;" />', obj.avatar.url)
+        return format_html('<span style="color: gray;">No avatar</span>')
+    avatar_preview.short_description = 'Avatar'
     
     def followers_count(self, obj):
         return obj.followers.count()
@@ -214,11 +217,11 @@ class BackgroundMediaAdmin(admin.ModelAdmin):
     def file_preview(self, obj):
         if obj.file:
             if obj.media_type == 'image':
-                return format_html('<img src="{}" width="60" height="60" style="object-fit: cover; border-radius: 8px;" />', obj.file.url)
+                return format_html('<img src="{}?w_60,h_60,c_fill,q_auto,f_auto" width="60" height="60" style="object-fit: cover; border-radius: 8px;" />', obj.file.url)
             else:
                 return format_html(
                     '<video width="60" height="60" style="object-fit: cover; border-radius: 8px;" muted>'
-                    '<source src="{}" type="video/mp4">'
+                    '<source src="{}?q_auto,f_auto" type="video/mp4">'
                     '</video>', obj.file.url
                 )
         return format_html('<span style="color: gray;">No file</span>')
@@ -357,7 +360,7 @@ class PhotoAdmin(admin.ModelAdmin):
     
     def thumbnail_preview(self, obj):
         if obj.image:
-            return format_html('<img src="{}" width="50" height="50" style="object-fit: cover; border-radius: 5px;" />', obj.image.url)
+            return format_html('<img src="{}?w_50,h_50,c_fill,q_auto,f_auto" width="50" height="50" style="object-fit: cover; border-radius: 5px;" />', obj.image.url)
         return "No Image"
     thumbnail_preview.short_description = 'Preview'
     
@@ -381,7 +384,7 @@ class VideoAdmin(admin.ModelAdmin):
     
     def thumbnail_preview(self, obj):
         if obj.thumbnail:
-            return format_html('<img src="{}" width="50" height="50" style="object-fit: cover; border-radius: 5px;" />', obj.thumbnail.url)
+            return format_html('<img src="{}?w_50,h_50,c_fill,q_auto,f_auto" width="50" height="50" style="object-fit: cover; border-radius: 5px;" />', obj.thumbnail.url)
         return format_html('<span style="color: gray;">No thumbnail</span>')
     thumbnail_preview.short_description = 'Preview'
     
