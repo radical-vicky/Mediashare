@@ -197,12 +197,14 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 # ========== BACKGROUND MEDIA ADMIN ==========
 
+# frontend/admin.py
+
 @admin.register(BackgroundMedia)
 class BackgroundMediaAdmin(admin.ModelAdmin):
-    list_display = ['id', 'media_type', 'file_preview', 'is_active', 'created_at']
+    list_display = ['id', 'media_type', 'is_active', 'created_at']
     list_filter = ['media_type', 'is_active', 'created_at']
-    search_fields = ['file']
     list_editable = ['is_active']
+    readonly_fields = ['created_at']
     
     fieldsets = (
         ('Media Information', {
@@ -214,51 +216,20 @@ class BackgroundMediaAdmin(admin.ModelAdmin):
         }),
     )
     
-    readonly_fields = ['created_at']
-    
-    def file_preview(self, obj):
-        if obj.file and obj.file.url:
-            if obj.media_type == 'image':
-                return format_html('<img src="{}?w_60,h_60,c_fill,q_auto,f_auto" width="60" height="60" style="object-fit: cover; border-radius: 8px;" />', obj.file.url)
-            else:
-                return format_html(
-                    '<video width="60" height="60" style="object-fit: cover; border-radius: 8px;" muted>'
-                    '<source src="{}?q_auto,f_auto" type="video/mp4">'
-                    '</video>', obj.file.url
-                )
-        return format_html('<span style="color: gray;">No file</span>')
-    file_preview.short_description = 'Preview'
-    
     def save_model(self, request, obj, form, change):
-        # CloudinaryField handles the file upload automatically
-        # Just save the model normally
+        """Save the model - CloudinaryField handles the file upload automatically"""
         if obj.is_active:
             BackgroundMedia.objects.exclude(id=obj.id).update(is_active=False)
         super().save_model(request, obj, form, change)
     
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        # Make sure the file field is required only for new objects
+        # Make file field required only for new objects
         if obj is None:
             form.base_fields['file'].required = True
         else:
             form.base_fields['file'].required = False
         return form
-    
-    actions = ['activate_selected', 'deactivate_selected']
-    
-    def activate_selected(self, request, queryset):
-        BackgroundMedia.objects.all().update(is_active=False)
-        queryset.update(is_active=True)
-        self.message_user(request, f'{queryset.count()} background media activated.')
-    activate_selected.short_description = 'Activate selected (deactivates others)'
-    
-    def deactivate_selected(self, request, queryset):
-        queryset.update(is_active=False)
-        self.message_user(request, f'{queryset.count()} background media deactivated.')
-    deactivate_selected.short_description = 'Deactivate selected'
-
-# ========== M-PESA TRANSACTION ADMIN ==========
 
 @admin.register(MpesaTransaction)
 class MpesaTransactionAdmin(admin.ModelAdmin):
