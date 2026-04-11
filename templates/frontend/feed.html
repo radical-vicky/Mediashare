@@ -32,7 +32,7 @@
                 <div class="section-header">
                     <h2 class="section-title">Photos</h2>
                     {% if current_filter == 'all' %}
-                        <a href="?filter=photos" class="section-link">View all photos →</a>
+                        <a href="?filter=photos" class="section-link">View all photos</a>
                     {% endif %}
                 </div>
 
@@ -41,29 +41,29 @@
                         {% for photo in photos %}
                             <div class="media-card glass">
                                 <div class="media-poster">
-                                    <!-- PHOTO IMAGE - Links to photo detail -->
+                                    <!-- PHOTO IMAGE - Links to photo detail with Cloudinary optimization -->
                                     <a href="{% url 'frontend:photo_detail' photo.id %}" class="media-link-img">
-                                        <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" class="media-image">
+                                        <img src="{{ photo.image.url }}?q_auto,f_auto,w_400,h_400,c_fill" alt="{{ photo.caption }}" class="media-image" loading="lazy">
                                         <div class="media-overlay">
                                             <div class="media-stats">
-                                                <span class="stat-item">❤️ {{ photo.likes.count }}</span>
-                                                <span class="stat-item">👁️ {{ photo.views }}</span>
+                                                <span class="stat-item">Likes: {{ photo.likes.count }}</span>
+                                                <span class="stat-item">Views: {{ photo.views }}</span>
                                             </div>
                                         </div>
                                     </a>
                                     <div class="media-like-btn-wrapper">
                                         <button class="like-btn {% if user in photo.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_photo' photo.id %}" onclick="likeMedia(this)">
-                                            <span class="heart-icon">❤️</span>
+                                            <span class="heart-icon">♥</span>
                                             <span class="like-count">{{ photo.likes.count }}</span>
                                         </button>
                                     </div>
                                 </div>
                                 <div class="media-info">
                                     <div class="media-author">
-                                        <!-- AUTHOR AVATAR - Links to profile -->
+                                        <!-- AUTHOR AVATAR - Links to profile with Cloudinary optimization -->
                                         <a href="{% url 'frontend:user_profile' username=photo.author.username %}" class="author-avatar">
                                             {% if photo.author.profile.avatar %}
-                                                <img src="{{ photo.author.profile.avatar.url }}" alt="{{ photo.author.username }}" class="avatar-img">
+                                                <img src="{{ photo.author.profile.avatar.url }}?w_50,h_50,c_fill,q_auto,f_auto" alt="{{ photo.author.username }}" class="avatar-img">
                                             {% else %}
                                                 <div class="avatar-placeholder">{{ photo.author.username|first|upper }}</div>
                                             {% endif %}
@@ -111,7 +111,7 @@
                 <div class="section-header">
                     <h2 class="section-title">Videos</h2>
                     {% if current_filter == 'all' %}
-                        <a href="?filter=videos" class="section-link">View all videos →</a>
+                        <a href="?filter=videos" class="section-link">View all videos</a>
                     {% endif %}
                 </div>
 
@@ -120,32 +120,32 @@
                         {% for video in videos %}
                             <div class="media-card glass">
                                 <div class="media-poster">
-                                    <!-- VIDEO THUMBNAIL - Links to video detail -->
+                                    <!-- VIDEO THUMBNAIL - Links to video detail with Cloudinary optimization -->
                                     <a href="{% url 'frontend:video_detail' video.id %}" class="media-link-img">
-                                        <video class="media-video" preload="metadata">
-                                            <source src="{{ video.video_file.url }}">
+                                        <video class="media-video" preload="metadata" poster="{{ video.thumbnail.url }}?q_auto,f_auto,w_400,h_400,c_fill">
+                                            <source src="{{ video.video_file.url }}?q_auto,f_auto">
                                         </video>
                                         <div class="media-overlay">
                                             <div class="play-icon"></div>
                                             <div class="media-stats">
-                                                <span class="stat-item">❤️ {{ video.likes.count }}</span>
-                                                <span class="stat-item">👁️ {{ video.views }}</span>
+                                                <span class="stat-item">Likes: {{ video.likes.count }}</span>
+                                                <span class="stat-item">Views: {{ video.views }}</span>
                                             </div>
                                         </div>
                                     </a>
                                     <div class="media-like-btn-wrapper">
                                         <button class="like-btn {% if user in video.likes.all %}liked{% endif %}" data-url="{% url 'frontend:like_video' video.id %}" onclick="likeMedia(this)">
-                                            <span class="heart-icon">❤️</span>
+                                            <span class="heart-icon">♥</span>
                                             <span class="like-count">{{ video.likes.count }}</span>
                                         </button>
                                     </div>
                                 </div>
                                 <div class="media-info">
                                     <div class="media-author">
-                                        <!-- AUTHOR AVATAR - Links to profile -->
+                                        <!-- AUTHOR AVATAR - Links to profile with Cloudinary optimization -->
                                         <a href="{% url 'frontend:user_profile' username=video.author.username %}" class="author-avatar">
                                             {% if video.author.profile.avatar %}
-                                                <img src="{{ video.author.profile.avatar.url }}" alt="{{ video.author.username }}" class="avatar-img">
+                                                <img src="{{ video.author.profile.avatar.url }}?w_50,h_50,c_fill,q_auto,f_auto" alt="{{ video.author.username }}" class="avatar-img">
                                             {% else %}
                                                 <div class="avatar-placeholder">{{ video.author.username|first|upper }}</div>
                                             {% endif %}
