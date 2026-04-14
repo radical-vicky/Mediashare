@@ -286,3 +286,24 @@ LOGGING = {
         },
     },
 }
+
+
+
+
+# Comment out or delete the APP section - let Admin panel handle it
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        # 'APP': {  # <-- COMMENT THIS OUT
+        #     'client_id': '...',
+        #     'secret': '...',
+        # },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+    }
+}
