@@ -20,8 +20,10 @@ from datetime import datetime, timedelta
 import cloudinary.uploader
 
 
+# Update your home function in views.py
+
 def home(request):
-    """Home page - landing page with database-driven content"""
+    """Home page - Instagram-like feed for authenticated users, landing page for guests"""
     
     # Get background media (active hero background)
     background_media = None
@@ -36,9 +38,9 @@ def home(request):
     hero_description = get_site_setting('hero_description', 'Meet beautiful people, make meaningful connections through interactive chats and video calls.')
     
     # Get social proof counts
-    online_count = get_online_users_count()  # Users active in last 5 minutes
+    online_count = get_online_users_count()
     total_members = User.objects.count()
-    daily_matches = get_daily_matches_count()  # Connections made today
+    daily_matches = get_daily_matches_count()
     
     # Get features from database
     features = []
@@ -53,19 +55,28 @@ def home(request):
     videos_section_title = get_site_setting('videos_section_title', 'Video Vibes')
     videos_section_subtitle = get_site_setting('videos_section_subtitle', 'Watch and connect through videos')
     
-    # Get recent photos and videos
-    recent_photos = Photo.objects.select_related('author').all().order_by('-created_at')[:8]
-    recent_videos = Video.objects.select_related('author').all().order_by('-created_at')[:8]
+    # Get recent photos and videos for non-authenticated users
+    recent_photos = Photo.objects.select_related('author').filter(
+        image__isnull=False
+    ).order_by('-created_at')[:8]
     
-    # Add trending/new flags to photos (based on views or likes)
+    recent_videos = Video.objects.select_related('author').filter(
+        video_file__isnull=False
+    ).order_by('-created_at')[:8]
+    
+    # Add trending/new flags to photos
     for photo in recent_photos:
         photo.is_trending = photo.views > 100 or photo.likes.count() > 50
         photo.is_new = photo.created_at > timezone.now() - timedelta(days=1)
+        if not hasattr(photo.author, 'profile'):
+            UserProfile.objects.get_or_create(user=photo.author)
     
     # Add trending flags to videos
     for video in recent_videos:
         video.is_trending = video.views > 500 or video.likes.count() > 100
         video.is_new = video.created_at > timezone.now() - timedelta(days=1)
+        if not hasattr(video.author, 'profile'):
+            UserProfile.objects.get_or_create(user=video.author)
     
     context = {
         # Hero section
@@ -93,6 +104,128 @@ def home(request):
         'videos_section_subtitle': videos_section_subtitle,
         'recent_videos': recent_videos,
     }
+    
+    # For authenticated users, create Instagram-like feed
+    if request.user.is_authenticated:
+        print(f"User: {request.user.username} is authenticated")
+        
+        # Get user's own posts (photos and videos)
+        user_photos = Photo.objects.filter(
+            author=request.user,
+            image__isnull=False
+        ).order_by('-created_at')
+        
+        user_videos = Video.objects.filter(
+            author=request.user,
+            video_file__isnull=False
+        ).order_by('-created_at')
+        
+        print(f"User photos count: {user_photos.count()}")
+        print(f"User videos count: {user_videos.count()}")
+        
+        # Combine user's own posts
+        user_posts = []
+        for photo in user_photos:
+            user_posts.append({
+                'id': photo.id,
+                'type': 'photo',
+                'author': photo.author,
+                'image': photo.image,
+                'caption': photo.caption,
+                'likes': photo.likes,
+                'comments': photo.comments,
+                'created_at': photo.created_at,
+                'likes_count': photo.likes.count(),
+                'comments_count': photo.comments.count(),
+            })
+        for video in user_videos:
+            user_posts.append({
+                'id': video.id,
+                'type': 'video',
+                'author': video.author,
+                'video_file': video.video_file,
+                'thumbnail': video.thumbnail,
+                'title': video.title,
+                'caption': video.description,
+                'likes': video.likes,
+                'comments': video.comments,
+                'created_at': video.created_at,
+                'likes_count': video.likes.count(),
+                'comments_count': video.comments.count(),
+            })
+        
+        # Sort user posts by created_at descending
+        user_posts.sort(key=lambda x: x['created_at'], reverse=True)
+        
+        # Get the user's profile to access following
+        user_profile = UserProfile.objects.get(user=request.user)
+        
+        # Get users that the current user follows - FIX HERE
+        # The following relationship is on UserProfile, not directly on User
+        following_users = User.objects.filter(profile__followers=request.user)
+
+        print(f"Following users count: {following_users.count()}")
+        
+        # Get posts from followed users
+        following_photos = Photo.objects.filter(
+            author__in=following_users,
+            image__isnull=False
+        ).order_by('-created_at')
+        
+        following_videos = Video.objects.filter(
+            author__in=following_users,
+            video_file__isnull=False
+        ).order_by('-created_at')
+        
+        print(f"Following photos count: {following_photos.count()}")
+        print(f"Following videos count: {following_videos.count()}")
+        
+        # Combine feed posts from followed users
+        feed_items = []
+        for photo in following_photos:
+            feed_items.append({
+                'id': photo.id,
+                'type': 'photo',
+                'author': photo.author,
+                'image': photo.image,
+                'caption': photo.caption,
+                'likes': photo.likes,
+                'comments': photo.comments,
+                'created_at': photo.created_at,
+                'likes_count': photo.likes.count(),
+                'comments_count': photo.comments.count(),
+            })
+        for video in following_videos:
+            feed_items.append({
+                'id': video.id,
+                'type': 'video',
+                'author': video.author,
+                'video_file': video.video_file,
+                'thumbnail': video.thumbnail,
+                'title': video.title,
+                'caption': video.description,
+                'likes': video.likes,
+                'comments': video.comments,
+                'created_at': video.created_at,
+                'likes_count': video.likes.count(),
+                'comments_count': video.comments.count(),
+            })
+        
+        # Sort feed items by created_at descending
+        feed_items.sort(key=lambda x: x['created_at'], reverse=True)
+        
+        # Get featured profiles for stories (users with avatars)
+        featured_profiles = UserProfile.objects.select_related('user').filter(
+            avatar__isnull=False
+        ).exclude(user=request.user)[:15]
+        
+        context['user_posts'] = user_posts
+        context['feed_items'] = feed_items
+        context['featured_profiles'] = featured_profiles
+        
+        print(f"User posts in context: {len(user_posts)}")
+        print(f"Feed items in context: {len(feed_items)}")
+    
     return render(request, 'frontend/home.html', context)
 
 

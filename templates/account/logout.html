@@ -1,34 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Sign Out - MediaShare{% endblock %}
+{% block title %}Sign Out - VibeGaze{% endblock %}
 
 {% block extra_head %}
 <link rel="icon" type="image/jpg" href="{% static 'images/18+.jpg' %}">
-{% endblock %}
-
-{% block content %}
-<div class="auth-container">
-    <div class="auth-card">
-        <div class="auth-header">
-            <img src="{% static 'images/18+.jpg' %}" alt="MediaShare" style="width: 80px; height: 80px; margin-bottom: 16px; border-radius: 50%;">
-            <h1>Sign out</h1>
-            <p>Are you sure you want to sign out?</p>
-        </div>
-        
-        <form method="POST" action="{% url 'account_logout' %}" class="auth-form">
-            {% csrf_token %}
-            
-            {% if redirect_field_value %}
-                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
-            {% endif %}
-            
-            <button type="submit" class="btn btn-danger btn-block">Sign Out</button>
-            <a href="{% url 'frontend:feed' %}" class="btn btn-secondary btn-block" style="margin-top: 12px;">Cancel</a>
-        </form>
-    </div>
-</div>
-
 <style>
     .auth-container {
         min-height: calc(100vh - 200px);
@@ -46,6 +22,7 @@
         border: 1px solid rgba(59, 130, 246, 0.3);
         border-radius: 20px;
         padding: 40px 32px;
+        text-align: center;
     }
     
     .auth-header {
@@ -68,16 +45,44 @@
         font-size: 14px;
     }
     
+    /* Warning Box */
+    .warning-box {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .warning-text {
+        color: #f87171;
+        font-size: 13px;
+        line-height: 1.5;
+        margin: 0;
+    }
+    
+    /* Button Styles */
     .btn-block {
         width: 100%;
         justify-content: center;
     }
     
     .btn-danger {
+        width: 100%;
+        padding: 12px;
         background: linear-gradient(135deg, #ef4444, #dc2626);
-        border-color: #ef4444;
+        border: none;
+        border-radius: 12px;
         color: white;
-        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
     }
     
     .btn-danger:hover {
@@ -85,20 +90,135 @@
         box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
     }
     
+    .btn-danger:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
     .btn-secondary {
+        width: 100%;
+        padding: 12px;
         background: rgba(59, 130, 246, 0.15);
         border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
         color: #cbd5e1;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
         text-decoration: none;
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
-        padding: 12px 20px;
+        gap: 8px;
+        margin-top: 12px;
     }
     
     .btn-secondary:hover {
         background: rgba(59, 130, 246, 0.25);
         transform: translateY(-1px);
+        color: white;
+    }
+    
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        margin-right: 8px;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .user-info {
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 24px;
+    }
+    
+    .user-email {
+        color: #60a5fa;
+        font-size: 14px;
+        font-weight: 500;
+        word-break: break-all;
+    }
+    
+    .user-label {
+        color: #94a3b8;
+        font-size: 12px;
+        margin-bottom: 4px;
     }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <img src="{% static 'images/18+.jpg' %}" alt="VibeGaze" style="width: 80px; height: 80px; margin-bottom: 16px; border-radius: 50%;">
+            <h1>Sign Out</h1>
+            <p>Are you sure you want to sign out?</p>
+        </div>
+        
+        <!-- Display user info -->
+        {% if user.is_authenticated %}
+        <div class="user-info">
+            <div class="user-label">Currently signed in as</div>
+            <div class="user-email">{{ user.email|default:user.username }}</div>
+        </div>
+        {% endif %}
+        
+        <!-- Warning Box -->
+        <div class="warning-box">
+            <p class="warning-text">
+                You will be signed out of your account and will need to sign in again to access your content.
+            </p>
+        </div>
+        
+        <form method="POST" action="{% url 'account_logout' %}" class="auth-form" id="logoutForm">
+            {% csrf_token %}
+            
+            {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+            {% endif %}
+            
+            <button type="submit" class="btn-danger" id="submitBtn">
+                <span class="btn-text">Sign Out</span>
+            </button>
+            <a href="{% url 'frontend:feed' %}" class="btn-secondary">
+                Cancel
+            </a>
+        </form>
+    </div>
+</div>
+
+<script>
+    const logoutForm = document.getElementById('logoutForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (logoutForm) {
+        logoutForm.addEventListener('submit', function(e) {
+            // Show loading state
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner"></span><span class="btn-text">Signing Out...</span>';
+            }
+        });
+    }
+    
+    // Reset button state if needed (though form will submit)
+    window.addEventListener('load', function() {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="btn-text">Sign Out</span>';
+        }
+    });
+</script>
 {% endblock %}

@@ -2,10 +2,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from allauth.socialaccount.views import signup
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
+    path('accounts/3rdparty/signup/', signup, name='socialaccount_signup'),
     #path('messages/', include('pinax.messages.urls', namespace='pinax_messages')),
     path('', include('frontend.urls')),
 ]

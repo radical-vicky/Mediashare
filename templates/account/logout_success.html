@@ -1,32 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Logged Out - MediaShare{% endblock %}
+{% block title %}Logged Out - VibeGaze{% endblock %}
 
 {% block extra_head %}
 <link rel="icon" type="image/jpg" href="{% static 'images/18+.jpg' %}">
-{% endblock %}
-
-{% block content %}
-<div class="auth-container">
-    <div class="auth-card">
-        <div class="auth-header">
-            <img src="{% static 'images/18+.jpg' %}" alt="MediaShare" style="width: 80px; height: 80px; margin-bottom: 16px; border-radius: 50%;">
-            <h1>You've been logged out</h1>
-            <p>Thank you for using MediaShare</p>
-        </div>
-        
-        <div class="success-message">
-            <p>You have successfully signed out.</p>
-        </div>
-        
-        <div class="auth-footer">
-            <a href="{% url 'account_login' %}" class="btn btn-primary btn-block">Sign in again</a>
-            <a href="{% url 'frontend:home' %}" class="btn btn-secondary btn-block" style="margin-top: 12px;">Return to home</a>
-        </div>
-    </div>
-</div>
-
 <style>
     .auth-container {
         min-height: calc(100vh - 200px);
@@ -44,6 +22,7 @@
         border: 1px solid rgba(59, 130, 246, 0.3);
         border-radius: 20px;
         padding: 40px 32px;
+        text-align: center;
     }
     
     .auth-header {
@@ -68,7 +47,7 @@
     
     .success-message {
         text-align: center;
-        padding: 20px;
+        padding: 24px 20px;
         background: rgba(34, 197, 94, 0.1);
         border: 1px solid rgba(34, 197, 94, 0.3);
         border-radius: 12px;
@@ -78,51 +57,165 @@
     .success-message p {
         color: #4ade80;
         font-size: 14px;
+        margin: 0;
+        line-height: 1.6;
     }
     
-    .btn-block {
-        width: 100%;
-        justify-content: center;
+    .info-box {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+        text-align: left;
+    }
+    
+    .info-title {
+        color: #60a5fa;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .info-list {
+        color: #94a3b8;
+        font-size: 13px;
+        line-height: 1.6;
+        padding-left: 20px;
+        margin: 0;
+    }
+    
+    .info-list li {
+        margin-bottom: 6px;
     }
     
     .btn-primary {
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        border: none;
+        border-radius: 12px;
         color: white;
-        padding: 12px 20px;
-        text-decoration: none;
-        display: inline-flex;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 8px;
+        gap: 8px;
+        text-decoration: none;
     }
     
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     }
     
     .btn-secondary {
+        width: 100%;
+        padding: 12px;
         background: rgba(59, 130, 246, 0.15);
         border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
         color: #cbd5e1;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
         text-decoration: none;
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
-        padding: 12px 20px;
-        border-radius: 8px;
+        gap: 8px;
+        margin-top: 12px;
     }
     
     .btn-secondary:hover {
         background: rgba(59, 130, 246, 0.25);
         transform: translateY(-1px);
+        color: white;
     }
     
-    .auth-footer {
-        text-align: center;
+    .redirect-timer {
         margin-top: 24px;
         padding-top: 24px;
         border-top: 1px solid rgba(59, 130, 246, 0.2);
+        font-size: 12px;
+        color: #64748b;
+    }
+    
+    .timer-count {
+        color: #60a5fa;
+        font-weight: 600;
     }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <img src="{% static 'images/18+.jpg' %}" alt="VibeGaze" style="width: 80px; height: 80px; margin-bottom: 16px; border-radius: 50%;">
+            <h1>You've been logged out</h1>
+            <p>Thank you for using VibeGaze</p>
+        </div>
+        
+        <div class="success-message">
+            <p>✓ You have successfully signed out.</p>
+        </div>
+        
+        <div class="info-box">
+            <div class="info-title">What would you like to do next?</div>
+            <ul class="info-list">
+                <li>Sign in again to continue sharing and connecting</li>
+                <li>Explore our public content as a guest</li>
+                <li>Create a new account if you haven't already</li>
+            </ul>
+        </div>
+        
+        <a href="{% url 'account_login' %}" class="btn-primary">
+            Sign In Again
+        </a>
+        <a href="{% url 'frontend:home' %}" class="btn-secondary">
+            Return to Home
+        </a>
+        
+        <div class="redirect-timer" id="redirectTimer">
+            Redirecting to <a href="{% url 'frontend:home' %}" style="color: #60a5fa;">homepage</a> in <span class="timer-count" id="timerCount">5</span> seconds
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-redirect after 5 seconds
+    let seconds = 5;
+    const timerCount = document.getElementById('timerCount');
+    const redirectTimer = document.getElementById('redirectTimer');
+    
+    if (timerCount) {
+        const interval = setInterval(function() {
+            seconds--;
+            timerCount.textContent = seconds;
+            
+            if (seconds <= 0) {
+                clearInterval(interval);
+                window.location.href = "{% url 'frontend:home' %}";
+            }
+        }, 1000);
+    }
+    
+    // Optional: Allow user to stop redirect by hovering
+    if (redirectTimer) {
+        redirectTimer.addEventListener('mouseenter', function() {
+            // User can interact with the timer if needed
+            this.style.opacity = '0.7';
+        });
+        
+        redirectTimer.addEventListener('mouseleave', function() {
+            this.style.opacity = '1';
+        });
+    }
+</script>
 {% endblock %}

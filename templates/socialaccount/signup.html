@@ -1,0 +1,628 @@
+{% extends "base.html" %}
+{% load static %}
+{% load socialaccount %}
+
+{% block title %}Complete Sign Up - VibeGaze{% endblock %}
+
+{% block extra_head %}
+<style>
+    .auth-container {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    
+    .auth-card {
+        max-width: 500px;
+        width: 100%;
+        background: rgba(15, 25, 45, 0.65);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 20px;
+        padding: 40px 32px;
+    }
+    
+    .auth-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+    
+    .auth-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #f1f5f9, #60a5fa);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 8px;
+    }
+    
+    .auth-header p {
+        color: #94a3b8;
+        font-size: 14px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #cbd5e1;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        background: rgba(13, 17, 23, 0.8);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        color: #f1f5f9;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-control:disabled,
+    .form-control[readonly] {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+    
+    .info-box {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .info-text {
+        color: #94a3b8;
+        font-size: 13px;
+        text-align: center;
+    }
+    
+    .info-text strong {
+        color: #60a5fa;
+    }
+    
+    /* Error message styles */
+    .error-messages {
+        margin-bottom: 24px;
+    }
+    
+    .error-message {
+        background: rgba(239, 68, 68, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        animation: slideIn 0.3s ease;
+    }
+    
+    .error-text {
+        color: #f87171;
+        font-size: 13px;
+        flex: 1;
+    }
+    
+    .error-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 0 4px;
+        transition: color 0.2s ease;
+    }
+    
+    .error-close:hover {
+        color: #f87171;
+    }
+    
+    .success-message {
+        background: rgba(34, 197, 94, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(34, 197, 94, 0.5);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        animation: slideIn 0.3s ease;
+    }
+    
+    .success-text {
+        color: #4ade80;
+        font-size: 13px;
+        flex: 1;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .field-error {
+        border-color: #ef4444 !important;
+    }
+    
+    .field-error:focus {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    }
+    
+    .field-success {
+        border-color: #22c55e !important;
+    }
+    
+    .field-error-message {
+        color: #f87171;
+        font-size: 11px;
+        margin-top: 6px;
+        display: block;
+    }
+    
+    .field-hint {
+        color: #94a3b8;
+        font-size: 11px;
+        margin-top: 6px;
+        display: block;
+    }
+    
+    .field-hint.valid {
+        color: #22c55e;
+    }
+    
+    .field-hint.invalid {
+        color: #f87171;
+    }
+    
+    .btn-primary {
+        width: 100%;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .auth-footer {
+        text-align: center;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .auth-footer a {
+        color: #60a5fa;
+        text-decoration: none;
+    }
+    
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+    
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .btn-text {
+        display: inline-block;
+    }
+    
+    /* Suggestions box */
+    .suggestions-box {
+        background: rgba(59, 130, 246, 0.05);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-top: 8px;
+    }
+    
+    .suggestions-text {
+        color: #94a3b8;
+        font-size: 11px;
+    }
+    
+    .suggestions-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 6px;
+    }
+    
+    .suggestion {
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 12px;
+        color: #60a5fa;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .suggestion:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>Complete Your Profile</h1>
+            <p>Almost there</p>
+        </div>
+        
+        <div class="info-box">
+            <div class="info-text">
+                Signing up with <strong>Google</strong><br>
+                Email: <strong>{{ account.extra_data.email }}</strong>
+            </div>
+        </div>
+        
+        <!-- Display Django messages -->
+        {% if messages %}
+            <div class="error-messages">
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <div class="error-message">
+                            <span class="error-text">{{ message }}</span>
+                            <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    {% elif message.tags == 'success' %}
+                        <div class="success-message">
+                            <span class="success-text">{{ message }}</span>
+                            <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Display form non-field errors -->
+        {% if form.non_field_errors %}
+            <div class="error-messages">
+                {% for error in form.non_field_errors %}
+                    <div class="error-message">
+                        <span class="error-text">{{ error }}</span>
+                        <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <form method="post" action="{% url 'socialaccount_signup' %}" id="signupForm" novalidate>
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" 
+                       name="username" 
+                       id="usernameField"
+                       class="form-control {% if form.username.errors %}field-error{% endif %}"
+                       value="{{ form.username.value|default:'' }}"
+                       placeholder="Choose a username"
+                       required 
+                       autofocus>
+                {% if form.username.errors %}
+                    {% for error in form.username.errors %}
+                        <span class="field-error-message">
+                            {% if "already exists" in error|lower %}
+                                This username is already taken. Please choose another one.
+                            {% elif "invalid" in error|lower %}
+                                Invalid username. Use letters, numbers, and underscores only.
+                            {% else %}
+                                {{ error }}
+                            {% endif %}
+                        </span>
+                    {% endfor %}
+                {% else %}
+                    <span class="field-hint" id="usernameHint">Username must be at least 3 characters</span>
+                {% endif %}
+                <div id="usernameSuggestions" class="suggestions-box" style="display: none;">
+                    <div class="suggestions-text">Suggestions:</div>
+                    <div class="suggestions-list" id="suggestionsList"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" 
+                       class="form-control"
+                       value="{{ account.extra_data.email }}"
+                       readonly
+                       disabled>
+                <input type="hidden" name="email" value="{{ account.extra_data.email }}">
+                <span class="field-hint">
+                    {% if form.email.errors %}
+                        This email is already registered. Please sign in instead.
+                    {% else %}
+                        Email is verified from Google
+                    {% endif %}
+                </span>
+                {% if form.email.errors %}
+                    <div class="error-message" style="margin-top: 8px;">
+                        <span class="error-text">
+                            An account with this email already exists. 
+                            <a href="{% url 'account_login' %}" style="color: #60a5fa;">Sign in instead</a>
+                        </span>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn-primary" id="submitBtn">
+                <span class="btn-text">Complete Sign Up</span>
+            </button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Already have an account? <a href="{% url 'account_login' %}">Sign in</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const usernameField = document.getElementById('usernameField');
+    const usernameHint = document.getElementById('usernameHint');
+    const signupForm = document.getElementById('signupForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const suggestionsBox = document.getElementById('usernameSuggestions');
+    const suggestionsList = document.getElementById('suggestionsList');
+    
+    // Generate username suggestions
+    function generateSuggestions(baseName) {
+        const suggestions = [];
+        const randomNumbers = ['123', '456', '789', '01', '99', '007'];
+        const randomWords = ['_vibe', '_gaze', 'user', 'fan', 'lover', 'enthusiast'];
+        
+        for (let i = 0; i < 4; i++) {
+            suggestions.push(baseName + randomNumbers[i % randomNumbers.length]);
+            suggestions.push(baseName + randomWords[i % randomWords.length]);
+        }
+        
+        return [...new Set(suggestions)].slice(0, 4);
+    }
+    
+    // Function to show toast messages
+    function showMessage(message, type = 'error') {
+        const formElement = document.querySelector('form');
+        const messageDiv = document.createElement('div');
+        
+        if (type === 'error') {
+            messageDiv.className = 'error-message';
+            messageDiv.innerHTML = `
+                <span class="error-text">${message}</span>
+                <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+            `;
+        } else if (type === 'success') {
+            messageDiv.className = 'success-message';
+            messageDiv.innerHTML = `
+                <span class="success-text">${message}</span>
+                <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+            `;
+        }
+        
+        formElement.insertBefore(messageDiv, formElement.firstChild);
+        
+        setTimeout(() => {
+            if (messageDiv.parentElement) {
+                messageDiv.remove();
+            }
+        }, 5000);
+    }
+    
+    // Check if username exists via AJAX (if you want real-time checking)
+    async function checkUsernameExists(username) {
+        try {
+            const response = await fetch(`/check-username/?username=${encodeURIComponent(username)}`);
+            const data = await response.json();
+            return data.exists;
+        } catch (error) {
+            console.error('Error checking username:', error);
+            return false;
+        }
+    }
+    
+    // Username validation
+    if (usernameField) {
+        usernameField.addEventListener('input', async function() {
+            const username = this.value.trim();
+            const email = '{{ account.extra_data.email }}';
+            
+            if (username === '') {
+                this.classList.add('field-error');
+                this.classList.remove('field-success');
+                usernameHint.textContent = 'Username is required';
+                usernameHint.classList.remove('valid');
+                usernameHint.classList.add('invalid');
+                usernameHint.style.color = '#f87171';
+                suggestionsBox.style.display = 'none';
+            } else if (username.length < 3) {
+                this.classList.add('field-error');
+                this.classList.remove('field-success');
+                usernameHint.textContent = 'Username must be at least 3 characters';
+                usernameHint.classList.remove('valid');
+                usernameHint.classList.add('invalid');
+                usernameHint.style.color = '#f87171';
+                suggestionsBox.style.display = 'none';
+            } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                this.classList.add('field-error');
+                this.classList.remove('field-success');
+                usernameHint.textContent = 'Username can only contain letters, numbers, and underscores';
+                usernameHint.classList.remove('valid');
+                usernameHint.classList.add('invalid');
+                usernameHint.style.color = '#f87171';
+                suggestionsBox.style.display = 'none';
+            } else if (username.length > 30) {
+                this.classList.add('field-error');
+                this.classList.remove('field-success');
+                usernameHint.textContent = 'Username must be less than 30 characters';
+                usernameHint.classList.remove('valid');
+                usernameHint.classList.add('invalid');
+                usernameHint.style.color = '#f87171';
+                suggestionsBox.style.display = 'none';
+            } else {
+                // Check if username exists (you can implement this with AJAX)
+                // const exists = await checkUsernameExists(username);
+                // if (exists) {
+                //     this.classList.add('field-error');
+                //     this.classList.remove('field-success');
+                //     usernameHint.textContent = 'Username is already taken';
+                //     usernameHint.classList.remove('valid');
+                //     usernameHint.classList.add('invalid');
+                //     usernameHint.style.color = '#f87171';
+                //     
+                //     // Show suggestions
+                //     const suggestions = generateSuggestions(username.split('_')[0]);
+                //     suggestionsList.innerHTML = '';
+                //     suggestions.forEach(suggestion => {
+                //         const suggestionEl = document.createElement('div');
+                //         suggestionEl.className = 'suggestion';
+                //         suggestionEl.textContent = suggestion;
+                //         suggestionEl.onclick = () => {
+                //             usernameField.value = suggestion;
+                //             usernameField.dispatchEvent(new Event('input'));
+                //             suggestionsBox.style.display = 'none';
+                //         };
+                //         suggestionsList.appendChild(suggestionEl);
+                //     });
+                //     suggestionsBox.style.display = 'block';
+                // } else {
+                    this.classList.remove('field-error');
+                    this.classList.add('field-success');
+                    usernameHint.textContent = 'Username is available';
+                    usernameHint.classList.remove('invalid');
+                    usernameHint.classList.add('valid');
+                    usernameHint.style.color = '#22c55e';
+                    suggestionsBox.style.display = 'none';
+                // }
+            }
+        });
+        
+        // Real-time validation on blur
+        usernameField.addEventListener('blur', function() {
+            const username = this.value.trim();
+            if (username === '') {
+                showMessage('Username is required', 'error');
+            } else if (username.length < 3) {
+                showMessage('Username must be at least 3 characters long', 'error');
+            } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                showMessage('Username can only contain letters, numbers, and underscores', 'error');
+            }
+        });
+    }
+    
+    // Form submission with validation
+    if (signupForm) {
+        signupForm.addEventListener('submit', function(e) {
+            const username = usernameField.value.trim();
+            let hasError = false;
+            let errorMessage = '';
+            
+            // Validate username
+            if (username === '') {
+                hasError = true;
+                errorMessage = 'Username is required';
+                usernameField.classList.add('field-error');
+            } else if (username.length < 3) {
+                hasError = true;
+                errorMessage = 'Username must be at least 3 characters long';
+                usernameField.classList.add('field-error');
+            } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                hasError = true;
+                errorMessage = 'Username can only contain letters, numbers, and underscores';
+                usernameField.classList.add('field-error');
+            } else if (username.length > 30) {
+                hasError = true;
+                errorMessage = 'Username must be less than 30 characters';
+                usernameField.classList.add('field-error');
+            }
+            
+            if (hasError) {
+                e.preventDefault();
+                showMessage(errorMessage, 'error');
+                usernameField.focus();
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner"></span> <span class="btn-text">Creating Account...</span>';
+            }
+        });
+    }
+    
+    // Reset button state on page load
+    window.addEventListener('load', function() {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="btn-text">Complete Sign Up</span>';
+        }
+        
+        // Check if there are any error messages from the server
+        {% if form.email.errors %}
+            showMessage('This email is already registered. Please sign in instead.', 'error');
+        {% endif %}
+        
+        {% if form.username.errors %}
+            showMessage('{{ form.username.errors.0 }}', 'error');
+        {% endif %}
+    });
+</script>
+{% endblock %}

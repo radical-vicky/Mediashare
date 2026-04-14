@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.contrib.auth.models import User
 from .models import (
@@ -6,6 +7,7 @@ from .models import (
     CallSession, MessageThread, Message, VideoView, BackgroundMedia,
     MpesaTransaction, PaidMessage, SiteSetting, Feature, UserSession, Match
 )
+from django.contrib import messages
 
 # ========== SITE SETTING ADMIN ==========
 
@@ -181,7 +183,7 @@ class UserProfileAdmin(admin.ModelAdmin):
     def avatar_preview(self, obj):
         if obj.avatar:
             return format_html('<img src="{}?w_50,h_50,c_fill,q_auto,f_auto" width="40" height="40" style="object-fit: cover; border-radius: 50%;" />', obj.avatar.url)
-        return format_html('<span style="color: gray;">No avatar</span>')
+        return format_html('<span style="color: gray;">{}</span>', 'No avatar')
     avatar_preview.short_description = 'Avatar'
     
     def followers_count(self, obj):
@@ -201,7 +203,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 @admin.register(BackgroundMedia)
 class BackgroundMediaAdmin(admin.ModelAdmin):
-    list_display = ['id', 'media_type', 'is_active', 'created_at']
+    list_display = ['id', 'media_type', 'media_preview', 'is_active', 'created_at']
     list_filter = ['media_type', 'is_active', 'created_at']
     list_editable = ['is_active']
     readonly_fields = ['created_at']
@@ -216,20 +218,95 @@ class BackgroundMediaAdmin(admin.ModelAdmin):
         }),
     )
     
+    def media_preview(self, obj):
+        """Display preview in list view"""
+        if not obj.file:
+            return format_html('<span style="color: gray;">{}</span>', 'No file')
+        
+        if obj.media_type == 'image':
+            return format_html(
+                '<img src="{}?w_50,h_50,c_fill,q_auto,f_auto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;" />',
+                obj.file.url
+            )
+        elif obj.media_type == 'video':
+            return format_html(
+                '<video width="80" height="50" style="border-radius: 5px;"><source src="{}" type="video/mp4"></video>',
+                obj.file.url
+            )
+        return format_html('<span style="color: gray;">{}</span>', 'Unknown')
+    
+    media_preview.short_description = 'Preview'
+    
     def save_model(self, request, obj, form, change):
-        """Save the model - CloudinaryField handles the file upload automatically"""
-        if obj.is_active:
-            BackgroundMedia.objects.exclude(id=obj.id).update(is_active=False)
-        super().save_model(request, obj, form, change)
+        """Save the model with error handling"""
+        try:
+            # Check file size before attempting upload
+            if form.cleaned_data.get('file'):
+                file_size = form.cleaned_data['file'].size
+                max_size = 10 * 1024 * 1024  # 10 MB
+                
+                if file_size > max_size:
+                    size_mb = file_size / (1024 * 1024)
+                    max_mb = max_size / (1024 * 1024)
+                    messages.error(
+                        request, 
+                        f'File too large! Your file is {size_mb:.1f} MB. Maximum allowed size is {max_mb:.0f} MB. '
+                        f'Please compress your file or use a smaller one.'
+                    )
+                    return
+                
+                # Check if media type matches file type
+                if obj.media_type == 'image' and not form.cleaned_data['file'].content_type.startswith('image/'):
+                    messages.error(
+                        request,
+                        f'You selected "image" but uploaded a {form.cleaned_data["file"].content_type}. '
+                        f'Please select the correct media type for your file.'
+                    )
+                    return
+                elif obj.media_type == 'video' and not form.cleaned_data['file'].content_type.startswith('video/'):
+                    messages.error(
+                        request,
+                        f'You selected "video" but uploaded a {form.cleaned_data["file"].content_type}. '
+                        f'Please select the correct media type for your file.'
+                    )
+                    return
+            
+            # If we passed validation, save the model
+            if obj.is_active:
+                BackgroundMedia.objects.exclude(id=obj.id).update(is_active=False)
+            super().save_model(request, obj, form, change)
+            messages.success(request, f'{obj.media_type.title()} uploaded successfully!')
+            
+        except CloudinaryError as e:
+            error_msg = str(e)
+            if "too large" in error_msg.lower():
+                messages.error(
+                    request,
+                    'Upload failed: File is too large for Cloudinary. '
+                    'Maximum file size is 10 MB. Please compress your file.'
+                )
+            else:
+                messages.error(request, f'Upload failed: {error_msg}')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
     
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        # Make file field required only for new objects
         if obj is None:
             form.base_fields['file'].required = True
+            # Add help text about file size limits
+            form.base_fields['file'].help_text = 'Maximum file size: 10 MB (10,485,760 bytes)'
         else:
             form.base_fields['file'].required = False
         return form
+    
+    def response_add(self, request, obj, post_url_continue=None):
+        """Redirect back to add page if there was an error"""
+        if '_save' in request.POST and messages.get_messages(request):
+            # If there were error messages, stay on the add page
+            return HttpResponseRedirect(request.path)
+        return super().response_add(request, obj, post_url_continue)
+
 
 @admin.register(MpesaTransaction)
 class MpesaTransactionAdmin(admin.ModelAdmin):
@@ -360,21 +437,54 @@ class PhotoAdmin(admin.ModelAdmin):
 
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
-    list_display = ['id', 'author', 'title', 'video_type', 'thumbnail_preview', 'created_at', 'likes_count', 'views']
+    list_display = ['id', 'author', 'title', 'video_type', 'video_preview', 'created_at', 'likes_count', 'views']
     list_filter = ['created_at', 'author', 'video_type']
     search_fields = ['author__username', 'title', 'description']
     readonly_fields = ['views', 'likes_count', 'created_at', 'updated_at', 'duration']
     
+    def video_preview(self, obj):
+        """Display video thumbnail with play button or embedded video player"""
+        if obj.video_file:  # Assuming your video field is named 'video_file'
+            # Option 1: Thumbnail with play icon (recommended for list view)
+            if obj.thumbnail:
+                return format_html(
+                    '''
+                    <div style="position: relative; width: 100px; height: 100px;">
+                        <img src="{}?w_100,h_100,c_fill,q_auto,f_auto" 
+                             style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px; cursor: pointer;" 
+                             onclick="window.open('{}', '_blank');" />
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                                    background: rgba(0,0,0,0.7); color: white; border-radius: 50%; 
+                                    width: 30px; height: 30px; display: flex; align-items: center; 
+                                    justify-content: center; font-size: 20px;">▶</div>
+                    </div>
+                    ''',
+                    obj.thumbnail.url,
+                    obj.video_file.url if hasattr(obj.video_file, 'url') else '#'
+                )
+            else:
+                # Option 2: Simple video player (small)
+                return format_html(
+                    '<video width="150" height="100" controls preload="none" style="border-radius: 5px;">'
+                    '<source src="{}" type="video/mp4">'
+                    'Your browser does not support the video tag.'
+                    '</video>',
+                    obj.video_file.url
+                )
+        return format_html('<span style="color: gray;">{}</span>', 'No video')
+    
+    video_preview.short_description = 'Video Preview'
+    
     def thumbnail_preview(self, obj):
+        """Keep this for backward compatibility if needed"""
         if obj.thumbnail:
             return format_html('<img src="{}?w_50,h_50,c_fill,q_auto,f_auto" width="50" height="50" style="object-fit: cover; border-radius: 5px;" />', obj.thumbnail.url)
-        return format_html('<span style="color: gray;">No thumbnail</span>')
-    thumbnail_preview.short_description = 'Preview'
+        return format_html('<span style="color: gray;">{}</span>', 'No thumbnail')
+    thumbnail_preview.short_description = 'Thumbnail'
     
     def likes_count(self, obj):
         return obj.likes.count()
     likes_count.short_description = 'Likes'
-
 
 # ========== COMMENT ADMIN ==========
 

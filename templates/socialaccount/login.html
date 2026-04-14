@@ -1,0 +1,496 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+
+{% block title %}Connected Accounts - VibeGaze{% endblock %}
+
+{% block extra_head %}
+<style>
+    .auth-container {
+        min-height: calc(100vh - 200px);
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+    
+    .auth-card {
+        background: rgba(15, 25, 45, 0.65);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 20px;
+        padding: 40px 32px;
+    }
+    
+    .auth-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+    
+    .auth-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #f1f5f9, #60a5fa);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 8px;
+    }
+    
+    .auth-header p {
+        color: #94a3b8;
+        font-size: 14px;
+    }
+    
+    /* Error message styles */
+    .error-messages {
+        margin-bottom: 24px;
+    }
+    
+    .error-message {
+        background: rgba(239, 68, 68, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        animation: slideIn 0.3s ease;
+    }
+    
+    .error-text {
+        color: #f87171;
+        font-size: 13px;
+        flex: 1;
+    }
+    
+    .success-message {
+        background: rgba(34, 197, 94, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(34, 197, 94, 0.5);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        animation: slideIn 0.3s ease;
+    }
+    
+    .success-text {
+        color: #4ade80;
+        font-size: 13px;
+        flex: 1;
+    }
+    
+    .info-message {
+        background: rgba(59, 130, 246, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(59, 130, 246, 0.5);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        animation: slideIn 0.3s ease;
+    }
+    
+    .info-text-msg {
+        color: #60a5fa;
+        font-size: 13px;
+        flex: 1;
+    }
+    
+    .error-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 0 4px;
+        transition: color 0.2s ease;
+    }
+    
+    .error-close:hover {
+        color: #f87171;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .connection-list {
+        margin: 24px 0;
+    }
+    
+    .connection-item {
+        background: rgba(13, 17, 23, 0.8);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+    
+    .connection-item:hover {
+        border-color: rgba(59, 130, 246, 0.6);
+        background: rgba(13, 17, 23, 0.95);
+    }
+    
+    .connection-info {
+        flex: 1;
+    }
+    
+    .connection-provider {
+        font-weight: 600;
+        color: #60a5fa;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .provider-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        background: rgba(59, 130, 246, 0.2);
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 500;
+        color: #60a5fa;
+    }
+    
+    .connection-details {
+        font-size: 13px;
+        color: #94a3b8;
+    }
+    
+    .connection-date {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 4px;
+    }
+    
+    .radio-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .radio-custom {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: #3b82f6;
+    }
+    
+    .btn-danger {
+        padding: 8px 16px;
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        border-radius: 8px;
+        color: #f87171;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.25);
+        border-color: #ef4444;
+        transform: translateY(-1px);
+    }
+    
+    .btn-primary {
+        display: inline-block;
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        text-decoration: none;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .btn-secondary {
+        display: inline-block;
+        padding: 10px 20px;
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        color: #60a5fa;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        text-align: center;
+    }
+    
+    .btn-secondary:hover {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: #3b82f6;
+        transform: translateY(-1px);
+    }
+    
+    .divider {
+        margin: 24px 0;
+        border-top: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+    }
+    
+    .empty-state p {
+        margin-top: 8px;
+        font-size: 14px;
+    }
+    
+    .auth-footer {
+        text-align: center;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .auth-footer a {
+        color: #60a5fa;
+        text-decoration: none;
+    }
+    
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+    
+    .warning-box {
+        background: rgba(251, 191, 36, 0.1);
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 20px;
+        font-size: 12px;
+        color: #fcd34d;
+        text-align: center;
+    }
+    
+    .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        margin-right: 6px;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>Connected Accounts</h1>
+            <p>Manage your social connections</p>
+        </div>
+        
+        <!-- Display Django messages -->
+        {% if messages %}
+            <div class="error-messages">
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <div class="error-message">
+                            <span class="error-text">{{ message }}</span>
+                            <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    {% elif message.tags == 'success' %}
+                        <div class="success-message">
+                            <span class="success-text">{{ message }}</span>
+                            <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    {% elif message.tags == 'info' %}
+                        <div class="info-message">
+                            <span class="info-text-msg">{{ message }}</span>
+                            <button type="button" class="error-close" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Warning about removing accounts -->
+        <div class="warning-box">
+            Removing a connected account will disconnect it from your profile. You can reconnect it at any time.
+        </div>
+        
+        {% if form.accounts %}
+            <div class="connection-list">
+                <form method="post" action="{% url 'socialaccount_connections' %}" id="connectionsForm">
+                    {% csrf_token %}
+                    
+                    {% for base_account in form.accounts %}
+                        {% with provider=base_account.get_provider %}
+                        <div class="connection-item">
+                            <div class="connection-info">
+                                <div class="connection-provider">
+                                    {{ provider.name }}
+                                    <span class="provider-badge">Connected</span>
+                                </div>
+                                <div class="connection-details">
+                                    {{ base_account.extra_data.email }}
+                                </div>
+                                <div class="connection-date">
+                                    Connected since {{ base_account.date_joined|date:"F j, Y" }}
+                                </div>
+                            </div>
+                            <div class="radio-group">
+                                <input type="radio" 
+                                       name="account" 
+                                       value="{{ base_account.id }}" 
+                                       id="id_account_{{ base_account.id }}" 
+                                       class="radio-custom"
+                                       required>
+                                <label for="id_account_{{ base_account.id }}" class="btn-danger" style="cursor: pointer;">
+                                    Remove
+                                </label>
+                            </div>
+                        </div>
+                        {% endwith %}
+                    {% endfor %}
+                    
+                    <button type="submit" class="btn-danger" id="removeBtn" style="width: 100%; margin-top: 16px; display: none;">
+                        Remove Selected Account
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div style="font-size: 48px; margin-bottom: 16px;">🔌</div>
+                <p>No social accounts connected</p>
+                <p style="font-size: 13px; margin-top: 8px;">Connect your Google account to enable social features</p>
+            </div>
+        {% endif %}
+        
+        <div class="divider"></div>
+        
+        <h2 style="font-size: 18px; margin-bottom: 16px; color: #cbd5e1;">Add a new connection</h2>
+        
+        <a href="{% provider_login_url 'google' process='connect' %}" class="btn-primary" id="connectBtn">
+            Connect with Google
+        </a>
+        
+        <div class="auth-footer">
+            <p><a href="{% url 'account_login' %}">Back to Account</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const connectionsForm = document.getElementById('connectionsForm');
+    const removeBtn = document.getElementById('removeBtn');
+    const connectBtn = document.getElementById('connectBtn');
+    const radioButtons = document.querySelectorAll('input[name="account"]');
+    
+    // Show/hide remove button based on radio selection
+    if (radioButtons.length > 0) {
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (removeBtn) {
+                    removeBtn.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+        });
+    }
+    
+    // Confirm before removing account
+    if (connectionsForm) {
+        connectionsForm.addEventListener('submit', function(e) {
+            const selectedRadio = document.querySelector('input[name="account"]:checked');
+            if (selectedRadio) {
+                const connectionItem = selectedRadio.closest('.connection-item');
+                const providerName = connectionItem ? connectionItem.querySelector('.connection-provider').textContent.trim() : 'this account';
+                
+                const confirmMessage = `Are you sure you want to remove your ${providerName} connection?\n\nYou will lose access to features associated with this account. You can reconnect it at any time.`;
+                
+                if (!confirm(confirmMessage)) {
+                    e.preventDefault();
+                } else {
+                    // Show loading state
+                    const submitBtn = connectionsForm.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner"></span> Removing...';
+                    }
+                }
+            }
+        });
+    }
+    
+    // Show loading state when connecting
+    if (connectBtn) {
+        connectBtn.addEventListener('click', function(e) {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<span class="spinner"></span> Connecting...';
+            this.style.opacity = '0.7';
+            this.style.cursor = 'wait';
+            
+            // Don't prevent default, let the link work normally
+            setTimeout(() => {
+                // This will only run if the redirect takes too long
+                this.innerHTML = originalText;
+                this.style.opacity = '1';
+                this.style.cursor = 'pointer';
+            }, 3000);
+        });
+    }
+    
+    // Auto-dismiss messages after 5 seconds
+    setTimeout(() => {
+        const messages = document.querySelectorAll('.error-message, .success-message, .info-message');
+        messages.forEach(message => {
+            setTimeout(() => {
+                if (message.parentElement) {
+                    message.style.opacity = '0';
+                    setTimeout(() => {
+                        if (message.parentElement) message.remove();
+                    }, 300);
+                }
+            }, 5000);
+        });
+    }, 1000);
+</script>
+{% endblock %}
