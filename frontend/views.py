@@ -22,6 +22,7 @@ import cloudinary.uploader
 
 # Update your home function in views.py
 
+
 def home(request):
     """Home page - Instagram-like feed for authenticated users, landing page for guests"""
     
@@ -158,7 +159,7 @@ def home(request):
         user_posts.sort(key=lambda x: x['created_at'], reverse=True)
         
         # Get the user's profile to access following
-        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
         
         # Get users that the current user follows - FIX HERE
         # The following relationship is on UserProfile, not directly on User
@@ -227,6 +228,8 @@ def home(request):
         print(f"Feed items in context: {len(feed_items)}")
     
     return render(request, 'frontend/home.html', context)
+
+
 
 
 def get_site_setting(key, default=''):
